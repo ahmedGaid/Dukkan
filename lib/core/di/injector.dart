@@ -31,6 +31,7 @@ import '../../domain/shop/repositories/shop_repository.dart';
 import '../../domain/shop/usecases/watch_shop.dart';
 import '../../domain/shop/usecases/watch_shops.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
+import '../../presentation/cart/bloc/cart_bloc.dart';
 import '../../presentation/home/bloc/shops_bloc.dart';
 import '../../presentation/search/bloc/search_bloc.dart';
 import '../../presentation/shop/bloc/products_bloc.dart';
@@ -128,6 +129,10 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => WatchCustomerOrders(sl()));
   sl.registerLazySingleton(() => WatchOrder(sl()));
   sl.registerLazySingleton(() => CancelOrder(sl()));
+
+  // Cart — bloc (app lifetime: one basket across the whole session; no
+  // repository — nothing to sync until PlaceOrder runs at checkout).
+  sl.registerLazySingleton(() => CartBloc());
 
   // Router (reads AuthBloc)
   sl.registerLazySingleton(() => AppRouter(sl()));

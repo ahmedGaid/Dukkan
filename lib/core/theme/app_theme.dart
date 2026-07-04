@@ -93,6 +93,10 @@ abstract final class AppTheme {
         ),
       ),
       dividerTheme: DividerThemeData(color: colorScheme.outline, thickness: 1),
+      dialogTheme: DialogThemeData(
+        backgroundColor: colorScheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.xlAll),
+      ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: colorScheme.surface,
         surfaceTintColor: Colors.transparent,

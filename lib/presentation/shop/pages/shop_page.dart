@@ -8,6 +8,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../domain/product/entities/product.dart';
 import '../../../domain/shop/entities/shop.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/common/cart_icon_button.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/shimmer_image.dart';
 import '../../widgets/common/skeletons.dart';
@@ -54,6 +55,7 @@ class ShopView extends StatelessWidget {
             return Text(isArabic ? shop.nameAr : shop.name);
           },
         ),
+        actions: const [CartIconButton()],
       ),
       body: BlocBuilder<ProductsBloc, ProductsState>(
         builder: (context, state) => switch (state.status) {

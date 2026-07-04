@@ -6,6 +6,7 @@ import '../../../core/di/injector.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/common/cart_icon_button.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/skeletons.dart';
 import '../bloc/shops_bloc.dart';
@@ -121,6 +122,8 @@ class _HomeHeader extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(width: AppSpacing.sm),
+          const CartIconButton(),
         ],
       ),
     );

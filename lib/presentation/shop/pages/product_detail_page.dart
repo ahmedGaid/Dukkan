@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/di/injector.dart';
 import '../../../core/theme/app_colors.dart';
@@ -8,20 +9,23 @@ import '../../../domain/product/entities/product.dart';
 import '../../../domain/product/entities/stock_status.dart';
 import '../../../domain/product/usecases/get_product.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../cart/bloc/cart_bloc.dart';
+import '../../cart/cart_actions.dart';
 import '../../widgets/common/app_snackbar.dart';
+import '../../widgets/common/cart_icon_button.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/price_tag.dart';
+import '../../widgets/common/quantity_stepper.dart';
 import '../../widgets/common/shimmer.dart';
 import '../../widgets/common/shimmer_image.dart';
 import '../../widgets/common/skeletons.dart';
 import '../../widgets/common/status_chip.dart';
 
-/// Full product view: large image, name, price, stock, a quantity selector and
-/// an add-to-cart CTA. Usually seeded with the [Product] the grid already holds
-/// (no load flash); falls back to [GetProduct] for a cold/deep-link open.
-///
-/// The cart itself lands in C3 — the CTA here confirms the intent but doesn't
-/// yet persist a basket.
+/// Full product view: large image, name, price, stock, and either a quantity
+/// picker + add-to-cart CTA (not yet in the cart) or a live [QuantityStepper]
+/// bound to the cart (already added). Usually seeded with the [Product] the
+/// grid already holds (no load flash); falls back to [GetProduct] for a
+/// cold/deep-link open.
 class ProductDetailPage extends StatefulWidget {
   const ProductDetailPage({super.key, required this.productId, this.seed});
 
@@ -36,7 +40,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Product? _product;
   bool _loading = false;
   bool _failed = false;
-  int _qty = 1;
+
+  /// Quantity to add, picked BEFORE the product is in the cart. Once added,
+  /// the stepper controls the real cart quantity instead.
+  int _pickedQty = 1;
 
   @override
   void initState() {
@@ -69,7 +76,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
-  void _setQty(int next) => setState(() => _qty = next.clamp(1, 99));
+  void _setPickedQty(int next) => setState(() => _pickedQty = next.clamp(1, 99));
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +88,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         : (isArabic ? product.nameAr : product.name);
 
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(
+        title: Text(title),
+        actions: const [CartIconButton()],
+      ),
       body: Builder(
         builder: (context) {
           if (_loading) return const _DetailLoading();
@@ -96,9 +106,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           }
           return _DetailContent(
             product: product,
-            qty: _qty,
-            onIncrement: () => _setQty(_qty + 1),
-            onDecrement: () => _setQty(_qty - 1),
+            pickedQty: _pickedQty,
+            onPickedIncrement: () => _setPickedQty(_pickedQty + 1),
+            onPickedDecrement: () => _setPickedQty(_pickedQty - 1),
           );
         },
       ),
@@ -109,15 +119,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 class _DetailContent extends StatelessWidget {
   const _DetailContent({
     required this.product,
-    required this.qty,
-    required this.onIncrement,
-    required this.onDecrement,
+    required this.pickedQty,
+    required this.onPickedIncrement,
+    required this.onPickedDecrement,
   });
 
   final Product product;
-  final int qty;
-  final VoidCallback onIncrement;
-  final VoidCallback onDecrement;
+  final int pickedQty;
+  final VoidCallback onPickedIncrement;
+  final VoidCallback onPickedDecrement;
 
   @override
   Widget build(BuildContext context) {
@@ -168,15 +178,34 @@ class _DetailContent extends StatelessWidget {
         const SizedBox(height: AppSpacing.xl),
         if (soldOut)
           const _SoldOutBlock()
-        else ...[
-          _QuantityRow(
-            qty: qty,
-            onIncrement: onIncrement,
-            onDecrement: onDecrement,
+        else
+          BlocSelector<CartBloc, CartState, int>(
+            selector: (state) => state.quantityOf(product.id),
+            builder: (context, cartQty) => cartQty == 0
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _QuantityRow(
+                        label: l10n.qtyLabel,
+                        qty: pickedQty,
+                        onIncrement: onPickedIncrement,
+                        onDecrement: onPickedDecrement,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      _AddToCartButton(product: product, qty: pickedQty),
+                    ],
+                  )
+                : _QuantityRow(
+                    label: l10n.qtyLabel,
+                    qty: cartQty,
+                    onIncrement: () => context
+                        .read<CartBloc>()
+                        .add(CartItemIncremented(product.id)),
+                    onDecrement: () => context
+                        .read<CartBloc>()
+                        .add(CartItemDecremented(product.id)),
+                  ),
           ),
-          const SizedBox(height: AppSpacing.lg),
-          _AddToCartButton(product: product, qty: qty),
-        ],
       ],
     );
   }
@@ -212,87 +241,31 @@ class _StockLine extends StatelessWidget {
 
 class _QuantityRow extends StatelessWidget {
   const _QuantityRow({
+    required this.label,
     required this.qty,
     required this.onIncrement,
     required this.onDecrement,
   });
 
+  final String label;
   final int qty;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final text = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
 
     return Row(
       children: [
-        Text(l10n.qtyLabel, style: text.titleSmall),
+        Text(label, style: text.titleSmall),
         const Spacer(),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: AppRadius.roundAll,
-            border: Border.all(color: scheme.outline),
-          ),
-          child: Row(
-            children: [
-              _StepButton(
-                icon: Icons.remove_rounded,
-                onTap: onDecrement,
-                semanticLabel: l10n.qtyDecrease,
-              ),
-              SizedBox(
-                width: 40,
-                child: Text(
-                  '$qty',
-                  textAlign: TextAlign.center,
-                  style: text.titleMedium?.copyWith(
-                    color: scheme.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              _StepButton(
-                icon: Icons.add_rounded,
-                onTap: onIncrement,
-                semanticLabel: l10n.qtyIncrease,
-              ),
-            ],
-          ),
+        QuantityStepper(
+          qty: qty,
+          onIncrement: onIncrement,
+          onDecrement: onDecrement,
         ),
       ],
-    );
-  }
-}
-
-class _StepButton extends StatelessWidget {
-  const _StepButton({
-    required this.icon,
-    required this.onTap,
-    required this.semanticLabel,
-  });
-
-  final IconData icon;
-  final VoidCallback onTap;
-  final String semanticLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: onTap,
-      customBorder: const CircleBorder(),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.sm),
-        child: Icon(
-          icon,
-          size: 22,
-          color: scheme.primary,
-          semanticLabel: semanticLabel,
-        ),
-      ),
     );
   }
 }
@@ -310,7 +283,12 @@ class _AddToCartButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: FilledButton.icon(
-        onPressed: () => AppSnackBar.info(context, l10n.cartComingSoon),
+        onPressed: () async {
+          final added = await addToCart(context, product, quantity: qty);
+          if (added && context.mounted) {
+            AppSnackBar.success(context, l10n.cartItemAdded);
+          }
+        },
         icon: const Icon(Icons.add_shopping_cart_rounded, size: 20),
         label: Text(l10n.actionAddToCart),
         style: FilledButton.styleFrom(

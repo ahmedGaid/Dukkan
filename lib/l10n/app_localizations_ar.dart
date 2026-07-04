@@ -233,6 +233,24 @@ class AppLocalizationsAr extends AppLocalizations {
   String get actionAddToCart => 'أضف للسلة';
 
   @override
+  String get actionCancel => 'إلغاء';
+
+  @override
+  String get actionClear => 'امسح';
+
+  @override
+  String get actionClearAndAdd => 'امسح وضيف';
+
+  @override
+  String get actionCheckout => 'إتمام الطلب';
+
+  @override
+  String get actionPlaceOrder => 'أكّد الطلب';
+
+  @override
+  String get actionBackHome => 'رجوع للرئيسية';
+
+  @override
   String get qtyLabel => 'الكمية';
 
   @override
@@ -242,7 +260,68 @@ class AppLocalizationsAr extends AppLocalizations {
   String get qtyDecrease => 'قلّل واحد';
 
   @override
-  String get cartComingSoon => 'هنفعّل السلة في التحديث الجاي.';
+  String get cartItemAdded => 'اتضاف للسلة';
+
+  @override
+  String get cartTitle => 'السلة';
+
+  @override
+  String get cartTotal => 'الإجمالي';
+
+  @override
+  String get cartClearAll => 'امسح السلة';
+
+  @override
+  String get cartClearConfirmTitle => 'تمسح السلة؟';
+
+  @override
+  String get cartClearConfirmBody => 'هيتشال كل اللي في السلة.';
+
+  @override
+  String get cartEmptyTitle => 'السلة فاضية';
+
+  @override
+  String get cartEmptyBody => 'ضيف منتجات من أي دكان عشان تشوفها هنا.';
+
+  @override
+  String get cartEmptyAction => 'تصفّح الدكاكين';
+
+  @override
+  String get cartSwitchShopTitle => 'تبدأ سلة جديدة؟';
+
+  @override
+  String get cartSwitchShopBody =>
+      'السلة فيها منتجات من دكان تاني. لو ضفت المنتج ده، هنمسح السلة الأول.';
+
+  @override
+  String get checkoutTitle => 'إتمام الطلب';
+
+  @override
+  String get checkoutAddressSection => 'عنوان التوصيل';
+
+  @override
+  String get checkoutSummary => 'ملخص الطلب';
+
+  @override
+  String get checkoutErrorBody => 'معرفناش نأكد طلبك دلوقتي — جرّب تاني.';
+
+  @override
+  String get fieldAddressLine => 'العنوان';
+
+  @override
+  String get fieldCity => 'المدينة';
+
+  @override
+  String get fieldNotesOptional => 'ملاحظات (اختياري)';
+
+  @override
+  String get codLabel => 'الدفع عند الاستلام';
+
+  @override
+  String get orderPlacedTitle => 'الطلب اتأكد!';
+
+  @override
+  String get orderPlacedBody => 'الدكان هيبدأ يجهّز طلبك على طول.';
 
   @override
   String get shopProductsEmptyTitle => 'الدكان لسه بيرتّب رفوفه';

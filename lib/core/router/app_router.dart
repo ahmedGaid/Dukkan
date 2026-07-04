@@ -5,6 +5,10 @@ import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/auth/pages/forgot_password_page.dart';
 import '../../presentation/auth/pages/login_page.dart';
 import '../../presentation/auth/pages/signup_page.dart';
+import '../../presentation/cart/pages/cart_page.dart';
+import '../../presentation/cart/pages/checkout_page.dart';
+import '../../presentation/cart/pages/order_placed_page.dart';
+import '../../domain/order/entities/order.dart';
 import '../../domain/product/entities/product.dart';
 import '../../presentation/home/pages/home_page.dart';
 import '../../presentation/search/pages/search_page.dart';
@@ -60,6 +64,16 @@ class AppRouter {
       GoRoute(
         path: '/search',
         builder: (context, state) => const SearchPage(),
+      ),
+      GoRoute(path: '/cart', builder: (context, state) => const CartPage()),
+      GoRoute(
+        path: '/checkout',
+        builder: (context, state) => const CheckoutPage(),
+      ),
+      GoRoute(
+        path: '/order-placed',
+        builder: (context, state) =>
+            OrderPlacedPage(order: state.extra as Order),
       ),
     ],
   );

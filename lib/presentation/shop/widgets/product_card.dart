@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
@@ -6,17 +7,17 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../domain/product/entities/product.dart';
 import '../../../domain/product/entities/stock_status.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../cart/bloc/cart_bloc.dart';
+import '../../cart/cart_actions.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/price_tag.dart';
+import '../../widgets/common/quantity_stepper.dart';
 import '../../widgets/common/shimmer_image.dart';
 
-/// A product tile in the shop grid: image, localized name, price, and an
-/// add-to-cart control that morphs from an "add" pill into a quantity stepper.
-///
-/// The quantity here is **local and ephemeral** — C2b is browse-only. C3 wires
-/// [onQuantityChanged] to the real cart bloc so the count survives navigation;
-/// until then it's a self-contained interaction preview.
-class ProductCard extends StatefulWidget {
+/// A product tile in the shop/search grid: image, localized name, price, and
+/// an add-to-cart control that morphs from an "add" pill into the shared
+/// [QuantityStepper] once the product is in the cart.
+class ProductCard extends StatelessWidget {
   const ProductCard({
     super.key,
     required this.product,
@@ -35,25 +36,15 @@ class ProductCard extends StatefulWidget {
   final String? subtitle;
 
   @override
-  State<ProductCard> createState() => _ProductCardState();
-}
-
-class _ProductCardState extends State<ProductCard> {
-  int _qty = 0;
-
-  void _setQty(int next) => setState(() => _qty = next.clamp(0, 99));
-
-  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final text = Theme.of(context).textTheme;
     final isArabic = Localizations.localeOf(context).languageCode == 'ar';
-    final product = widget.product;
     final name = isArabic ? product.nameAr : product.name;
     final soldOut = product.stockStatus == StockStatus.outOfStock;
 
     return AppCard(
-      onTap: widget.onTap,
+      onTap: onTap,
       clip: true,
       radius: AppRadius.lgAll,
       child: Column(
@@ -107,7 +98,7 @@ class _ProductCardState extends State<ProductCard> {
                   overflow: TextOverflow.ellipsis,
                   style: text.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
-                if (widget.subtitle != null) ...[
+                if (subtitle != null) ...[
                   const SizedBox(height: 2),
                   Row(
                     children: [
@@ -122,7 +113,7 @@ class _ProductCardState extends State<ProductCard> {
                       const SizedBox(width: AppSpacing.xs),
                       Expanded(
                         child: Text(
-                          widget.subtitle!,
+                          subtitle!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: text.bodySmall?.copyWith(
@@ -144,11 +135,20 @@ class _ProductCardState extends State<ProductCard> {
                   width: double.infinity,
                   child: soldOut
                       ? const _SoldOutLabel()
-                      : _AddControl(
-                          qty: _qty,
-                          onAdd: () => _setQty(1),
-                          onIncrement: () => _setQty(_qty + 1),
-                          onDecrement: () => _setQty(_qty - 1),
+                      : BlocSelector<CartBloc, CartState, int>(
+                          selector: (state) => state.quantityOf(product.id),
+                          builder: (context, qty) => qty == 0
+                              ? _AddPill(onTap: () => addToCart(context, product))
+                              : QuantityStepper(
+                                  expand: true,
+                                  qty: qty,
+                                  onIncrement: () => context
+                                      .read<CartBloc>()
+                                      .add(CartItemIncremented(product.id)),
+                                  onDecrement: () => context
+                                      .read<CartBloc>()
+                                      .add(CartItemDecremented(product.id)),
+                                ),
                         ),
                 ),
               ],
@@ -195,106 +195,37 @@ class _Badge extends StatelessWidget {
   }
 }
 
-/// The "add" pill ↔ quantity stepper. `qty == 0` shows the pill; tapping it (or
-/// the "+") raises the count; "−" at 1 returns to the pill.
-class _AddControl extends StatelessWidget {
-  const _AddControl({
-    required this.qty,
-    required this.onAdd,
-    required this.onIncrement,
-    required this.onDecrement,
-  });
+/// The initial "add" pill — tapping it adds one unit; the control then morphs
+/// into a [QuantityStepper] bound to the real cart.
+class _AddPill extends StatelessWidget {
+  const _AddPill({required this.onTap});
 
-  final int qty;
-  final VoidCallback onAdd;
-  final VoidCallback onIncrement;
-  final VoidCallback onDecrement;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
 
-    if (qty == 0) {
-      return Material(
-        color: scheme.primary,
-        borderRadius: AppRadius.roundAll,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onAdd,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.add_rounded, size: 18, color: scheme.onPrimary),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                l10n.actionAdd,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: scheme.onPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.roundAll,
-        border: Border.all(color: scheme.primary),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _StepButton(
-            icon: Icons.remove_rounded,
-            onTap: onDecrement,
-            semanticLabel: l10n.qtyDecrease,
-          ),
-          Text(
-            '$qty',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: scheme.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-          ),
-          _StepButton(
-            icon: Icons.add_rounded,
-            onTap: onIncrement,
-            semanticLabel: l10n.qtyIncrease,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StepButton extends StatelessWidget {
-  const _StepButton({
-    required this.icon,
-    required this.onTap,
-    required this.semanticLabel,
-  });
-
-  final IconData icon;
-  final VoidCallback onTap;
-  final String semanticLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: onTap,
-      customBorder: const CircleBorder(),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-        child: Icon(
-          icon,
-          size: 20,
-          color: scheme.primary,
-          semanticLabel: semanticLabel,
+    return Material(
+      color: scheme.primary,
+      borderRadius: AppRadius.roundAll,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add_rounded, size: 18, color: scheme.onPrimary),
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              l10n.actionAdd,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: scheme.onPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ],
         ),
       ),
     );

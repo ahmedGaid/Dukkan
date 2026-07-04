@@ -79,7 +79,7 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
         product grid, product detail. ProductsBloc.
   - [x] **C2c — Search + polish.** Global product search (matches product name/category + shop
         name, Arabic-folded, debounced); designed prompt/no-results/error/loading states. SearchBloc.
-- [ ] **C3 — Cart + checkout.** Per-shop cart, quantity stepper, checkout with manual address
+- [x] **C3 — Cart + checkout.** Per-shop cart, quantity stepper, checkout with manual address
       entry (maps deferred), COD confirm, order placed screen.
 - [ ] **C4 — Orders.** Orders list, order detail with status stepper, cancel
       (pending/accepted only), realtime status via Firestore snapshots.

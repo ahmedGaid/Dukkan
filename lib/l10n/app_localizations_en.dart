@@ -234,6 +234,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionAddToCart => 'Add to cart';
 
   @override
+  String get actionCancel => 'Cancel';
+
+  @override
+  String get actionClear => 'Clear';
+
+  @override
+  String get actionClearAndAdd => 'Clear and add';
+
+  @override
+  String get actionCheckout => 'Checkout';
+
+  @override
+  String get actionPlaceOrder => 'Place order';
+
+  @override
+  String get actionBackHome => 'Back to home';
+
+  @override
   String get qtyLabel => 'Quantity';
 
   @override
@@ -243,7 +261,69 @@ class AppLocalizationsEn extends AppLocalizations {
   String get qtyDecrease => 'Decrease by one';
 
   @override
-  String get cartComingSoon => 'The cart arrives in the next update.';
+  String get cartItemAdded => 'Added to cart';
+
+  @override
+  String get cartTitle => 'Cart';
+
+  @override
+  String get cartTotal => 'Total';
+
+  @override
+  String get cartClearAll => 'Clear cart';
+
+  @override
+  String get cartClearConfirmTitle => 'Clear the cart?';
+
+  @override
+  String get cartClearConfirmBody => 'This removes every item from your cart.';
+
+  @override
+  String get cartEmptyTitle => 'Your cart is empty';
+
+  @override
+  String get cartEmptyBody => 'Add products from a shop to see them here.';
+
+  @override
+  String get cartEmptyAction => 'Browse shops';
+
+  @override
+  String get cartSwitchShopTitle => 'Start a new cart?';
+
+  @override
+  String get cartSwitchShopBody =>
+      'Your cart has items from another shop. Adding this will clear it first.';
+
+  @override
+  String get checkoutTitle => 'Checkout';
+
+  @override
+  String get checkoutAddressSection => 'Delivery address';
+
+  @override
+  String get checkoutSummary => 'Order summary';
+
+  @override
+  String get checkoutErrorBody => 'We couldn\'t place your order — try again.';
+
+  @override
+  String get fieldAddressLine => 'Address';
+
+  @override
+  String get fieldCity => 'City';
+
+  @override
+  String get fieldNotesOptional => 'Notes (optional)';
+
+  @override
+  String get codLabel => 'Cash on delivery';
+
+  @override
+  String get orderPlacedTitle => 'Order placed!';
+
+  @override
+  String get orderPlacedBody =>
+      'The shop will start preparing your order soon.';
 
   @override
   String get shopProductsEmptyTitle => 'This shop is still stocking up';

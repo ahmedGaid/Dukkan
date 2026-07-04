@@ -530,6 +530,42 @@ abstract class AppLocalizations {
   /// **'أضف للسلة'**
   String get actionAddToCart;
 
+  /// No description provided for @actionCancel.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء'**
+  String get actionCancel;
+
+  /// No description provided for @actionClear.
+  ///
+  /// In ar, this message translates to:
+  /// **'امسح'**
+  String get actionClear;
+
+  /// No description provided for @actionClearAndAdd.
+  ///
+  /// In ar, this message translates to:
+  /// **'امسح وضيف'**
+  String get actionClearAndAdd;
+
+  /// No description provided for @actionCheckout.
+  ///
+  /// In ar, this message translates to:
+  /// **'إتمام الطلب'**
+  String get actionCheckout;
+
+  /// No description provided for @actionPlaceOrder.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّد الطلب'**
+  String get actionPlaceOrder;
+
+  /// No description provided for @actionBackHome.
+  ///
+  /// In ar, this message translates to:
+  /// **'رجوع للرئيسية'**
+  String get actionBackHome;
+
   /// No description provided for @qtyLabel.
   ///
   /// In ar, this message translates to:
@@ -548,11 +584,131 @@ abstract class AppLocalizations {
   /// **'قلّل واحد'**
   String get qtyDecrease;
 
-  /// No description provided for @cartComingSoon.
+  /// No description provided for @cartItemAdded.
   ///
   /// In ar, this message translates to:
-  /// **'هنفعّل السلة في التحديث الجاي.'**
-  String get cartComingSoon;
+  /// **'اتضاف للسلة'**
+  String get cartItemAdded;
+
+  /// No description provided for @cartTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'السلة'**
+  String get cartTitle;
+
+  /// No description provided for @cartTotal.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإجمالي'**
+  String get cartTotal;
+
+  /// No description provided for @cartClearAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'امسح السلة'**
+  String get cartClearAll;
+
+  /// No description provided for @cartClearConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمسح السلة؟'**
+  String get cartClearConfirmTitle;
+
+  /// No description provided for @cartClearConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيتشال كل اللي في السلة.'**
+  String get cartClearConfirmBody;
+
+  /// No description provided for @cartEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'السلة فاضية'**
+  String get cartEmptyTitle;
+
+  /// No description provided for @cartEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'ضيف منتجات من أي دكان عشان تشوفها هنا.'**
+  String get cartEmptyBody;
+
+  /// No description provided for @cartEmptyAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصفّح الدكاكين'**
+  String get cartEmptyAction;
+
+  /// No description provided for @cartSwitchShopTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تبدأ سلة جديدة؟'**
+  String get cartSwitchShopTitle;
+
+  /// No description provided for @cartSwitchShopBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'السلة فيها منتجات من دكان تاني. لو ضفت المنتج ده، هنمسح السلة الأول.'**
+  String get cartSwitchShopBody;
+
+  /// No description provided for @checkoutTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إتمام الطلب'**
+  String get checkoutTitle;
+
+  /// No description provided for @checkoutAddressSection.
+  ///
+  /// In ar, this message translates to:
+  /// **'عنوان التوصيل'**
+  String get checkoutAddressSection;
+
+  /// No description provided for @checkoutSummary.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملخص الطلب'**
+  String get checkoutSummary;
+
+  /// No description provided for @checkoutErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نأكد طلبك دلوقتي — جرّب تاني.'**
+  String get checkoutErrorBody;
+
+  /// No description provided for @fieldAddressLine.
+  ///
+  /// In ar, this message translates to:
+  /// **'العنوان'**
+  String get fieldAddressLine;
+
+  /// No description provided for @fieldCity.
+  ///
+  /// In ar, this message translates to:
+  /// **'المدينة'**
+  String get fieldCity;
+
+  /// No description provided for @fieldNotesOptional.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظات (اختياري)'**
+  String get fieldNotesOptional;
+
+  /// No description provided for @codLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدفع عند الاستلام'**
+  String get codLabel;
+
+  /// No description provided for @orderPlacedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب اتأكد!'**
+  String get orderPlacedTitle;
+
+  /// No description provided for @orderPlacedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدكان هيبدأ يجهّز طلبك على طول.'**
+  String get orderPlacedBody;
 
   /// No description provided for @shopProductsEmptyTitle.
   ///

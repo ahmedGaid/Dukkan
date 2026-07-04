@@ -10,6 +10,7 @@ import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 import 'presentation/auth/bloc/auth_bloc.dart';
+import 'presentation/cart/bloc/cart_bloc.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,9 +27,13 @@ class DukkanApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // AuthBloc first (router listens to it) and provided above the router so
-    // every routed page can read it.
-    return BlocProvider<AuthBloc>.value(
-      value: sl<AuthBloc>(),
+    // every routed page can read it. CartBloc is also app-lifetime — one
+    // basket across Home/Shop/Search/Cart/Checkout.
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>.value(value: sl<AuthBloc>()),
+        BlocProvider<CartBloc>.value(value: sl<CartBloc>()),
+      ],
       child: ValueListenableBuilder<Locale>(
         valueListenable: sl<LocaleController>(),
         builder: (context, locale, _) {
