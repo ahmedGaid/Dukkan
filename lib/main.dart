@@ -1,30 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'core/di/injector.dart';
+import 'core/l10n/locale_controller.dart';
+import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
-import 'presentation/splash/splash_page.dart';
+import 'l10n/app_localizations.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initDependencies();
   runApp(const DukkanApp());
 }
 
 class DukkanApp extends StatelessWidget {
   const DukkanApp({super.key});
 
-  // Real locale switching + l10n delegates land in F2. Arabic-first default
-  // per BRAND.md — forced visually here via Directionality until then.
-  static const _locale = Locale('ar');
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Dukkan',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(_locale),
-      darkTheme: AppTheme.dark(_locale),
-      home: const Directionality(
-        textDirection: TextDirection.rtl,
-        child: SplashPage(),
-      ),
+    return ValueListenableBuilder<Locale>(
+      valueListenable: sl<LocaleController>(),
+      builder: (context, locale, _) {
+        return MaterialApp.router(
+          onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light(locale),
+          darkTheme: AppTheme.dark(locale),
+          locale: locale,
+          supportedLocales: LocaleController.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          routerConfig: AppRouter.router,
+        );
+      },
     );
   }
 }

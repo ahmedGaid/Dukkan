@@ -1,0 +1,7 @@
+{
+  "@@locale": "ar",
+  "appName": "دكان",
+  "@appName": {
+    "description": "App name shown as the window/task title."
+  }
+}
