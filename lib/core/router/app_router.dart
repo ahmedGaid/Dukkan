@@ -1,12 +1,14 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/auth/pages/forgot_password_page.dart';
 import '../../presentation/auth/pages/login_page.dart';
 import '../../presentation/auth/pages/signup_page.dart';
 import '../../presentation/home/pages/home_page.dart';
 import '../../presentation/splash/splash_page.dart';
+import '../../presentation/widgets/common/coming_soon_page.dart';
 import 'go_router_refresh_stream.dart';
 
 /// Auth-guarded router. Redirect reads the [AuthBloc] session status and the
@@ -37,6 +39,31 @@ class AppRouter {
         builder: (context, state) => const ForgotPasswordPage(),
       ),
       GoRoute(path: '/home', builder: (context, state) => const HomePage()),
+      // Placeholders until their sessions land: shop page → C2b, search → C2c.
+      GoRoute(
+        path: '/shop/:id',
+        builder: (context, state) {
+          final l10n = AppLocalizations.of(context)!;
+          return ComingSoonPage(
+            icon: Icons.storefront_outlined,
+            title: l10n.shopComingSoonTitle,
+            message: l10n.shopComingSoonBody,
+            appBarTitle: l10n.shopComingSoonTitle,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/search',
+        builder: (context, state) {
+          final l10n = AppLocalizations.of(context)!;
+          return ComingSoonPage(
+            icon: Icons.search_rounded,
+            title: l10n.searchComingSoonTitle,
+            message: l10n.searchComingSoonBody,
+            appBarTitle: l10n.searchComingSoonTitle,
+          );
+        },
+      ),
     ],
   );
 

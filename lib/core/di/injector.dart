@@ -30,6 +30,7 @@ import '../../domain/shop/repositories/shop_repository.dart';
 import '../../domain/shop/usecases/watch_shop.dart';
 import '../../domain/shop/usecases/watch_shops.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
+import '../../presentation/home/bloc/shops_bloc.dart';
 import '../l10n/locale_controller.dart';
 import '../network/network_info.dart';
 import '../router/app_router.dart';
@@ -84,6 +85,9 @@ Future<void> initDependencies() async {
   // Shop — use cases
   sl.registerLazySingleton(() => WatchShops(sl()));
   sl.registerLazySingleton(() => WatchShop(sl()));
+
+  // Shop — bloc (page-scoped: a fresh subscription per Home open)
+  sl.registerFactory(() => ShopsBloc(watchShops: sl()));
 
   // Product — data
   sl.registerLazySingleton(() => ProductRemoteDataSource(firestore: sl()));

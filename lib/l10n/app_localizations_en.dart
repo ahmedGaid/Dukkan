@@ -126,4 +126,124 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get homeOwnerPlaceholder =>
       'Your shop dashboard will appear here soon.';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navCategories => 'Categories';
+
+  @override
+  String get navFavorites => 'Favorites';
+
+  @override
+  String get navOrders => 'Orders';
+
+  @override
+  String get navMore => 'More';
+
+  @override
+  String get homeSearchHint => 'Search for a product or shop';
+
+  @override
+  String get sectionOffers => 'Offers';
+
+  @override
+  String get sectionCategories => 'Categories';
+
+  @override
+  String get sectionNearbyShops => 'Shops near you';
+
+  @override
+  String get categoryAll => 'All';
+
+  @override
+  String get shopOpen => 'Open';
+
+  @override
+  String get shopClosed => 'Closed';
+
+  @override
+  String get shopsEmptyTitle => 'No shops near you yet';
+
+  @override
+  String get shopsEmptyBody => 'We add new shops every day — check back soon.';
+
+  @override
+  String get categoryEmptyTitle => 'No shops in this category';
+
+  @override
+  String get categoryEmptyBody => 'Try another category or see all shops.';
+
+  @override
+  String get errorTitle => 'Something went wrong';
+
+  @override
+  String get errorBody => 'We can\'t load the shops right now — try again.';
+
+  @override
+  String get actionRetry => 'Try again';
+
+  @override
+  String get favoritesEmptyTitle => 'No favorites yet';
+
+  @override
+  String get favoritesEmptyBody =>
+      'Tap the heart on any shop or product you love — it\'ll be saved here.';
+
+  @override
+  String get ordersEmptyTitle => 'No orders yet';
+
+  @override
+  String get ordersEmptyBody =>
+      'Once you order from a shop, you\'ll track it here step by step.';
+
+  @override
+  String get moreTitle => 'More';
+
+  @override
+  String get moreComingSoonTitle => 'Settings coming soon';
+
+  @override
+  String get moreComingSoonBody =>
+      'Your account and settings will live here soon.';
+
+  @override
+  String get categoriesComingSoonTitle => 'Browse by category — coming soon';
+
+  @override
+  String get categoriesComingSoonBody =>
+      'You\'ll browse each category on its own here soon. For now, categories are on Home.';
+
+  @override
+  String get shopComingSoonTitle => 'Shop page coming soon';
+
+  @override
+  String get shopComingSoonBody =>
+      'This shop\'s products will appear here in the next update.';
+
+  @override
+  String get searchComingSoonTitle => 'Search coming soon';
+
+  @override
+  String get searchComingSoonBody =>
+      'You\'ll be able to search any product or shop from here soon.';
+
+  @override
+  String get promo1Title => 'Welcome to Dukkan';
+
+  @override
+  String get promo1Body => 'Your neighborhood shops, in your pocket.';
+
+  @override
+  String get promo2Title => 'Delivery from your shop';
+
+  @override
+  String get promo2Body => 'Order what you need — it comes to your door.';
+
+  @override
+  String get promo3Title => 'Neighborhood prices';
+
+  @override
+  String get promo3Body => 'The same prices as the shop downstairs, exactly.';
 }

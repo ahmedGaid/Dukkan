@@ -55,5 +55,51 @@
     }
   },
   "homeCustomerPlaceholder": "دكاكينك هتظهر هنا قريب.",
-  "homeOwnerPlaceholder": "لوحة دكانك هتظهر هنا قريب."
+  "homeOwnerPlaceholder": "لوحة دكانك هتظهر هنا قريب.",
+
+  "navHome": "الرئيسية",
+  "navCategories": "الأقسام",
+  "navFavorites": "المفضلة",
+  "navOrders": "طلباتي",
+  "navMore": "المزيد",
+
+  "homeSearchHint": "دوّر على منتج أو دكان",
+  "sectionOffers": "عروض",
+  "sectionCategories": "الأقسام",
+  "sectionNearbyShops": "دكاكين قريبة منك",
+  "categoryAll": "الكل",
+
+  "shopOpen": "متاح",
+  "shopClosed": "مقفول",
+
+  "shopsEmptyTitle": "مافيش دكاكين قريبة لسه",
+  "shopsEmptyBody": "بنضيف دكاكين جديدة كل يوم — تعالى بصّ تاني قريب.",
+  "categoryEmptyTitle": "مافيش دكاكين في القسم ده",
+  "categoryEmptyBody": "جرّب قسم تاني أو شوف كل الدكاكين.",
+
+  "errorTitle": "حصلت مشكلة",
+  "errorBody": "مش قادرين نجيب الدكاكين دلوقتي — جرّب تاني.",
+  "actionRetry": "جرّب تاني",
+
+  "favoritesEmptyTitle": "لسه مفيش مفضلة",
+  "favoritesEmptyBody": "دوس على القلب في أي دكان أو منتج بتحبه، وهيتحفظ هنا.",
+  "ordersEmptyTitle": "لسه مفيش طلبات",
+  "ordersEmptyBody": "أول ما تطلب من دكان، هتلاقي طلبك هنا وتتابعه خطوة بخطوة.",
+  "moreTitle": "المزيد",
+  "moreComingSoonTitle": "الإعدادات قريب",
+  "moreComingSoonBody": "حسابك وإعداداتك هتكون هنا قريب.",
+  "categoriesComingSoonTitle": "تصفّح الأقسام قريب",
+  "categoriesComingSoonBody": "هتقدر تتصفّح كل قسم لوحده هنا قريب. دلوقتي الأقسام في الصفحة الرئيسية.",
+
+  "shopComingSoonTitle": "صفحة الدكان قريب",
+  "shopComingSoonBody": "منتجات الدكان ده هتظهر هنا في التحديث الجاي.",
+  "searchComingSoonTitle": "البحث قريب",
+  "searchComingSoonBody": "هتقدر تدوّر على أي منتج أو دكان من هنا قريب.",
+
+  "promo1Title": "أهلاً بيك في دكان",
+  "promo1Body": "دكاكين حيّك، في جيبك.",
+  "promo2Title": "توصيل من دكانك",
+  "promo2Body": "اطلب اللي محتاجه، وهو ييجي لحد باب البيت.",
+  "promo3Title": "أسعار حيّك",
+  "promo3Body": "نفس أسعار الدكان اللي تحت بيتك، بالظبط."
 }

@@ -72,7 +72,7 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
 - **C2 — Browse.** Split into three build sessions (design direction:
       `Docs/plan/c2-browse-design.md`). Dukkan is a **marketplace** — home leads with shops +
       categories, not products (unlike the single-store Ben Soliman ref).
-  - [ ] **C2a — UI foundation + Home.** Reusable primitives (AppCard, PriceTag, ShimmerImage,
+  - [x] **C2a — UI foundation + Home.** Reusable primitives (AppCard, PriceTag, ShimmerImage,
         EmptyState, GridShimmer, StatusChip, bottom-nav shell) + Home (promo carousel + category
         grid + nearby-shops list) + ShopsBloc. All states designed.
   - [ ] **C2b — Shop + products.** Shop page (header w/ open/closed, in-shop category filter),

@@ -325,6 +325,234 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'لوحة دكانك هتظهر هنا قريب.'**
   String get homeOwnerPlaceholder;
+
+  /// No description provided for @navHome.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرئيسية'**
+  String get navHome;
+
+  /// No description provided for @navCategories.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأقسام'**
+  String get navCategories;
+
+  /// No description provided for @navFavorites.
+  ///
+  /// In ar, this message translates to:
+  /// **'المفضلة'**
+  String get navFavorites;
+
+  /// No description provided for @navOrders.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلباتي'**
+  String get navOrders;
+
+  /// No description provided for @navMore.
+  ///
+  /// In ar, this message translates to:
+  /// **'المزيد'**
+  String get navMore;
+
+  /// No description provided for @homeSearchHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'دوّر على منتج أو دكان'**
+  String get homeSearchHint;
+
+  /// No description provided for @sectionOffers.
+  ///
+  /// In ar, this message translates to:
+  /// **'عروض'**
+  String get sectionOffers;
+
+  /// No description provided for @sectionCategories.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأقسام'**
+  String get sectionCategories;
+
+  /// No description provided for @sectionNearbyShops.
+  ///
+  /// In ar, this message translates to:
+  /// **'دكاكين قريبة منك'**
+  String get sectionNearbyShops;
+
+  /// No description provided for @categoryAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكل'**
+  String get categoryAll;
+
+  /// No description provided for @shopOpen.
+  ///
+  /// In ar, this message translates to:
+  /// **'متاح'**
+  String get shopOpen;
+
+  /// No description provided for @shopClosed.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقفول'**
+  String get shopClosed;
+
+  /// No description provided for @shopsEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مافيش دكاكين قريبة لسه'**
+  String get shopsEmptyTitle;
+
+  /// No description provided for @shopsEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'بنضيف دكاكين جديدة كل يوم — تعالى بصّ تاني قريب.'**
+  String get shopsEmptyBody;
+
+  /// No description provided for @categoryEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مافيش دكاكين في القسم ده'**
+  String get categoryEmptyTitle;
+
+  /// No description provided for @categoryEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب قسم تاني أو شوف كل الدكاكين.'**
+  String get categoryEmptyBody;
+
+  /// No description provided for @errorTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'حصلت مشكلة'**
+  String get errorTitle;
+
+  /// No description provided for @errorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نجيب الدكاكين دلوقتي — جرّب تاني.'**
+  String get errorBody;
+
+  /// No description provided for @actionRetry.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب تاني'**
+  String get actionRetry;
+
+  /// No description provided for @favoritesEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش مفضلة'**
+  String get favoritesEmptyTitle;
+
+  /// No description provided for @favoritesEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'دوس على القلب في أي دكان أو منتج بتحبه، وهيتحفظ هنا.'**
+  String get favoritesEmptyBody;
+
+  /// No description provided for @ordersEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش طلبات'**
+  String get ordersEmptyTitle;
+
+  /// No description provided for @ordersEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أول ما تطلب من دكان، هتلاقي طلبك هنا وتتابعه خطوة بخطوة.'**
+  String get ordersEmptyBody;
+
+  /// No description provided for @moreTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المزيد'**
+  String get moreTitle;
+
+  /// No description provided for @moreComingSoonTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإعدادات قريب'**
+  String get moreComingSoonTitle;
+
+  /// No description provided for @moreComingSoonBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسابك وإعداداتك هتكون هنا قريب.'**
+  String get moreComingSoonBody;
+
+  /// No description provided for @categoriesComingSoonTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصفّح الأقسام قريب'**
+  String get categoriesComingSoonTitle;
+
+  /// No description provided for @categoriesComingSoonBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هتقدر تتصفّح كل قسم لوحده هنا قريب. دلوقتي الأقسام في الصفحة الرئيسية.'**
+  String get categoriesComingSoonBody;
+
+  /// No description provided for @shopComingSoonTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'صفحة الدكان قريب'**
+  String get shopComingSoonTitle;
+
+  /// No description provided for @shopComingSoonBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'منتجات الدكان ده هتظهر هنا في التحديث الجاي.'**
+  String get shopComingSoonBody;
+
+  /// No description provided for @searchComingSoonTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'البحث قريب'**
+  String get searchComingSoonTitle;
+
+  /// No description provided for @searchComingSoonBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هتقدر تدوّر على أي منتج أو دكان من هنا قريب.'**
+  String get searchComingSoonBody;
+
+  /// No description provided for @promo1Title.
+  ///
+  /// In ar, this message translates to:
+  /// **'أهلاً بيك في دكان'**
+  String get promo1Title;
+
+  /// No description provided for @promo1Body.
+  ///
+  /// In ar, this message translates to:
+  /// **'دكاكين حيّك، في جيبك.'**
+  String get promo1Body;
+
+  /// No description provided for @promo2Title.
+  ///
+  /// In ar, this message translates to:
+  /// **'توصيل من دكانك'**
+  String get promo2Title;
+
+  /// No description provided for @promo2Body.
+  ///
+  /// In ar, this message translates to:
+  /// **'اطلب اللي محتاجه، وهو ييجي لحد باب البيت.'**
+  String get promo2Body;
+
+  /// No description provided for @promo3Title.
+  ///
+  /// In ar, this message translates to:
+  /// **'أسعار حيّك'**
+  String get promo3Title;
+
+  /// No description provided for @promo3Body.
+  ///
+  /// In ar, this message translates to:
+  /// **'نفس أسعار الدكان اللي تحت بيتك، بالظبط.'**
+  String get promo3Body;
 }
 
 class _AppLocalizationsDelegate

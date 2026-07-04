@@ -46,5 +46,51 @@
 
   "homeGreeting": "Hi {name}",
   "homeCustomerPlaceholder": "Your shops will appear here soon.",
-  "homeOwnerPlaceholder": "Your shop dashboard will appear here soon."
+  "homeOwnerPlaceholder": "Your shop dashboard will appear here soon.",
+
+  "navHome": "Home",
+  "navCategories": "Categories",
+  "navFavorites": "Favorites",
+  "navOrders": "Orders",
+  "navMore": "More",
+
+  "homeSearchHint": "Search for a product or shop",
+  "sectionOffers": "Offers",
+  "sectionCategories": "Categories",
+  "sectionNearbyShops": "Shops near you",
+  "categoryAll": "All",
+
+  "shopOpen": "Open",
+  "shopClosed": "Closed",
+
+  "shopsEmptyTitle": "No shops near you yet",
+  "shopsEmptyBody": "We add new shops every day — check back soon.",
+  "categoryEmptyTitle": "No shops in this category",
+  "categoryEmptyBody": "Try another category or see all shops.",
+
+  "errorTitle": "Something went wrong",
+  "errorBody": "We can't load the shops right now — try again.",
+  "actionRetry": "Try again",
+
+  "favoritesEmptyTitle": "No favorites yet",
+  "favoritesEmptyBody": "Tap the heart on any shop or product you love — it'll be saved here.",
+  "ordersEmptyTitle": "No orders yet",
+  "ordersEmptyBody": "Once you order from a shop, you'll track it here step by step.",
+  "moreTitle": "More",
+  "moreComingSoonTitle": "Settings coming soon",
+  "moreComingSoonBody": "Your account and settings will live here soon.",
+  "categoriesComingSoonTitle": "Browse by category — coming soon",
+  "categoriesComingSoonBody": "You'll browse each category on its own here soon. For now, categories are on Home.",
+
+  "shopComingSoonTitle": "Shop page coming soon",
+  "shopComingSoonBody": "This shop's products will appear here in the next update.",
+  "searchComingSoonTitle": "Search coming soon",
+  "searchComingSoonBody": "You'll be able to search any product or shop from here soon.",
+
+  "promo1Title": "Welcome to Dukkan",
+  "promo1Body": "Your neighborhood shops, in your pocket.",
+  "promo2Title": "Delivery from your shop",
+  "promo2Body": "Order what you need — it comes to your door.",
+  "promo3Title": "Neighborhood prices",
+  "promo3Body": "The same prices as the shop downstairs, exactly."
 }

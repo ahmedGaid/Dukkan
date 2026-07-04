@@ -125,4 +125,124 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get homeOwnerPlaceholder => 'لوحة دكانك هتظهر هنا قريب.';
+
+  @override
+  String get navHome => 'الرئيسية';
+
+  @override
+  String get navCategories => 'الأقسام';
+
+  @override
+  String get navFavorites => 'المفضلة';
+
+  @override
+  String get navOrders => 'طلباتي';
+
+  @override
+  String get navMore => 'المزيد';
+
+  @override
+  String get homeSearchHint => 'دوّر على منتج أو دكان';
+
+  @override
+  String get sectionOffers => 'عروض';
+
+  @override
+  String get sectionCategories => 'الأقسام';
+
+  @override
+  String get sectionNearbyShops => 'دكاكين قريبة منك';
+
+  @override
+  String get categoryAll => 'الكل';
+
+  @override
+  String get shopOpen => 'متاح';
+
+  @override
+  String get shopClosed => 'مقفول';
+
+  @override
+  String get shopsEmptyTitle => 'مافيش دكاكين قريبة لسه';
+
+  @override
+  String get shopsEmptyBody =>
+      'بنضيف دكاكين جديدة كل يوم — تعالى بصّ تاني قريب.';
+
+  @override
+  String get categoryEmptyTitle => 'مافيش دكاكين في القسم ده';
+
+  @override
+  String get categoryEmptyBody => 'جرّب قسم تاني أو شوف كل الدكاكين.';
+
+  @override
+  String get errorTitle => 'حصلت مشكلة';
+
+  @override
+  String get errorBody => 'مش قادرين نجيب الدكاكين دلوقتي — جرّب تاني.';
+
+  @override
+  String get actionRetry => 'جرّب تاني';
+
+  @override
+  String get favoritesEmptyTitle => 'لسه مفيش مفضلة';
+
+  @override
+  String get favoritesEmptyBody =>
+      'دوس على القلب في أي دكان أو منتج بتحبه، وهيتحفظ هنا.';
+
+  @override
+  String get ordersEmptyTitle => 'لسه مفيش طلبات';
+
+  @override
+  String get ordersEmptyBody =>
+      'أول ما تطلب من دكان، هتلاقي طلبك هنا وتتابعه خطوة بخطوة.';
+
+  @override
+  String get moreTitle => 'المزيد';
+
+  @override
+  String get moreComingSoonTitle => 'الإعدادات قريب';
+
+  @override
+  String get moreComingSoonBody => 'حسابك وإعداداتك هتكون هنا قريب.';
+
+  @override
+  String get categoriesComingSoonTitle => 'تصفّح الأقسام قريب';
+
+  @override
+  String get categoriesComingSoonBody =>
+      'هتقدر تتصفّح كل قسم لوحده هنا قريب. دلوقتي الأقسام في الصفحة الرئيسية.';
+
+  @override
+  String get shopComingSoonTitle => 'صفحة الدكان قريب';
+
+  @override
+  String get shopComingSoonBody =>
+      'منتجات الدكان ده هتظهر هنا في التحديث الجاي.';
+
+  @override
+  String get searchComingSoonTitle => 'البحث قريب';
+
+  @override
+  String get searchComingSoonBody =>
+      'هتقدر تدوّر على أي منتج أو دكان من هنا قريب.';
+
+  @override
+  String get promo1Title => 'أهلاً بيك في دكان';
+
+  @override
+  String get promo1Body => 'دكاكين حيّك، في جيبك.';
+
+  @override
+  String get promo2Title => 'توصيل من دكانك';
+
+  @override
+  String get promo2Body => 'اطلب اللي محتاجه، وهو ييجي لحد باب البيت.';
+
+  @override
+  String get promo3Title => 'أسعار حيّك';
+
+  @override
+  String get promo3Body => 'نفس أسعار الدكان اللي تحت بيتك، بالظبط.';
 }
