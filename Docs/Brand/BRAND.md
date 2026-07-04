@@ -9,6 +9,11 @@ Mark: rounded **D** monogram with a shop **awning** (دكان = the neighborhood
 Not corporate, not loud. Speaks Egyptian Arabic like a good shopkeeper: welcoming, direct,
 never salesy. (Contrast with Conductor ERP which is quiet/precise — Dukkan is warmer.)
 
+**Bar: premium, minimal, not generic.** Warm ≠ cheap, minimal ≠ empty. Every screen should
+feel crafted enough to become THE recognizable brand in Arabic grocery-delivery — not a
+template clone. Cut before you add: every element on screen must earn its place. Prefer the
+more distinctive/polished/simpler option whenever craft and "just functional" disagree.
+
 ## Color (from logo — the only place raw hex is allowed is `AppColors` in Flutter)
 
 ```dart

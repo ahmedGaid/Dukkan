@@ -12,6 +12,18 @@ manage incoming orders. UI/UX inspiration: **Ben Soliman app**
 (`com.BenSoliman.BSS` on Play Store) — Arabic retail ordering: promo carousel, category grid,
 big product cards with inline add-to-cart, order-tracking stepper.
 
+## North star (bar for every session, added 2026-07-04)
+
+**Premium, easy, clear, minimal — built to become THE brand in this field**, not a generic
+clone. Every screen judged against: does this feel premium (not cheap/templated)? Is the flow
+obvious with zero explanation? Is every element earning its place — nothing on screen "just
+because"? Is it visually distinct enough that someone remembers "Dukkan" specifically? When a
+session-block has a UI/UX choice, pick the option that is simpler AND more crafted over the
+option that's merely functional or merely decorative — same discipline as Conductor's "would
+Linear ship this?", Dukkan's version: **"would this stand out on the Play Store, and would a
+دكان owner brag about it?"** Minimal means cut, not shrink — fewer elements, not smaller ones.
+Applies on top of the `dukkan-brand` checklist, not instead of it.
+
 ## Locked decisions (2026-07-04)
 
 | Decision | Choice |
