@@ -216,11 +216,58 @@ class AppLocalizationsEn extends AppLocalizations {
       'You\'ll browse each category on its own here soon. For now, categories are on Home.';
 
   @override
-  String get shopComingSoonTitle => 'Shop page coming soon';
+  String get promoBadge => 'Offer';
 
   @override
-  String get shopComingSoonBody =>
-      'This shop\'s products will appear here in the next update.';
+  String get productStockIn => 'In stock';
+
+  @override
+  String get productStockLow => 'Low stock';
+
+  @override
+  String get productStockOut => 'Out of stock';
+
+  @override
+  String get actionAdd => 'Add';
+
+  @override
+  String get actionAddToCart => 'Add to cart';
+
+  @override
+  String get qtyLabel => 'Quantity';
+
+  @override
+  String get qtyIncrease => 'Increase by one';
+
+  @override
+  String get qtyDecrease => 'Decrease by one';
+
+  @override
+  String get cartComingSoon => 'The cart arrives in the next update.';
+
+  @override
+  String get shopProductsEmptyTitle => 'This shop is still stocking up';
+
+  @override
+  String get shopProductsEmptyBody =>
+      'Products will show up here as soon as the shop adds them.';
+
+  @override
+  String get productsCategoryEmptyTitle => 'No products in this category';
+
+  @override
+  String get productsCategoryEmptyBody =>
+      'Try another category or see all products.';
+
+  @override
+  String get shopErrorBody => 'We can\'t open this shop right now — try again.';
+
+  @override
+  String get productNotFoundTitle => 'Product not found';
+
+  @override
+  String get productNotFoundBody =>
+      'It may have been removed. Go back and see the other products.';
 
   @override
   String get searchComingSoonTitle => 'Search coming soon';

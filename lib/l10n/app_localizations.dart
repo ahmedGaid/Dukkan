@@ -494,17 +494,107 @@ abstract class AppLocalizations {
   /// **'هتقدر تتصفّح كل قسم لوحده هنا قريب. دلوقتي الأقسام في الصفحة الرئيسية.'**
   String get categoriesComingSoonBody;
 
-  /// No description provided for @shopComingSoonTitle.
+  /// No description provided for @promoBadge.
   ///
   /// In ar, this message translates to:
-  /// **'صفحة الدكان قريب'**
-  String get shopComingSoonTitle;
+  /// **'عرض'**
+  String get promoBadge;
 
-  /// No description provided for @shopComingSoonBody.
+  /// No description provided for @productStockIn.
   ///
   /// In ar, this message translates to:
-  /// **'منتجات الدكان ده هتظهر هنا في التحديث الجاي.'**
-  String get shopComingSoonBody;
+  /// **'متوفر'**
+  String get productStockIn;
+
+  /// No description provided for @productStockLow.
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر كمية'**
+  String get productStockLow;
+
+  /// No description provided for @productStockOut.
+  ///
+  /// In ar, this message translates to:
+  /// **'خلص من المخزن'**
+  String get productStockOut;
+
+  /// No description provided for @actionAdd.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف'**
+  String get actionAdd;
+
+  /// No description provided for @actionAddToCart.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف للسلة'**
+  String get actionAddToCart;
+
+  /// No description provided for @qtyLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكمية'**
+  String get qtyLabel;
+
+  /// No description provided for @qtyIncrease.
+  ///
+  /// In ar, this message translates to:
+  /// **'زوّد واحد'**
+  String get qtyIncrease;
+
+  /// No description provided for @qtyDecrease.
+  ///
+  /// In ar, this message translates to:
+  /// **'قلّل واحد'**
+  String get qtyDecrease;
+
+  /// No description provided for @cartComingSoon.
+  ///
+  /// In ar, this message translates to:
+  /// **'هنفعّل السلة في التحديث الجاي.'**
+  String get cartComingSoon;
+
+  /// No description provided for @shopProductsEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدكان لسه بيرتّب رفوفه'**
+  String get shopProductsEmptyTitle;
+
+  /// No description provided for @shopProductsEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'المنتجات هتظهر هنا أول ما الدكان يضيفها.'**
+  String get shopProductsEmptyBody;
+
+  /// No description provided for @productsCategoryEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مافيش منتجات في القسم ده'**
+  String get productsCategoryEmptyTitle;
+
+  /// No description provided for @productsCategoryEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب قسم تاني أو شوف كل المنتجات.'**
+  String get productsCategoryEmptyBody;
+
+  /// No description provided for @shopErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نفتح الدكان دلوقتي — جرّب تاني.'**
+  String get shopErrorBody;
+
+  /// No description provided for @productNotFoundTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المنتج مش موجود'**
+  String get productNotFoundTitle;
+
+  /// No description provided for @productNotFoundBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'يمكن يكون اتشال من الدكان. ارجع وبصّ على باقي المنتجات.'**
+  String get productNotFoundBody;
 
   /// No description provided for @searchComingSoonTitle.
   ///

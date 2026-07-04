@@ -91,8 +91,26 @@
   "categoriesComingSoonTitle": "تصفّح الأقسام قريب",
   "categoriesComingSoonBody": "هتقدر تتصفّح كل قسم لوحده هنا قريب. دلوقتي الأقسام في الصفحة الرئيسية.",
 
-  "shopComingSoonTitle": "صفحة الدكان قريب",
-  "shopComingSoonBody": "منتجات الدكان ده هتظهر هنا في التحديث الجاي.",
+  "promoBadge": "عرض",
+  "productStockIn": "متوفر",
+  "productStockLow": "آخر كمية",
+  "productStockOut": "خلص من المخزن",
+
+  "actionAdd": "أضف",
+  "actionAddToCart": "أضف للسلة",
+  "qtyLabel": "الكمية",
+  "qtyIncrease": "زوّد واحد",
+  "qtyDecrease": "قلّل واحد",
+  "cartComingSoon": "هنفعّل السلة في التحديث الجاي.",
+
+  "shopProductsEmptyTitle": "الدكان لسه بيرتّب رفوفه",
+  "shopProductsEmptyBody": "المنتجات هتظهر هنا أول ما الدكان يضيفها.",
+  "productsCategoryEmptyTitle": "مافيش منتجات في القسم ده",
+  "productsCategoryEmptyBody": "جرّب قسم تاني أو شوف كل المنتجات.",
+  "shopErrorBody": "مش قادرين نفتح الدكان دلوقتي — جرّب تاني.",
+  "productNotFoundTitle": "المنتج مش موجود",
+  "productNotFoundBody": "يمكن يكون اتشال من الدكان. ارجع وبصّ على باقي المنتجات.",
+
   "searchComingSoonTitle": "البحث قريب",
   "searchComingSoonBody": "هتقدر تدوّر على أي منتج أو دكان من هنا قريب.",
 

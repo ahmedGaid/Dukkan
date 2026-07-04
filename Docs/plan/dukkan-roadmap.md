@@ -75,7 +75,7 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
   - [x] **C2a — UI foundation + Home.** Reusable primitives (AppCard, PriceTag, ShimmerImage,
         EmptyState, GridShimmer, StatusChip, bottom-nav shell) + Home (promo carousel + category
         grid + nearby-shops list) + ShopsBloc. All states designed.
-  - [ ] **C2b — Shop + products.** Shop page (header w/ open/closed, in-shop category filter),
+  - [x] **C2b — Shop + products.** Shop page (header w/ open/closed, in-shop category filter),
         product grid, product detail. ProductsBloc.
   - [ ] **C2c — Search + polish.** Product search + cross-screen empty/loading/error polish.
 - [ ] **C3 — Cart + checkout.** Per-shop cart, quantity stepper, checkout with manual address

@@ -6,7 +6,10 @@ import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/auth/pages/forgot_password_page.dart';
 import '../../presentation/auth/pages/login_page.dart';
 import '../../presentation/auth/pages/signup_page.dart';
+import '../../domain/product/entities/product.dart';
 import '../../presentation/home/pages/home_page.dart';
+import '../../presentation/shop/pages/product_detail_page.dart';
+import '../../presentation/shop/pages/shop_page.dart';
 import '../../presentation/splash/splash_page.dart';
 import '../../presentation/widgets/common/coming_soon_page.dart';
 import 'go_router_refresh_stream.dart';
@@ -39,19 +42,23 @@ class AppRouter {
         builder: (context, state) => const ForgotPasswordPage(),
       ),
       GoRoute(path: '/home', builder: (context, state) => const HomePage()),
-      // Placeholders until their sessions land: shop page → C2b, search → C2c.
       GoRoute(
         path: '/shop/:id',
-        builder: (context, state) {
-          final l10n = AppLocalizations.of(context)!;
-          return ComingSoonPage(
-            icon: Icons.storefront_outlined,
-            title: l10n.shopComingSoonTitle,
-            message: l10n.shopComingSoonBody,
-            appBarTitle: l10n.shopComingSoonTitle,
-          );
-        },
+        builder: (context, state) =>
+            ShopPage(shopId: state.pathParameters['id']!),
+        routes: [
+          // Nested so the shop id stays in the path. The grid seeds `extra` with
+          // the tapped product (no refetch); a cold open falls back to GetProduct.
+          GoRoute(
+            path: 'product/:pid',
+            builder: (context, state) => ProductDetailPage(
+              productId: state.pathParameters['pid']!,
+              seed: state.extra as Product?,
+            ),
+          ),
+        ],
       ),
+      // Placeholder until its session lands: search → C2c.
       GoRoute(
         path: '/search',
         builder: (context, state) {

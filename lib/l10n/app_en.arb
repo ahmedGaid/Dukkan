@@ -82,8 +82,26 @@
   "categoriesComingSoonTitle": "Browse by category — coming soon",
   "categoriesComingSoonBody": "You'll browse each category on its own here soon. For now, categories are on Home.",
 
-  "shopComingSoonTitle": "Shop page coming soon",
-  "shopComingSoonBody": "This shop's products will appear here in the next update.",
+  "promoBadge": "Offer",
+  "productStockIn": "In stock",
+  "productStockLow": "Low stock",
+  "productStockOut": "Out of stock",
+
+  "actionAdd": "Add",
+  "actionAddToCart": "Add to cart",
+  "qtyLabel": "Quantity",
+  "qtyIncrease": "Increase by one",
+  "qtyDecrease": "Decrease by one",
+  "cartComingSoon": "The cart arrives in the next update.",
+
+  "shopProductsEmptyTitle": "This shop is still stocking up",
+  "shopProductsEmptyBody": "Products will show up here as soon as the shop adds them.",
+  "productsCategoryEmptyTitle": "No products in this category",
+  "productsCategoryEmptyBody": "Try another category or see all products.",
+  "shopErrorBody": "We can't open this shop right now — try again.",
+  "productNotFoundTitle": "Product not found",
+  "productNotFoundBody": "It may have been removed. Go back and see the other products.",
+
   "searchComingSoonTitle": "Search coming soon",
   "searchComingSoonBody": "You'll be able to search any product or shop from here soon.",
 

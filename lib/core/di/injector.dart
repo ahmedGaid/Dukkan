@@ -31,6 +31,7 @@ import '../../domain/shop/usecases/watch_shop.dart';
 import '../../domain/shop/usecases/watch_shops.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/home/bloc/shops_bloc.dart';
+import '../../presentation/shop/bloc/products_bloc.dart';
 import '../l10n/locale_controller.dart';
 import '../network/network_info.dart';
 import '../router/app_router.dart';
@@ -99,6 +100,16 @@ Future<void> initDependencies() async {
   // Product — use cases
   sl.registerLazySingleton(() => WatchProductsByShop(sl()));
   sl.registerLazySingleton(() => GetProduct(sl()));
+
+  // Product — bloc (page-scoped: one shop's catalog per shop-page open; the
+  // shop id is the factory param).
+  sl.registerFactoryParam<ProductsBloc, String, void>(
+    (shopId, _) => ProductsBloc(
+      shopId: shopId,
+      watchShop: sl(),
+      watchProductsByShop: sl(),
+    ),
+  );
 
   // Order — data
   sl.registerLazySingleton(() => OrderRemoteDataSource(firestore: sl()));

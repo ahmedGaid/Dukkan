@@ -215,11 +215,57 @@ class AppLocalizationsAr extends AppLocalizations {
       'هتقدر تتصفّح كل قسم لوحده هنا قريب. دلوقتي الأقسام في الصفحة الرئيسية.';
 
   @override
-  String get shopComingSoonTitle => 'صفحة الدكان قريب';
+  String get promoBadge => 'عرض';
 
   @override
-  String get shopComingSoonBody =>
-      'منتجات الدكان ده هتظهر هنا في التحديث الجاي.';
+  String get productStockIn => 'متوفر';
+
+  @override
+  String get productStockLow => 'آخر كمية';
+
+  @override
+  String get productStockOut => 'خلص من المخزن';
+
+  @override
+  String get actionAdd => 'أضف';
+
+  @override
+  String get actionAddToCart => 'أضف للسلة';
+
+  @override
+  String get qtyLabel => 'الكمية';
+
+  @override
+  String get qtyIncrease => 'زوّد واحد';
+
+  @override
+  String get qtyDecrease => 'قلّل واحد';
+
+  @override
+  String get cartComingSoon => 'هنفعّل السلة في التحديث الجاي.';
+
+  @override
+  String get shopProductsEmptyTitle => 'الدكان لسه بيرتّب رفوفه';
+
+  @override
+  String get shopProductsEmptyBody =>
+      'المنتجات هتظهر هنا أول ما الدكان يضيفها.';
+
+  @override
+  String get productsCategoryEmptyTitle => 'مافيش منتجات في القسم ده';
+
+  @override
+  String get productsCategoryEmptyBody => 'جرّب قسم تاني أو شوف كل المنتجات.';
+
+  @override
+  String get shopErrorBody => 'مش قادرين نفتح الدكان دلوقتي — جرّب تاني.';
+
+  @override
+  String get productNotFoundTitle => 'المنتج مش موجود';
+
+  @override
+  String get productNotFoundBody =>
+      'يمكن يكون اتشال من الدكان. ارجع وبصّ على باقي المنتجات.';
 
   @override
   String get searchComingSoonTitle => 'البحث قريب';
