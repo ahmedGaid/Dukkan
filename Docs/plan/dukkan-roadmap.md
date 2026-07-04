@@ -69,8 +69,15 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
 - [x] **C1 — Domain + data.** Entities (Shop, Product, CartItem, Order, Address), models,
       Firestore datasources + local cache datasources, repositories, seed script (2 demo shops,
       ~20 products).
-- [ ] **C2 — Browse.** Home (promo banner + shops list + category grid — BSS pattern), shop page,
-      product grid, product detail, search. Designed empty/loading/error states.
+- **C2 — Browse.** Split into three build sessions (design direction:
+      `Docs/plan/c2-browse-design.md`). Dukkan is a **marketplace** — home leads with shops +
+      categories, not products (unlike the single-store Ben Soliman ref).
+  - [ ] **C2a — UI foundation + Home.** Reusable primitives (AppCard, PriceTag, ShimmerImage,
+        EmptyState, GridShimmer, StatusChip, bottom-nav shell) + Home (promo carousel + category
+        grid + nearby-shops list) + ShopsBloc. All states designed.
+  - [ ] **C2b — Shop + products.** Shop page (header w/ open/closed, in-shop category filter),
+        product grid, product detail. ProductsBloc.
+  - [ ] **C2c — Search + polish.** Product search + cross-screen empty/loading/error polish.
 - [ ] **C3 — Cart + checkout.** Per-shop cart, quantity stepper, checkout with manual address
       entry (maps deferred), COD confirm, order placed screen.
 - [ ] **C4 — Orders.** Orders list, order detail with status stepper, cancel
