@@ -1,0 +1,81 @@
+# Dukkan — Brand
+
+Logo files: `assets/brand/logo-light.png` (light bg) · `assets/brand/logo-dark.png` (dark bg).
+Mark: rounded **D** monogram with a shop **awning** (دكان = the neighborhood shop).
+
+## Personality
+
+**Your neighborhood shop, in your pocket.** Friendly, warm, trustworthy, simple.
+Not corporate, not loud. Speaks Egyptian Arabic like a good shopkeeper: welcoming, direct,
+never salesy. (Contrast with Conductor ERP which is quiet/precise — Dukkan is warmer.)
+
+## Color (from logo — the only place raw hex is allowed is `AppColors` in Flutter)
+
+```dart
+// Brand
+primary       = Color(0xFF12362A)   // deep green — text-strong, CTAs on light, chrome
+primaryBright = Color(0xFF4DBB87)   // mint/awning green — accents, active states, dark-mode primary
+awning        = Color(0xFF57C793)   // lighter mint — highlights, promo chips
+
+// Semantic
+success = Color(0xFF2E9E6B)   // stays in the green family
+warning = Color(0xFFE8A13D)
+error   = Color(0xFFD9534F)
+info    = Color(0xFF3D7FA6)
+
+// Light surfaces
+surface        = Color(0xFFFFFFFF)
+surfaceVariant = Color(0xFFF4F7F5)  // scaffold — green-tinted near-white
+outline        = Color(0xFFE2EAE5)
+
+// Dark surfaces (from logo-dark)
+darkBg      = Color(0xFF0A0F0D)
+darkSurface = Color(0xFF121A16)
+darkCard    = Color(0xFF18231D)
+```
+
+Rules:
+- Green is THE brand. No second brand color. Semantic colors only inside content
+  (status chips, deltas), never in the app chrome.
+- Color always pairs with a word or icon — never color alone carries meaning.
+- Dark mode: mint (`primaryBright`) becomes the primary; deep green recedes.
+
+## Type
+
+- Arabic: **IBM Plex Sans Arabic** (same family the founder already uses — one voice across products).
+- Latin: **Inter**.
+- Rounded, friendly weights: titles 600, body 400. No third font ever.
+
+## Spacing / radius (rounded like the logo)
+
+```dart
+// Spacing: xs=4, sm=8, md=16, lg=24, xl=32, xxl=48
+// Radius:  sm=10, md=14, lg=18, xl=24, round=100   ← slightly rounder than default; logo is round
+```
+
+## Voice & Arabic lexicon (one canonical word per concept — add here BEFORE shipping)
+
+| Concept | Arabic | Never |
+|---|---|---|
+| Shop | دكان (pl. دكاكين) | متجر، محل |
+| Order | طلب | أوردر |
+| Cart | السلة | عربة التسوق |
+| Checkout | إتمام الطلب | الدفع |
+| Cash on delivery | الدفع عند الاستلام | كاش |
+| Out for delivery | في الطريق إليك | قيد الشحن |
+| Shop owner | صاحب الدكان | التاجر، البائع |
+
+- Human statuses ("جارٍ تجهيز طلبك"), blame-free errors ("حصلت مشكلة — جرّب تاني").
+- RTL is the default layout. LTR (English) must read identically well.
+
+## UI/UX reference — Ben Soliman (com.BenSoliman.BSS)
+
+Patterns to borrow (screenshots live in `Docs/ui-ref/` when provided):
+promo carousel on home, category grid, big product cards with inline +/− add,
+order-tracking stepper, bottom nav (Home / Orders / Cart / Profile).
+Borrow *patterns*, never their visual identity — Dukkan looks like Dukkan.
+
+## Every screen must have
+
+Designed empty state (warm illustration/emoji + one action), designed error state,
+shimmer/skeleton loading. Never bare "No data" / blank / raw exception.

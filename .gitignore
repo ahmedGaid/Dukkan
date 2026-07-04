@@ -1,0 +1,14 @@
+# Flutter/Dart (full set arrives with `flutter create` in session F1)
+build/
+.dart_tool/
+.packages
+pubspec.lock.bak
+*.iml
+.idea/
+.vscode/
+
+# Firebase secrets — never commit
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+.env
