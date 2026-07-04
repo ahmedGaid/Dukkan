@@ -4,12 +4,31 @@ import 'package:get_it/get_it.dart';
 
 import '../../data/auth/datasources/auth_remote_datasource.dart';
 import '../../data/auth/repositories/auth_repository_impl.dart';
+import '../../data/order/datasources/order_remote_datasource.dart';
+import '../../data/order/repositories/order_repository_impl.dart';
+import '../../data/product/datasources/product_local_datasource.dart';
+import '../../data/product/datasources/product_remote_datasource.dart';
+import '../../data/product/repositories/product_repository_impl.dart';
+import '../../data/shop/datasources/shop_local_datasource.dart';
+import '../../data/shop/datasources/shop_remote_datasource.dart';
+import '../../data/shop/repositories/shop_repository_impl.dart';
 import '../../domain/auth/repositories/auth_repository.dart';
 import '../../domain/auth/usecases/log_in.dart';
 import '../../domain/auth/usecases/log_out.dart';
 import '../../domain/auth/usecases/send_password_reset.dart';
 import '../../domain/auth/usecases/sign_up.dart';
 import '../../domain/auth/usecases/watch_auth_state.dart';
+import '../../domain/order/repositories/order_repository.dart';
+import '../../domain/order/usecases/cancel_order.dart';
+import '../../domain/order/usecases/place_order.dart';
+import '../../domain/order/usecases/watch_customer_orders.dart';
+import '../../domain/order/usecases/watch_order.dart';
+import '../../domain/product/repositories/product_repository.dart';
+import '../../domain/product/usecases/get_product.dart';
+import '../../domain/product/usecases/watch_products_by_shop.dart';
+import '../../domain/shop/repositories/shop_repository.dart';
+import '../../domain/shop/usecases/watch_shop.dart';
+import '../../domain/shop/usecases/watch_shops.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../l10n/locale_controller.dart';
 import '../network/network_info.dart';
@@ -54,6 +73,38 @@ Future<void> initDependencies() async {
       logOut: sl(),
     ),
   );
+
+  // Shop — data
+  sl.registerLazySingleton(() => ShopRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton(() => ShopLocalDataSource());
+  sl.registerLazySingleton<ShopRepository>(
+    () => ShopRepositoryImpl(sl(), sl(), sl()),
+  );
+
+  // Shop — use cases
+  sl.registerLazySingleton(() => WatchShops(sl()));
+  sl.registerLazySingleton(() => WatchShop(sl()));
+
+  // Product — data
+  sl.registerLazySingleton(() => ProductRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton(() => ProductLocalDataSource());
+  sl.registerLazySingleton<ProductRepository>(
+    () => ProductRepositoryImpl(sl(), sl(), sl()),
+  );
+
+  // Product — use cases
+  sl.registerLazySingleton(() => WatchProductsByShop(sl()));
+  sl.registerLazySingleton(() => GetProduct(sl()));
+
+  // Order — data
+  sl.registerLazySingleton(() => OrderRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<OrderRepository>(() => OrderRepositoryImpl(sl()));
+
+  // Order — use cases
+  sl.registerLazySingleton(() => PlaceOrder(sl()));
+  sl.registerLazySingleton(() => WatchCustomerOrders(sl()));
+  sl.registerLazySingleton(() => WatchOrder(sl()));
+  sl.registerLazySingleton(() => CancelOrder(sl()));
 
   // Router (reads AuthBloc)
   sl.registerLazySingleton(() => AppRouter(sl()));

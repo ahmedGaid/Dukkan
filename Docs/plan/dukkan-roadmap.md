@@ -66,7 +66,7 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
 
 ### Phase 1 — Customer core
 > Before UI sessions: user drops Ben Soliman screenshots into `Docs/ui-ref/` for reference.
-- [ ] **C1 — Domain + data.** Entities (Shop, Product, CartItem, Order, Address), models,
+- [x] **C1 — Domain + data.** Entities (Shop, Product, CartItem, Order, Address), models,
       Firestore datasources + local cache datasources, repositories, seed script (2 demo shops,
       ~20 products).
 - [ ] **C2 — Browse.** Home (promo banner + shops list + category grid — BSS pattern), shop page,

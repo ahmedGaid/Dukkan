@@ -1,10 +1,9 @@
 rules_version = '2';
 
-// Dukkan Firestore security rules — v1 (F3: users only).
+// Dukkan Firestore security rules — v1 (F3 users + C1 shops/products).
 // Deploy: Firebase console → Firestore Database → Rules → paste → Publish
 // (the CLI `firebase deploy` path needs an interactive login we can't run here).
-// Later phases add explicit rules for /shops, /products, /orders; until then the
-// catch-all at the bottom denies them.
+// /orders rules land with C3 (place order); until then the catch-all denies it.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -30,6 +29,19 @@ service cloud.firestore {
         && request.resource.data.role == resource.data.role;
 
       allow delete: if false;
+    }
+
+    // Catalog is public to read (browsing works signed-out); writes just need
+    // an authenticated user for now — tightened to owner-only in S1/S2 once
+    // shop ownership is assigned at signup.
+    match /shops/{shopId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isSignedIn();
     }
 
     // Deny anything without an explicit rule above.
