@@ -54,7 +54,7 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
 ## Phases & sessions
 
 ### Phase 0 — Foundation
-- [ ] **F1 — Scaffold + brand shell.** `flutter create dukkan` (org `com.dukkan`), folder skeleton
+- [x] **F1 — Scaffold + brand shell.** `flutter create dukkan` (org `com.dukkan`), folder skeleton
       per Clean Architecture, theme from `Docs/Brand/BRAND.md` tokens (AppColors/AppSpacing/AppRadius),
       fonts, logo assets wired, splash screen. Gates green. First push to GitHub.
 - [ ] **F2 — Core layer + i18n.** DI container, go_router shell, Failure hierarchy, NetworkInfo
