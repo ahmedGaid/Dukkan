@@ -21,6 +21,11 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
+    # Off: our DI/BLoC constructors take named private-field deps
+    # (required FirebaseAuth auth) → assigned in the initializer list. Named
+    # parameters can't start with `_`, so `this._auth` initializing formals
+    # are impossible here; the lint would fire on every injected dependency.
+    prefer_initializing_formals: false
     # avoid_print: false  # Uncomment to disable the `avoid_print` rule
     # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
 

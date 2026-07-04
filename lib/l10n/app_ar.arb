@@ -3,5 +3,57 @@
   "appName": "دكان",
   "@appName": {
     "description": "App name shown as the window/task title."
-  }
+  },
+
+  "authWelcomeTitle": "أهلاً بيك في دكان",
+  "authLoginSubtitle": "سجّل دخولك وكمّل تسوّق من دكاكينك",
+  "authSignupTitle": "حساب جديد",
+
+  "fieldName": "الاسم",
+  "fieldEmail": "البريد الإلكتروني",
+  "fieldPassword": "كلمة السر",
+  "fieldPhoneOptional": "رقم الموبايل (اختياري)",
+
+  "roleQuestion": "إنت هنا عشان؟",
+  "roleCustomer": "أطلب من الدكاكين",
+  "roleOwner": "أدير دكاني",
+  "roleBadgeCustomer": "زبون",
+  "roleBadgeOwner": "صاحب دكان",
+
+  "actionLogin": "تسجيل الدخول",
+  "actionSignup": "إنشاء الحساب",
+  "actionForgot": "نسيت كلمة السر؟",
+  "actionSendReset": "إبعت رابط الاستعادة",
+  "actionSignupLink": "سجّل دلوقتي",
+  "actionLoginLink": "تسجيل الدخول",
+  "actionLogout": "تسجيل الخروج",
+
+  "noAccountPrompt": "لسه معندكش حساب؟",
+  "haveAccountPrompt": "عندك حساب بالفعل؟",
+
+  "forgotTitle": "استعادة كلمة السر",
+  "forgotSubtitle": "اكتب بريدك وهنبعتلك رابط تعمل بيه كلمة سر جديدة.",
+  "resetSent": "بعتنا رابط استعادة كلمة السر على بريدك.",
+
+  "validateRequired": "الحقل ده مطلوب",
+  "validateEmail": "اكتب بريد إلكتروني صحيح",
+  "validatePasswordShort": "كلمة السر لازم تكون ٦ حروف على الأقل",
+
+  "authErrorInvalidCredentials": "البريد أو كلمة السر مش مظبوطين",
+  "authErrorEmailInUse": "البريد ده مستخدم قبل كده — جرّب تسجّل دخول",
+  "authErrorWeakPassword": "كلمة السر ضعيفة شوية — خليها أطول",
+  "authErrorInvalidEmail": "البريد الإلكتروني شكله مش مظبوط",
+  "authErrorUserDisabled": "الحساب ده موقوف دلوقتي",
+  "authErrorNetwork": "مفيش اتصال بالنت — اتأكد وجرّب تاني",
+  "authErrorUnknown": "حصلت مشكلة — جرّب تاني",
+
+  "homeGreeting": "أهلاً {name}",
+  "@homeGreeting": {
+    "description": "AppBar greeting on the home page.",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "homeCustomerPlaceholder": "دكاكينك هتظهر هنا قريب.",
+  "homeOwnerPlaceholder": "لوحة دكانك هتظهر هنا قريب."
 }

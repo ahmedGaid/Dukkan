@@ -1,13 +1,58 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../presentation/auth/bloc/auth_bloc.dart';
+import '../../presentation/auth/pages/forgot_password_page.dart';
+import '../../presentation/auth/pages/login_page.dart';
+import '../../presentation/auth/pages/signup_page.dart';
+import '../../presentation/home/pages/home_page.dart';
 import '../../presentation/splash/splash_page.dart';
+import 'go_router_refresh_stream.dart';
 
-/// Route shell. Auth-guarded redirects land in F3 once real Auth exists.
-abstract final class AppRouter {
-  static final GoRouter router = GoRouter(
+/// Auth-guarded router. Redirect reads the [AuthBloc] session status and the
+/// router refreshes whenever that status changes:
+///   unknown        → splash (`/`) while Firebase resolves the session
+///   unauthenticated → the auth pages only, else pushed to `/login`
+///   authenticated   → `/home`, kept off splash + auth pages
+class AppRouter {
+  AppRouter(this._authBloc);
+
+  final AuthBloc _authBloc;
+
+  static const _authPages = {'/login', '/signup', '/forgot'};
+
+  late final GoRouter router = GoRouter(
     initialLocation: '/',
+    refreshListenable: GoRouterRefreshStream(_authBloc.stream),
+    redirect: _redirect,
     routes: [
       GoRoute(path: '/', builder: (context, state) => const SplashPage()),
+      GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+      GoRoute(
+        path: '/signup',
+        builder: (context, state) => const SignupPage(),
+      ),
+      GoRoute(
+        path: '/forgot',
+        builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(path: '/home', builder: (context, state) => const HomePage()),
     ],
   );
+
+  String? _redirect(BuildContext context, GoRouterState state) {
+    final session = _authBloc.state.session;
+    final location = state.matchedLocation;
+
+    switch (session) {
+      case SessionStatus.unknown:
+        return location == '/' ? null : '/';
+      case SessionStatus.unauthenticated:
+        return _authPages.contains(location) ? null : '/login';
+      case SessionStatus.authenticated:
+        return (location == '/' || _authPages.contains(location))
+            ? '/home'
+            : null;
+    }
+  }
 }

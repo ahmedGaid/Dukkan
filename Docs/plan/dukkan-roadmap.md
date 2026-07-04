@@ -60,7 +60,7 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
 - [x] **F2 — Core layer + i18n.** DI container, go_router shell, Failure hierarchy, NetworkInfo
       (HTTP probe — NEVER InternetConnectionChecker, Shoppy lesson), `lib/l10n/` ar/en ARB files +
       parity check script (`scripts/check_i18n_parity.dart`), RTL-first MaterialApp.
-- [ ] **F3 — Firebase + auth + roles.** Firebase project, flutterfire configure, REAL Auth
+- [x] **F3 — Firebase + auth + roles.** Firebase project, flutterfire configure, REAL Auth
       (email+password v1; phone OTP deferred — costs money), signup with role choice,
       login/forgot, auth-guarded router, `/users` doc with role. Security rules v1.
 

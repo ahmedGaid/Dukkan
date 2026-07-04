@@ -1,4 +1,50 @@
 {
   "@@locale": "en",
-  "appName": "Dukkan"
+  "appName": "Dukkan",
+
+  "authWelcomeTitle": "Welcome to Dukkan",
+  "authLoginSubtitle": "Log in and keep shopping from your shops",
+  "authSignupTitle": "New account",
+
+  "fieldName": "Name",
+  "fieldEmail": "Email",
+  "fieldPassword": "Password",
+  "fieldPhoneOptional": "Phone (optional)",
+
+  "roleQuestion": "You're here to…",
+  "roleCustomer": "Order from shops",
+  "roleOwner": "Run my shop",
+  "roleBadgeCustomer": "Customer",
+  "roleBadgeOwner": "Shop owner",
+
+  "actionLogin": "Log in",
+  "actionSignup": "Create account",
+  "actionForgot": "Forgot password?",
+  "actionSendReset": "Send reset link",
+  "actionSignupLink": "Sign up",
+  "actionLoginLink": "Log in",
+  "actionLogout": "Log out",
+
+  "noAccountPrompt": "No account yet?",
+  "haveAccountPrompt": "Already have an account?",
+
+  "forgotTitle": "Reset password",
+  "forgotSubtitle": "Enter your email and we'll send you a link to set a new password.",
+  "resetSent": "We sent a password reset link to your email.",
+
+  "validateRequired": "This field is required",
+  "validateEmail": "Enter a valid email",
+  "validatePasswordShort": "Password must be at least 6 characters",
+
+  "authErrorInvalidCredentials": "Wrong email or password",
+  "authErrorEmailInUse": "This email is already registered — try logging in",
+  "authErrorWeakPassword": "Password is a bit weak — make it longer",
+  "authErrorInvalidEmail": "That email doesn't look right",
+  "authErrorUserDisabled": "This account is currently disabled",
+  "authErrorNetwork": "No internet connection — check and try again",
+  "authErrorUnknown": "Something went wrong — try again",
+
+  "homeGreeting": "Hi {name}",
+  "homeCustomerPlaceholder": "Your shops will appear here soon.",
+  "homeOwnerPlaceholder": "Your shop dashboard will appear here soon."
 }
