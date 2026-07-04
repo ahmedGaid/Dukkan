@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../l10n/app_localizations.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/auth/pages/forgot_password_page.dart';
 import '../../presentation/auth/pages/login_page.dart';
 import '../../presentation/auth/pages/signup_page.dart';
 import '../../domain/product/entities/product.dart';
 import '../../presentation/home/pages/home_page.dart';
+import '../../presentation/search/pages/search_page.dart';
 import '../../presentation/shop/pages/product_detail_page.dart';
 import '../../presentation/shop/pages/shop_page.dart';
 import '../../presentation/splash/splash_page.dart';
-import '../../presentation/widgets/common/coming_soon_page.dart';
 import 'go_router_refresh_stream.dart';
 
 /// Auth-guarded router. Redirect reads the [AuthBloc] session status and the
@@ -58,18 +57,9 @@ class AppRouter {
           ),
         ],
       ),
-      // Placeholder until its session lands: search → C2c.
       GoRoute(
         path: '/search',
-        builder: (context, state) {
-          final l10n = AppLocalizations.of(context)!;
-          return ComingSoonPage(
-            icon: Icons.search_rounded,
-            title: l10n.searchComingSoonTitle,
-            message: l10n.searchComingSoonBody,
-            appBarTitle: l10n.searchComingSoonTitle,
-          );
-        },
+        builder: (context, state) => const SearchPage(),
       ),
     ],
   );

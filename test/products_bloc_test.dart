@@ -30,6 +30,9 @@ class _FakeProductRepository implements ProductRepository {
       controller.stream;
 
   @override
+  Stream<List<Product>> watchAllProducts() => const Stream.empty();
+
+  @override
   Future<Product> getProduct(String productId) =>
       throw UnimplementedError();
 }

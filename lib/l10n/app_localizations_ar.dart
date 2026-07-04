@@ -268,11 +268,22 @@ class AppLocalizationsAr extends AppLocalizations {
       'يمكن يكون اتشال من الدكان. ارجع وبصّ على باقي المنتجات.';
 
   @override
-  String get searchComingSoonTitle => 'البحث قريب';
+  String get searchPromptTitle => 'دوّر على اللي محتاجه';
 
   @override
-  String get searchComingSoonBody =>
-      'هتقدر تدوّر على أي منتج أو دكان من هنا قريب.';
+  String get searchPromptBody => 'اكتب اسم منتج أو دكان، وهنلاقيهولك على طول.';
+
+  @override
+  String get searchNoResultsTitle => 'مفيش نتايج';
+
+  @override
+  String get searchNoResultsBody => 'جرّب كلمة تانية أو اسم أقصر.';
+
+  @override
+  String get searchClear => 'امسح';
+
+  @override
+  String get searchErrorBody => 'مش قادرين نكمّل البحث دلوقتي — جرّب تاني.';
 
   @override
   String get promo1Title => 'أهلاً بيك في دكان';

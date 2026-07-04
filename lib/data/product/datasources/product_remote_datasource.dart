@@ -20,6 +20,14 @@ class ProductRemoteDataSource {
         );
   }
 
+  Stream<List<ProductModel>> watchAllProducts() {
+    return _products.snapshots().map(
+          (snap) => snap.docs
+              .map((doc) => ProductModel.fromFirestore(doc.id, doc.data()))
+              .toList(),
+        );
+  }
+
   Future<ProductModel> getProduct(String productId) async {
     final doc = await _products.doc(productId).get();
     final data = doc.data();

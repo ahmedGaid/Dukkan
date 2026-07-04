@@ -596,17 +596,41 @@ abstract class AppLocalizations {
   /// **'يمكن يكون اتشال من الدكان. ارجع وبصّ على باقي المنتجات.'**
   String get productNotFoundBody;
 
-  /// No description provided for @searchComingSoonTitle.
+  /// No description provided for @searchPromptTitle.
   ///
   /// In ar, this message translates to:
-  /// **'البحث قريب'**
-  String get searchComingSoonTitle;
+  /// **'دوّر على اللي محتاجه'**
+  String get searchPromptTitle;
 
-  /// No description provided for @searchComingSoonBody.
+  /// No description provided for @searchPromptBody.
   ///
   /// In ar, this message translates to:
-  /// **'هتقدر تدوّر على أي منتج أو دكان من هنا قريب.'**
-  String get searchComingSoonBody;
+  /// **'اكتب اسم منتج أو دكان، وهنلاقيهولك على طول.'**
+  String get searchPromptBody;
+
+  /// No description provided for @searchNoResultsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش نتايج'**
+  String get searchNoResultsTitle;
+
+  /// No description provided for @searchNoResultsBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب كلمة تانية أو اسم أقصر.'**
+  String get searchNoResultsBody;
+
+  /// No description provided for @searchClear.
+  ///
+  /// In ar, this message translates to:
+  /// **'امسح'**
+  String get searchClear;
+
+  /// No description provided for @searchErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نكمّل البحث دلوقتي — جرّب تاني.'**
+  String get searchErrorBody;
 
   /// No description provided for @promo1Title.
   ///

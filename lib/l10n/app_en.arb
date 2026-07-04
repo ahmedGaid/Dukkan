@@ -102,8 +102,12 @@
   "productNotFoundTitle": "Product not found",
   "productNotFoundBody": "It may have been removed. Go back and see the other products.",
 
-  "searchComingSoonTitle": "Search coming soon",
-  "searchComingSoonBody": "You'll be able to search any product or shop from here soon.",
+  "searchPromptTitle": "Search the marketplace",
+  "searchPromptBody": "Type a product or shop name and we'll find it.",
+  "searchNoResultsTitle": "No results",
+  "searchNoResultsBody": "Try another word or a shorter name.",
+  "searchClear": "Clear",
+  "searchErrorBody": "We can't finish the search right now — try again.",
 
   "promo1Title": "Welcome to Dukkan",
   "promo1Body": "Your neighborhood shops, in your pocket.",

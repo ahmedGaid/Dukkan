@@ -77,7 +77,8 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
         grid + nearby-shops list) + ShopsBloc. All states designed.
   - [x] **C2b — Shop + products.** Shop page (header w/ open/closed, in-shop category filter),
         product grid, product detail. ProductsBloc.
-  - [ ] **C2c — Search + polish.** Product search + cross-screen empty/loading/error polish.
+  - [x] **C2c — Search + polish.** Global product search (matches product name/category + shop
+        name, Arabic-folded, debounced); designed prompt/no-results/error/loading states. SearchBloc.
 - [ ] **C3 — Cart + checkout.** Per-shop cart, quantity stepper, checkout with manual address
       entry (maps deferred), COD confirm, order placed screen.
 - [ ] **C4 — Orders.** Orders list, order detail with status stepper, cancel

@@ -13,6 +13,11 @@ class ProductLocalDataSource {
 
   static const _keyPrefix = 'cache.products.';
 
+  /// The whole-catalog cache (global search). Kept under the same prefix so it
+  /// clears with the rest, but skipped by [getCachedProduct]'s per-shop scan so
+  /// a product isn't matched twice.
+  static const _allKey = '${_keyPrefix}__all__';
+
   late final Future<void> _ready;
   late final SharedPreferences _prefs;
 
@@ -32,12 +37,25 @@ class ProductLocalDataSource {
     return _decode(raw);
   }
 
+  Future<void> cacheAllProducts(List<ProductModel> products) async {
+    await _ready;
+    final raw = jsonEncode(products.map((p) => p.toJson()).toList());
+    await _prefs.setString(_allKey, raw);
+  }
+
+  Future<List<ProductModel>> getCachedAllProducts() async {
+    await _ready;
+    final raw = _prefs.getString(_allKey);
+    if (raw == null) return [];
+    return _decode(raw);
+  }
+
   /// Scans every cached shop's product list for a single product id — used
   /// when `getProduct` is called offline without knowing the shop upfront.
   Future<ProductModel?> getCachedProduct(String productId) async {
     await _ready;
     for (final key in _prefs.getKeys()) {
-      if (!key.startsWith(_keyPrefix)) continue;
+      if (!key.startsWith(_keyPrefix) || key == _allKey) continue;
       final raw = _prefs.getString(key);
       if (raw == null) continue;
       for (final product in _decode(raw)) {

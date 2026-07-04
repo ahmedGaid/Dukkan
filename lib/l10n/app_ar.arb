@@ -111,8 +111,12 @@
   "productNotFoundTitle": "المنتج مش موجود",
   "productNotFoundBody": "يمكن يكون اتشال من الدكان. ارجع وبصّ على باقي المنتجات.",
 
-  "searchComingSoonTitle": "البحث قريب",
-  "searchComingSoonBody": "هتقدر تدوّر على أي منتج أو دكان من هنا قريب.",
+  "searchPromptTitle": "دوّر على اللي محتاجه",
+  "searchPromptBody": "اكتب اسم منتج أو دكان، وهنلاقيهولك على طول.",
+  "searchNoResultsTitle": "مفيش نتايج",
+  "searchNoResultsBody": "جرّب كلمة تانية أو اسم أقصر.",
+  "searchClear": "امسح",
+  "searchErrorBody": "مش قادرين نكمّل البحث دلوقتي — جرّب تاني.",
 
   "promo1Title": "أهلاً بيك في دكان",
   "promo1Body": "دكاكين حيّك، في جيبك.",

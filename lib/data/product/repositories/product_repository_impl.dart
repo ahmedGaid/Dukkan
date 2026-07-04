@@ -25,6 +25,18 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
+  Stream<List<Product>> watchAllProducts() async* {
+    if (await _networkInfo.isConnected) {
+      await for (final products in _remote.watchAllProducts()) {
+        await _local.cacheAllProducts(products);
+        yield products;
+      }
+    } else {
+      yield await _local.getCachedAllProducts();
+    }
+  }
+
+  @override
   Future<Product> getProduct(String productId) async {
     if (await _networkInfo.isConnected) {
       return _remote.getProduct(productId);

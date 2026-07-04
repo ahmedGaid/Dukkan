@@ -270,11 +270,24 @@ class AppLocalizationsEn extends AppLocalizations {
       'It may have been removed. Go back and see the other products.';
 
   @override
-  String get searchComingSoonTitle => 'Search coming soon';
+  String get searchPromptTitle => 'Search the marketplace';
 
   @override
-  String get searchComingSoonBody =>
-      'You\'ll be able to search any product or shop from here soon.';
+  String get searchPromptBody =>
+      'Type a product or shop name and we\'ll find it.';
+
+  @override
+  String get searchNoResultsTitle => 'No results';
+
+  @override
+  String get searchNoResultsBody => 'Try another word or a shorter name.';
+
+  @override
+  String get searchClear => 'Clear';
+
+  @override
+  String get searchErrorBody =>
+      'We can\'t finish the search right now — try again.';
 
   @override
   String get promo1Title => 'Welcome to Dukkan';

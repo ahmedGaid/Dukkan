@@ -25,12 +25,14 @@ import '../../domain/order/usecases/watch_customer_orders.dart';
 import '../../domain/order/usecases/watch_order.dart';
 import '../../domain/product/repositories/product_repository.dart';
 import '../../domain/product/usecases/get_product.dart';
+import '../../domain/product/usecases/watch_all_products.dart';
 import '../../domain/product/usecases/watch_products_by_shop.dart';
 import '../../domain/shop/repositories/shop_repository.dart';
 import '../../domain/shop/usecases/watch_shop.dart';
 import '../../domain/shop/usecases/watch_shops.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/home/bloc/shops_bloc.dart';
+import '../../presentation/search/bloc/search_bloc.dart';
 import '../../presentation/shop/bloc/products_bloc.dart';
 import '../l10n/locale_controller.dart';
 import '../network/network_info.dart';
@@ -99,6 +101,7 @@ Future<void> initDependencies() async {
 
   // Product — use cases
   sl.registerLazySingleton(() => WatchProductsByShop(sl()));
+  sl.registerLazySingleton(() => WatchAllProducts(sl()));
   sl.registerLazySingleton(() => GetProduct(sl()));
 
   // Product — bloc (page-scoped: one shop's catalog per shop-page open; the
@@ -109,6 +112,11 @@ Future<void> initDependencies() async {
       watchShop: sl(),
       watchProductsByShop: sl(),
     ),
+  );
+
+  // Search — bloc (page-scoped: fresh product + shop subscriptions per open).
+  sl.registerFactory(
+    () => SearchBloc(watchAllProducts: sl(), watchShops: sl()),
   );
 
   // Order — data

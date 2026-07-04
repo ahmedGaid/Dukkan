@@ -21,12 +21,18 @@ class ProductCard extends StatefulWidget {
     super.key,
     required this.product,
     required this.onTap,
+    this.subtitle,
   });
 
   final Product product;
 
   /// Opens the product detail page.
   final VoidCallback onTap;
+
+  /// Secondary line under the name — the shop name in global search results,
+  /// where the same product could come from any دكان. Null on a shop page (the
+  /// shop is already the context).
+  final String? subtitle;
 
   @override
   State<ProductCard> createState() => _ProductCardState();
@@ -101,6 +107,35 @@ class _ProductCardState extends State<ProductCard> {
                   overflow: TextOverflow.ellipsis,
                   style: text.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
+                if (widget.subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.storefront_outlined,
+                        size: 13,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.5),
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Expanded(
+                        child: Text(
+                          widget.subtitle!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: text.bodySmall?.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: AppSpacing.xs),
                 PriceTag(product.priceMinor),
                 const SizedBox(height: AppSpacing.sm),
