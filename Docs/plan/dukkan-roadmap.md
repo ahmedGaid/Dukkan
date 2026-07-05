@@ -95,7 +95,7 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
         via the S1a foundation → save `/shops` doc. Needs Firestore `/shops` owner-write rule.
 - [x] **S2 — Catalog manager.** Product CRUD, image upload, price (piasters!), stock toggle,
       promo flag.
-- [ ] **S3 — Order desk.** Incoming orders list (realtime), accept/reject, advance status,
+- [x] **S3 — Order desk.** Incoming orders list (realtime), accept/reject, advance status,
       daily summary strip.
 
 ### Phase 3 — Polish
