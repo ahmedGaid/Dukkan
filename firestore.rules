@@ -1,9 +1,8 @@
 rules_version = '2';
 
-// Dukkan Firestore security rules — v1 (F3 users + C1 shops/products).
+// Dukkan Firestore security rules — v1 (F3 users + C1 shops/products + C4 orders).
 // Deploy: Firebase console → Firestore Database → Rules → paste → Publish
 // (the CLI `firebase deploy` path needs an interactive login we can't run here).
-// /orders rules land with C3 (place order); until then the catch-all denies it.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -42,6 +41,33 @@ service cloud.firestore {
     match /products/{productId} {
       allow read: if true;
       allow write: if isSignedIn();
+    }
+
+    // A customer owns their own orders; a shop owner can read orders placed
+    // against their own shop (needed once S3's order desk lands).
+    match /orders/{orderId} {
+      function isOrderOwner() {
+        return isSelf(resource.data.customerUid);
+      }
+      function isShopOwner() {
+        return isSignedIn() &&
+          get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerUid
+            == request.auth.uid;
+      }
+
+      allow read: if isOrderOwner() || isShopOwner();
+
+      allow create: if isSelf(request.resource.data.customerUid);
+
+      // Only mutation today is a customer cancelling their own pending/
+      // accepted order (CancelOrder) — status-only change. Shop-owner status
+      // advances (accept/reject/preparing/...) land with S3 and extend this.
+      allow update: if isOrderOwner()
+        && resource.data.status in ['pending', 'accepted']
+        && request.resource.data.status == 'cancelled'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+
+      allow delete: if false;
     }
 
     // Deny anything without an explicit rule above.
