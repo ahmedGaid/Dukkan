@@ -30,6 +30,8 @@ import '../../domain/product/usecases/get_product.dart';
 import '../../domain/product/usecases/watch_all_products.dart';
 import '../../domain/product/usecases/watch_products_by_shop.dart';
 import '../../domain/shop/repositories/shop_repository.dart';
+import '../../domain/shop/usecases/create_shop.dart';
+import '../../domain/shop/usecases/get_shop_by_owner.dart';
 import '../../domain/shop/usecases/watch_shop.dart';
 import '../../domain/shop/usecases/watch_shops.dart';
 import '../../domain/storage/repositories/storage_repository.dart';
@@ -95,6 +97,8 @@ Future<void> initDependencies() async {
   // Shop — use cases
   sl.registerLazySingleton(() => WatchShops(sl()));
   sl.registerLazySingleton(() => WatchShop(sl()));
+  sl.registerLazySingleton(() => GetShopByOwner(sl()));
+  sl.registerLazySingleton(() => CreateShop(sl()));
 
   // Shop — bloc (page-scoped: a fresh subscription per Home open)
   sl.registerFactory(() => ShopsBloc(watchShops: sl()));

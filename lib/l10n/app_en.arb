@@ -152,6 +152,18 @@
   "searchClear": "Clear",
   "searchErrorBody": "We can't finish the search right now — try again.",
 
+  "shopOnboardingTitle": "Set up your shop",
+  "shopOnboardingSubtitle": "Customers will see this as soon as you're done.",
+  "fieldShopName": "Shop name (English)",
+  "fieldShopNameAr": "Shop name (Arabic)",
+  "fieldShopAddress": "Shop address",
+  "shopOnboardingLogoLabel": "Shop logo",
+  "shopOnboardingLogoHint": "Tap to add a photo",
+  "shopOnboardingOpenLabel": "Open for orders",
+  "actionCreateShop": "Create shop",
+  "shopOnboardingErrorBody": "We couldn't create your shop — try again.",
+  "shopOnboardingLogoErrorBody": "We couldn't upload the logo — try again.",
+
   "promo1Title": "Welcome to Dukkan",
   "promo1Body": "Your neighborhood shops, in your pocket.",
   "promo2Title": "Delivery from your shop",

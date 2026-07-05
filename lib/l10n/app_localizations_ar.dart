@@ -404,6 +404,40 @@ class AppLocalizationsAr extends AppLocalizations {
   String get searchErrorBody => 'مش قادرين نكمّل البحث دلوقتي — جرّب تاني.';
 
   @override
+  String get shopOnboardingTitle => 'جهّز دكانك';
+
+  @override
+  String get shopOnboardingSubtitle => 'الزباين هيشوفوا دكانك أول ما تخلّص.';
+
+  @override
+  String get fieldShopName => 'اسم الدكان (إنجليزي)';
+
+  @override
+  String get fieldShopNameAr => 'اسم الدكان (عربي)';
+
+  @override
+  String get fieldShopAddress => 'عنوان الدكان';
+
+  @override
+  String get shopOnboardingLogoLabel => 'لوجو الدكان';
+
+  @override
+  String get shopOnboardingLogoHint => 'دوس عشان تضيف صورة';
+
+  @override
+  String get shopOnboardingOpenLabel => 'متاح لاستقبال الطلبات';
+
+  @override
+  String get actionCreateShop => 'أنشئ الدكان';
+
+  @override
+  String get shopOnboardingErrorBody => 'مش قادرين ننشئ الدكان — جرّب تاني.';
+
+  @override
+  String get shopOnboardingLogoErrorBody =>
+      'مش قادرين نرفع الصورة — جرّب تاني.';
+
+  @override
   String get promo1Title => 'أهلاً بيك في دكان';
 
   @override

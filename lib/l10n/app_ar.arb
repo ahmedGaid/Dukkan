@@ -161,6 +161,18 @@
   "searchClear": "امسح",
   "searchErrorBody": "مش قادرين نكمّل البحث دلوقتي — جرّب تاني.",
 
+  "shopOnboardingTitle": "جهّز دكانك",
+  "shopOnboardingSubtitle": "الزباين هيشوفوا دكانك أول ما تخلّص.",
+  "fieldShopName": "اسم الدكان (إنجليزي)",
+  "fieldShopNameAr": "اسم الدكان (عربي)",
+  "fieldShopAddress": "عنوان الدكان",
+  "shopOnboardingLogoLabel": "لوجو الدكان",
+  "shopOnboardingLogoHint": "دوس عشان تضيف صورة",
+  "shopOnboardingOpenLabel": "متاح لاستقبال الطلبات",
+  "actionCreateShop": "أنشئ الدكان",
+  "shopOnboardingErrorBody": "مش قادرين ننشئ الدكان — جرّب تاني.",
+  "shopOnboardingLogoErrorBody": "مش قادرين نرفع الصورة — جرّب تاني.",
+
   "promo1Title": "أهلاً بيك في دكان",
   "promo1Body": "دكاكين حيّك، في جيبك.",
   "promo2Title": "توصيل من دكانك",

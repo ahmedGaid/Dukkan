@@ -29,4 +29,26 @@ class ShopRemoteDataSource {
       return ShopModel.fromFirestore(doc.id, data);
     });
   }
+
+  Future<ShopModel?> getShopByOwner(String ownerUid) async {
+    final snap =
+        await _shops.where('ownerUid', isEqualTo: ownerUid).limit(1).get();
+    if (snap.docs.isEmpty) return null;
+    final doc = snap.docs.first;
+    return ShopModel.fromFirestore(doc.id, doc.data());
+  }
+
+  Future<ShopModel> createShop(ShopModel shop) async {
+    final doc = await _shops.add(shop.toFirestore());
+    return ShopModel(
+      id: doc.id,
+      ownerUid: shop.ownerUid,
+      name: shop.name,
+      nameAr: shop.nameAr,
+      logoUrl: shop.logoUrl,
+      address: shop.address,
+      isOpen: shop.isOpen,
+      categories: shop.categories,
+    );
+  }
 }

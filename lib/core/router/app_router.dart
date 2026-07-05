@@ -8,21 +8,29 @@ import '../../presentation/auth/pages/signup_page.dart';
 import '../../presentation/cart/pages/cart_page.dart';
 import '../../presentation/cart/pages/checkout_page.dart';
 import '../../presentation/cart/pages/order_placed_page.dart';
+import '../../domain/auth/entities/user_role.dart';
 import '../../domain/order/entities/order.dart';
 import '../../domain/product/entities/product.dart';
+import '../../domain/shop/usecases/get_shop_by_owner.dart';
 import '../../presentation/home/pages/home_page.dart';
 import '../../presentation/orders/pages/order_detail_page.dart';
 import '../../presentation/search/pages/search_page.dart';
 import '../../presentation/shop/pages/product_detail_page.dart';
+import '../../presentation/shop/pages/shop_onboarding_page.dart';
 import '../../presentation/shop/pages/shop_page.dart';
 import '../../presentation/splash/splash_page.dart';
+import '../di/injector.dart';
 import 'go_router_refresh_stream.dart';
 
 /// Auth-guarded router. Redirect reads the [AuthBloc] session status and the
 /// router refreshes whenever that status changes:
 ///   unknown        → splash (`/`) while Firebase resolves the session
 ///   unauthenticated → the auth pages only, else pushed to `/login`
-///   authenticated   → `/home`, kept off splash + auth pages
+///   authenticated   → `/home`, kept off splash + auth pages — except an
+///                     owner with no shop yet (S1b), who is sent to
+///                     `/shop-onboarding` instead. That check only runs at
+///                     the splash/auth-page entry point, never on every
+///                     in-app navigation.
 class AppRouter {
   AppRouter(this._authBloc);
 
@@ -46,6 +54,10 @@ class AppRouter {
         builder: (context, state) => const ForgotPasswordPage(),
       ),
       GoRoute(path: '/home', builder: (context, state) => const HomePage()),
+      GoRoute(
+        path: '/shop-onboarding',
+        builder: (context, state) => const ShopOnboardingPage(),
+      ),
       GoRoute(
         path: '/shop/:id',
         builder: (context, state) =>
@@ -84,7 +96,7 @@ class AppRouter {
     ],
   );
 
-  String? _redirect(BuildContext context, GoRouterState state) {
+  Future<String?> _redirect(BuildContext context, GoRouterState state) async {
     final session = _authBloc.state.session;
     final location = state.matchedLocation;
 
@@ -94,9 +106,11 @@ class AppRouter {
       case SessionStatus.unauthenticated:
         return _authPages.contains(location) ? null : '/login';
       case SessionStatus.authenticated:
-        return (location == '/' || _authPages.contains(location))
-            ? '/home'
-            : null;
+        if (location != '/' && !_authPages.contains(location)) return null;
+        final user = _authBloc.state.user;
+        if (user?.role != UserRole.owner) return '/home';
+        final shop = await sl<GetShopByOwner>()(user!.uid);
+        return shop == null ? '/shop-onboarding' : '/home';
     }
   }
 }

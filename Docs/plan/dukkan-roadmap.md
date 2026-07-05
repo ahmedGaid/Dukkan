@@ -91,7 +91,7 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
   - [x] **S1a — Storage foundation.** `worker/` (Cloudflare Worker verifying Firebase ID token →
         R2 put) + Flutter `StorageRepository`/`UploadImage`/R2 upload datasource (dart:io, no new
         dep) + `AppConfig.uploadWorkerBaseUrl` (stubbed till deploy) + tests. Gates green.
-  - [ ] **S1b — Onboarding UI.** Owner signup → shop-profile form → `image_picker` logo → upload
+  - [x] **S1b — Onboarding UI.** Owner signup → shop-profile form → `image_picker` logo → upload
         via the S1a foundation → save `/shops` doc. Needs Firestore `/shops` owner-write rule.
 - [ ] **S2 — Catalog manager.** Product CRUD, image upload, price (piasters!), stock toggle,
       promo flag.

@@ -866,6 +866,72 @@ abstract class AppLocalizations {
   /// **'مش قادرين نكمّل البحث دلوقتي — جرّب تاني.'**
   String get searchErrorBody;
 
+  /// No description provided for @shopOnboardingTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'جهّز دكانك'**
+  String get shopOnboardingTitle;
+
+  /// No description provided for @shopOnboardingSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الزباين هيشوفوا دكانك أول ما تخلّص.'**
+  String get shopOnboardingSubtitle;
+
+  /// No description provided for @fieldShopName.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم الدكان (إنجليزي)'**
+  String get fieldShopName;
+
+  /// No description provided for @fieldShopNameAr.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم الدكان (عربي)'**
+  String get fieldShopNameAr;
+
+  /// No description provided for @fieldShopAddress.
+  ///
+  /// In ar, this message translates to:
+  /// **'عنوان الدكان'**
+  String get fieldShopAddress;
+
+  /// No description provided for @shopOnboardingLogoLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'لوجو الدكان'**
+  String get shopOnboardingLogoLabel;
+
+  /// No description provided for @shopOnboardingLogoHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'دوس عشان تضيف صورة'**
+  String get shopOnboardingLogoHint;
+
+  /// No description provided for @shopOnboardingOpenLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'متاح لاستقبال الطلبات'**
+  String get shopOnboardingOpenLabel;
+
+  /// No description provided for @actionCreateShop.
+  ///
+  /// In ar, this message translates to:
+  /// **'أنشئ الدكان'**
+  String get actionCreateShop;
+
+  /// No description provided for @shopOnboardingErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين ننشئ الدكان — جرّب تاني.'**
+  String get shopOnboardingErrorBody;
+
+  /// No description provided for @shopOnboardingLogoErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نرفع الصورة — جرّب تاني.'**
+  String get shopOnboardingLogoErrorBody;
+
   /// No description provided for @promo1Title.
   ///
   /// In ar, this message translates to:

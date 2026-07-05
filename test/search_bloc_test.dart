@@ -33,6 +33,21 @@ class _FakeShopRepository implements ShopRepository {
 
   @override
   Stream<Shop> watchShop(String shopId) => const Stream.empty();
+
+  @override
+  Future<Shop?> getShopByOwner(String ownerUid) => throw UnimplementedError();
+
+  @override
+  Future<Shop> createShop({
+    required String ownerUid,
+    required String name,
+    required String nameAr,
+    required String address,
+    String? logoUrl,
+    bool isOpen = true,
+    List<String> categories = const [],
+  }) =>
+      throw UnimplementedError();
 }
 
 Shop _shop(String id, {required String name, required String nameAr}) => Shop(

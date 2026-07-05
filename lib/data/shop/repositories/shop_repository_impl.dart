@@ -4,6 +4,7 @@ import '../../../domain/shop/entities/shop.dart';
 import '../../../domain/shop/repositories/shop_repository.dart';
 import '../datasources/shop_local_datasource.dart';
 import '../datasources/shop_remote_datasource.dart';
+import '../models/shop_model.dart';
 
 class ShopRepositoryImpl implements ShopRepository {
   ShopRepositoryImpl(this._remote, this._local, this._networkInfo);
@@ -42,5 +43,38 @@ class ShopRepositoryImpl implements ShopRepository {
       }
       yield match;
     }
+  }
+
+  @override
+  Future<Shop?> getShopByOwner(String ownerUid) async {
+    if (!await _networkInfo.isConnected) {
+      throw const NetworkFailure('No connection');
+    }
+    return _remote.getShopByOwner(ownerUid);
+  }
+
+  @override
+  Future<Shop> createShop({
+    required String ownerUid,
+    required String name,
+    required String nameAr,
+    required String address,
+    String? logoUrl,
+    bool isOpen = true,
+    List<String> categories = const [],
+  }) async {
+    if (!await _networkInfo.isConnected) {
+      throw const NetworkFailure('No connection');
+    }
+    return _remote.createShop(ShopModel(
+      id: '',
+      ownerUid: ownerUid,
+      name: name,
+      nameAr: nameAr,
+      logoUrl: logoUrl,
+      address: address,
+      isOpen: isOpen,
+      categories: categories,
+    ));
   }
 }

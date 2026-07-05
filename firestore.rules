@@ -30,12 +30,20 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Catalog is public to read (browsing works signed-out); writes just need
-    // an authenticated user for now — tightened to owner-only in S1/S2 once
-    // shop ownership is assigned at signup.
+    // Catalog is public to read (browsing works signed-out). Writes are
+    // owner-only (S1b): a shop can only be created with the caller as its
+    // own ownerUid, and only that owner can ever update it again.
     match /shops/{shopId} {
       allow read: if true;
-      allow write: if isSignedIn();
+
+      allow create: if isSignedIn()
+        && request.resource.data.ownerUid == request.auth.uid;
+
+      allow update: if isSignedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerUid == resource.data.ownerUid;
+
+      allow delete: if false;
     }
 
     match /products/{productId} {

@@ -411,6 +411,42 @@ class AppLocalizationsEn extends AppLocalizations {
       'We can\'t finish the search right now — try again.';
 
   @override
+  String get shopOnboardingTitle => 'Set up your shop';
+
+  @override
+  String get shopOnboardingSubtitle =>
+      'Customers will see this as soon as you\'re done.';
+
+  @override
+  String get fieldShopName => 'Shop name (English)';
+
+  @override
+  String get fieldShopNameAr => 'Shop name (Arabic)';
+
+  @override
+  String get fieldShopAddress => 'Shop address';
+
+  @override
+  String get shopOnboardingLogoLabel => 'Shop logo';
+
+  @override
+  String get shopOnboardingLogoHint => 'Tap to add a photo';
+
+  @override
+  String get shopOnboardingOpenLabel => 'Open for orders';
+
+  @override
+  String get actionCreateShop => 'Create shop';
+
+  @override
+  String get shopOnboardingErrorBody =>
+      'We couldn\'t create your shop — try again.';
+
+  @override
+  String get shopOnboardingLogoErrorBody =>
+      'We couldn\'t upload the logo — try again.';
+
+  @override
   String get promo1Title => 'Welcome to Dukkan';
 
   @override
