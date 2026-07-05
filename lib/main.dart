@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -17,6 +19,15 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  // On Flutter web the default Firestore transport (WebChannel/gRPC-web) is
+  // often buffered to death by proxies/antivirus, so `.get()` fails with
+  // "client is offline" even with a live connection. Force long-polling on web
+  // to sidestep that (native mobile keeps the faster default). Must be set
+  // before any Firestore call — i.e. before DI wires the datasources.
+  if (kIsWeb) {
+    FirebaseFirestore.instance.settings =
+        const Settings(webExperimentalForceLongPolling: true);
+  }
   await initDependencies();
   runApp(const DukkanApp());
 }
