@@ -12,6 +12,8 @@ import '../../data/product/repositories/product_repository_impl.dart';
 import '../../data/shop/datasources/shop_local_datasource.dart';
 import '../../data/shop/datasources/shop_remote_datasource.dart';
 import '../../data/shop/repositories/shop_repository_impl.dart';
+import '../../data/storage/datasources/image_upload_remote_datasource.dart';
+import '../../data/storage/repositories/storage_repository_impl.dart';
 import '../../domain/auth/repositories/auth_repository.dart';
 import '../../domain/auth/usecases/log_in.dart';
 import '../../domain/auth/usecases/log_out.dart';
@@ -30,6 +32,8 @@ import '../../domain/product/usecases/watch_products_by_shop.dart';
 import '../../domain/shop/repositories/shop_repository.dart';
 import '../../domain/shop/usecases/watch_shop.dart';
 import '../../domain/shop/usecases/watch_shops.dart';
+import '../../domain/storage/repositories/storage_repository.dart';
+import '../../domain/storage/usecases/upload_image.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/cart/bloc/cart_bloc.dart';
 import '../../presentation/home/bloc/shops_bloc.dart';
@@ -145,6 +149,18 @@ Future<void> initDependencies() async {
       cancelOrder: sl(),
     ),
   );
+
+  // Storage — data (image upload via the Cloudflare Worker + R2). No local
+  // datasource: uploads are write-only, nothing to cache.
+  sl.registerLazySingleton<ImageUploadRemoteDataSource>(
+    () => HttpImageUploadRemoteDataSource(auth: sl()),
+  );
+  sl.registerLazySingleton<StorageRepository>(
+    () => StorageRepositoryImpl(sl(), sl()),
+  );
+
+  // Storage — use case
+  sl.registerLazySingleton(() => UploadImage(sl()));
 
   // Cart — bloc (app lifetime: one basket across the whole session; no
   // repository — nothing to sync until PlaceOrder runs at checkout).

@@ -85,8 +85,14 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       (pending/accepted only), realtime status via Firestore snapshots.
 
 ### Phase 2 — Shop owner core
-- [ ] **S1 — Shop onboarding.** Owner signup flow → create shop profile (name ar/en, logo upload
-      to Storage, address, open/closed toggle).
+- **S1 — Shop onboarding.** Owner signup flow → create shop profile (name ar/en, logo upload,
+      address, open/closed toggle). Storage backend = **Cloudflare R2** via a Worker (app never
+      holds R2 keys). Split:
+  - [x] **S1a — Storage foundation.** `worker/` (Cloudflare Worker verifying Firebase ID token →
+        R2 put) + Flutter `StorageRepository`/`UploadImage`/R2 upload datasource (dart:io, no new
+        dep) + `AppConfig.uploadWorkerBaseUrl` (stubbed till deploy) + tests. Gates green.
+  - [ ] **S1b — Onboarding UI.** Owner signup → shop-profile form → `image_picker` logo → upload
+        via the S1a foundation → save `/shops` doc. Needs Firestore `/shops` owner-write rule.
 - [ ] **S2 — Catalog manager.** Product CRUD, image upload, price (piasters!), stock toggle,
       promo flag.
 - [ ] **S3 — Order desk.** Incoming orders list (realtime), accept/reject, advance status,
