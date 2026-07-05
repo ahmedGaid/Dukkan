@@ -99,7 +99,7 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       daily summary strip.
 
 ### Phase 3 — Polish
-- [ ] **P1 — Favorites + promos + states pass.** Favorite shops/products, promo carousel wired to
+- [x] **P1 — Favorites + promos + states pass.** Favorite shops/products, promo carousel wired to
       real promo flags, full empty/error-state audit.
 - [ ] **P2 — Notifications + settings.** FCM push (order status → customer, new order → owner),
       settings page, dark-mode audit against `logo-dark.png` palette.
