@@ -65,14 +65,6 @@ class _CatalogManagerPageState extends State<CatalogManagerPage> {
         title: Text(
           shop == null ? l10n.appName : (isArabic ? shop.nameAr : shop.name),
         ),
-        actions: [
-          IconButton(
-            tooltip: l10n.actionLogout,
-            icon: const Icon(Icons.logout),
-            onPressed: () =>
-                context.read<AuthBloc>().add(const AuthLogoutRequested()),
-          ),
-        ],
       ),
       floatingActionButton: shop == null
           ? null

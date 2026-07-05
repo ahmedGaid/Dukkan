@@ -208,13 +208,43 @@ class AppLocalizationsAr extends AppLocalizations {
       'أول ما تطلب من دكان، هتلاقي طلبك هنا وتتابعه خطوة بخطوة.';
 
   @override
-  String get moreTitle => 'المزيد';
+  String get settingsTitle => 'الإعدادات';
 
   @override
-  String get moreComingSoonTitle => 'الإعدادات قريب';
+  String get settingsPreferences => 'التفضيلات';
 
   @override
-  String get moreComingSoonBody => 'حسابك وإعداداتك هتكون هنا قريب.';
+  String get settingsLanguage => 'اللغة';
+
+  @override
+  String get settingsLangArabic => 'العربية';
+
+  @override
+  String get settingsLangEnglish => 'English';
+
+  @override
+  String get settingsAppearance => 'المظهر';
+
+  @override
+  String get settingsThemeLight => 'فاتح';
+
+  @override
+  String get settingsThemeDark => 'غامق';
+
+  @override
+  String get settingsThemeSystem => 'تلقائي';
+
+  @override
+  String get settingsAbout => 'عن التطبيق';
+
+  @override
+  String get settingsVersion => 'الإصدار';
+
+  @override
+  String get settingsLogoutConfirmTitle => 'تسجّل خروج؟';
+
+  @override
+  String get settingsLogoutConfirmBody => 'هتحتاج تسجّل دخولك تاني عشان تكمّل.';
 
   @override
   String get categoriesComingSoonTitle => 'تصفّح الأقسام قريب';

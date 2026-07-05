@@ -101,8 +101,13 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
 ### Phase 3 — Polish
 - [x] **P1 — Favorites + promos + states pass.** Favorite shops/products, promo carousel wired to
       real promo flags, full empty/error-state audit.
-- [ ] **P2 — Notifications + settings.** FCM push (order status → customer, new order → owner),
-      settings page, dark-mode audit against `logo-dark.png` palette.
+- **P2 — Notifications + settings.** Split (2026-07-05 — FCM needs new deps + a backend sender
+      / Blaze, and can't be verified without a wired device; settings + dark-mode need none of that):
+  - [x] **P2a — Settings + dark-mode audit.** Settings page (profile, language, theme mode, logout,
+        version) + dark-mode audit against `logo-dark.png` palette. No new deps.
+  - [ ] **P2b — Notifications (FCM).** Push (order status → customer, new order → owner). Adds
+        `firebase_messaging` (+ foreground display). Sender backend TBD (Cloud Function/Blaze vs
+        extend the Cloudflare Worker) — decide at block start.
 - [ ] **P3 — Ratings.** Shop rating after delivered order, average on shop card.
 
 ### Phase 4 — Release

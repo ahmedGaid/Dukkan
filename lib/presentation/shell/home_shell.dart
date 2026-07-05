@@ -4,12 +4,13 @@ import '../../l10n/app_localizations.dart';
 import '../favorites/pages/favorites_page.dart';
 import '../home/pages/customer_home_page.dart';
 import '../orders/pages/orders_page.dart';
+import '../settings/pages/settings_page.dart';
 import '../widgets/common/coming_soon_page.dart';
 
 /// The customer app frame: five bottom-nav destinations over an [IndexedStack]
 /// so each tab keeps its scroll position and state. Home (C2a), Orders (C4),
-/// and Favorites (P1) are the real builds; the rest are designed "coming soon"
-/// until their sessions land (category browse → C2b, settings → later).
+/// Favorites (P1), and Settings (P2a) are the real builds; only category
+/// browse stays a designed "coming soon" until its session lands (C2b).
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
@@ -33,11 +34,7 @@ class _HomeShellState extends State<HomeShell> {
       ),
       const FavoritesPage(),
       const OrdersPage(),
-      ComingSoonPage(
-        icon: Icons.menu_rounded,
-        title: l10n.moreComingSoonTitle,
-        message: l10n.moreComingSoonBody,
-      ),
+      const SettingsPage(),
     ];
 
     return Scaffold(

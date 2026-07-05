@@ -208,14 +208,44 @@ class AppLocalizationsEn extends AppLocalizations {
       'Once you order from a shop, you\'ll track it here step by step.';
 
   @override
-  String get moreTitle => 'More';
+  String get settingsTitle => 'Settings';
 
   @override
-  String get moreComingSoonTitle => 'Settings coming soon';
+  String get settingsPreferences => 'Preferences';
 
   @override
-  String get moreComingSoonBody =>
-      'Your account and settings will live here soon.';
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get settingsLangArabic => 'العربية';
+
+  @override
+  String get settingsLangEnglish => 'English';
+
+  @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsThemeLight => 'Light';
+
+  @override
+  String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsThemeSystem => 'System';
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String get settingsVersion => 'Version';
+
+  @override
+  String get settingsLogoutConfirmTitle => 'Log out?';
+
+  @override
+  String get settingsLogoutConfirmBody =>
+      'You\'ll need to sign in again to continue.';
 
   @override
   String get categoriesComingSoonTitle => 'Browse by category — coming soon';

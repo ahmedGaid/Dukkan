@@ -32,9 +32,9 @@ abstract final class AppTheme {
       secondary: AppColors.awning,
       onSecondary: AppColors.darkBg,
       surface: AppColors.darkSurface,
-      onSurface: Color(0xFFF4F7F5),
+      onSurface: AppColors.darkOnSurface,
       surfaceContainerHighest: AppColors.darkCard,
-      outline: Color(0xFF2A362F),
+      outline: AppColors.darkOutline,
       error: AppColors.error,
       onError: AppColors.darkBg,
     );

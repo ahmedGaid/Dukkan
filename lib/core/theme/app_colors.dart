@@ -23,4 +23,6 @@ abstract final class AppColors {
   static const darkBg = Color(0xFF0A0F0D);
   static const darkSurface = Color(0xFF121A16);
   static const darkCard = Color(0xFF18231D);
+  static const darkOnSurface = Color(0xFFF4F7F5); // near-white text in dark
+  static const darkOutline = Color(0xFF2A362F); // hairlines/borders in dark
 }

@@ -9,6 +9,7 @@ import 'core/di/injector.dart';
 import 'core/l10n/locale_controller.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_controller.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 import 'presentation/auth/bloc/auth_bloc.dart';
@@ -51,23 +52,30 @@ class DukkanApp extends StatelessWidget {
         BlocProvider<CartBloc>.value(value: sl<CartBloc>()),
         BlocProvider<FavoritesBloc>(create: (_) => sl<FavoritesBloc>()),
       ],
-      child: ValueListenableBuilder<Locale>(
-        valueListenable: sl<LocaleController>(),
-        builder: (context, locale, _) {
-          return MaterialApp.router(
-            onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.light(locale),
-            darkTheme: AppTheme.dark(locale),
-            locale: locale,
-            supportedLocales: LocaleController.supportedLocales,
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            routerConfig: sl<AppRouter>().router,
+      child: ValueListenableBuilder<ThemeMode>(
+        valueListenable: sl<ThemeController>(),
+        builder: (context, themeMode, _) {
+          return ValueListenableBuilder<Locale>(
+            valueListenable: sl<LocaleController>(),
+            builder: (context, locale, _) {
+              return MaterialApp.router(
+                onGenerateTitle: (context) =>
+                    AppLocalizations.of(context)!.appName,
+                debugShowCheckedModeBanner: false,
+                theme: AppTheme.light(locale),
+                darkTheme: AppTheme.dark(locale),
+                themeMode: themeMode,
+                locale: locale,
+                supportedLocales: LocaleController.supportedLocales,
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                routerConfig: sl<AppRouter>().router,
+              );
+            },
           );
         },
       ),

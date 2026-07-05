@@ -482,23 +482,83 @@ abstract class AppLocalizations {
   /// **'أول ما تطلب من دكان، هتلاقي طلبك هنا وتتابعه خطوة بخطوة.'**
   String get ordersEmptyBody;
 
-  /// No description provided for @moreTitle.
+  /// No description provided for @settingsTitle.
   ///
   /// In ar, this message translates to:
-  /// **'المزيد'**
-  String get moreTitle;
+  /// **'الإعدادات'**
+  String get settingsTitle;
 
-  /// No description provided for @moreComingSoonTitle.
+  /// No description provided for @settingsPreferences.
   ///
   /// In ar, this message translates to:
-  /// **'الإعدادات قريب'**
-  String get moreComingSoonTitle;
+  /// **'التفضيلات'**
+  String get settingsPreferences;
 
-  /// No description provided for @moreComingSoonBody.
+  /// No description provided for @settingsLanguage.
   ///
   /// In ar, this message translates to:
-  /// **'حسابك وإعداداتك هتكون هنا قريب.'**
-  String get moreComingSoonBody;
+  /// **'اللغة'**
+  String get settingsLanguage;
+
+  /// No description provided for @settingsLangArabic.
+  ///
+  /// In ar, this message translates to:
+  /// **'العربية'**
+  String get settingsLangArabic;
+
+  /// No description provided for @settingsLangEnglish.
+  ///
+  /// In ar, this message translates to:
+  /// **'English'**
+  String get settingsLangEnglish;
+
+  /// No description provided for @settingsAppearance.
+  ///
+  /// In ar, this message translates to:
+  /// **'المظهر'**
+  String get settingsAppearance;
+
+  /// No description provided for @settingsThemeLight.
+  ///
+  /// In ar, this message translates to:
+  /// **'فاتح'**
+  String get settingsThemeLight;
+
+  /// No description provided for @settingsThemeDark.
+  ///
+  /// In ar, this message translates to:
+  /// **'غامق'**
+  String get settingsThemeDark;
+
+  /// No description provided for @settingsThemeSystem.
+  ///
+  /// In ar, this message translates to:
+  /// **'تلقائي'**
+  String get settingsThemeSystem;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In ar, this message translates to:
+  /// **'عن التطبيق'**
+  String get settingsAbout;
+
+  /// No description provided for @settingsVersion.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإصدار'**
+  String get settingsVersion;
+
+  /// No description provided for @settingsLogoutConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجّل خروج؟'**
+  String get settingsLogoutConfirmTitle;
+
+  /// No description provided for @settingsLogoutConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هتحتاج تسجّل دخولك تاني عشان تكمّل.'**
+  String get settingsLogoutConfirmBody;
 
   /// No description provided for @categoriesComingSoonTitle.
   ///

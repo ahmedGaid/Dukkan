@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/auth/datasources/auth_remote_datasource.dart';
 import '../../data/auth/repositories/auth_repository_impl.dart';
@@ -60,6 +61,7 @@ import '../../presentation/shop/bloc/products_bloc.dart';
 import '../l10n/locale_controller.dart';
 import '../network/network_info.dart';
 import '../router/app_router.dart';
+import '../theme/theme_controller.dart';
 
 final sl = GetIt.instance;
 
@@ -69,9 +71,13 @@ final sl = GetIt.instance;
 /// lazy singletons. Everything is lazy, so nothing touches Firebase until first
 /// resolved — tests override `AuthRepository` with a fake before that happens.
 Future<void> initDependencies() async {
-  // Core
+  // Core — prefs loaded once here (async); the locale/theme controllers and
+  // the local cache datasources all read this same instance synchronously.
+  final prefs = await SharedPreferences.getInstance();
+  sl.registerLazySingleton<SharedPreferences>(() => prefs);
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl());
-  sl.registerLazySingleton<LocaleController>(() => LocaleController());
+  sl.registerLazySingleton<LocaleController>(() => LocaleController(sl()));
+  sl.registerLazySingleton<ThemeController>(() => ThemeController(sl()));
 
   // Firebase
   sl.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);

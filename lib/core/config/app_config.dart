@@ -14,6 +14,11 @@
 class AppConfig {
   const AppConfig._();
 
+  /// App version shown on the settings page. Bump this alongside the
+  /// `version:` line in `pubspec.yaml` — there's no `package_info` dependency
+  /// (kept lean), so the two are synced by hand.
+  static const String version = '1.0.0';
+
   static const String _stub = 'https://REPLACE-ME.workers.dev';
 
   static const String uploadWorkerBaseUrl =

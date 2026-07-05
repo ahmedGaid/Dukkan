@@ -6,6 +6,7 @@ import 'package:dukkan/main.dart';
 import 'package:dukkan/presentation/auth/pages/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Signed-out fake so the widget tree never touches Firebase. The real
 /// repository (which subscribes to Firebase on construction) is swapped out
@@ -40,6 +41,9 @@ class _SignedOutAuthRepository implements AuthRepository {
 
 void main() {
   setUp(() async {
+    // initDependencies now loads SharedPreferences (locale/theme controllers);
+    // give it an empty in-memory store so the tree builds signed-out.
+    SharedPreferences.setMockInitialValues({});
     await initDependencies();
     // Override the Firebase-backed repository with a signed-out fake.
     await sl.unregister<AuthRepository>();
