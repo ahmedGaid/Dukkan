@@ -980,6 +980,30 @@ abstract class AppLocalizations {
   /// **'معرفناش نحدّث الطلب دلوقتي — جرّب تاني.'**
   String get orderActionErrorBody;
 
+  /// No description provided for @notifyNewOrderTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب جديد!'**
+  String get notifyNewOrderTitle;
+
+  /// No description provided for @notifyNewOrderBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'وصلك طلب جديد، افتح دكانك وشوفه.'**
+  String get notifyNewOrderBody;
+
+  /// No description provided for @notifyOrderStatusTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث على طلبك'**
+  String get notifyOrderStatusTitle;
+
+  /// No description provided for @notifyOrderStatusBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبك بقى {status}.'**
+  String notifyOrderStatusBody(Object status);
+
   /// No description provided for @shopProductsEmptyTitle.
   ///
   /// In ar, this message translates to:

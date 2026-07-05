@@ -105,9 +105,8 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       / Blaze, and can't be verified without a wired device; settings + dark-mode need none of that):
   - [x] **P2a — Settings + dark-mode audit.** Settings page (profile, language, theme mode, logout,
         version) + dark-mode audit against `logo-dark.png` palette. No new deps.
-  - [ ] **P2b — Notifications (FCM).** Push (order status → customer, new order → owner). Adds
-        `firebase_messaging` (+ foreground display). Sender backend TBD (Cloud Function/Blaze vs
-        extend the Cloudflare Worker) — decide at block start.
+  - [x] **P2b — Notifications (FCM).** Push (order status → customer, new order → owner). Sender
+        backend = the existing Cloudflare Worker, extended with `/notify` (FCM HTTP v1).
 - [x] **P3 — Ratings.** Shop rating after delivered order, average on shop card.
 
 ### Phase 4 — Release

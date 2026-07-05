@@ -459,6 +459,20 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orderActionErrorBody => 'معرفناش نحدّث الطلب دلوقتي — جرّب تاني.';
 
   @override
+  String get notifyNewOrderTitle => 'طلب جديد!';
+
+  @override
+  String get notifyNewOrderBody => 'وصلك طلب جديد، افتح دكانك وشوفه.';
+
+  @override
+  String get notifyOrderStatusTitle => 'تحديث على طلبك';
+
+  @override
+  String notifyOrderStatusBody(Object status) {
+    return 'طلبك بقى $status.';
+  }
+
+  @override
   String get shopProductsEmptyTitle => 'الدكان لسه بيرتّب رفوفه';
 
   @override

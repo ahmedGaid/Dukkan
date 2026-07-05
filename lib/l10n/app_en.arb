@@ -169,6 +169,10 @@
   "orderRejectConfirmTitle": "Reject this order?",
   "orderRejectConfirmBody": "The customer will be notified it was rejected.",
   "orderActionErrorBody": "We couldn't update this order — try again.",
+  "notifyNewOrderTitle": "New order!",
+  "notifyNewOrderBody": "You've got a new order — open your shop to check it out.",
+  "notifyOrderStatusTitle": "Order update",
+  "notifyOrderStatusBody": "Your order is now {status}.",
 
   "shopProductsEmptyTitle": "This shop is still stocking up",
   "shopProductsEmptyBody": "Products will show up here as soon as the shop adds them.",

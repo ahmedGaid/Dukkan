@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/di/injector.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../domain/notifications/repositories/notification_repository.dart';
+import '../../../domain/notifications/usecases/notify_order_event.dart';
 import '../../../domain/order/entities/order.dart';
 import '../../../domain/order/entities/order_status.dart';
 import '../../../domain/order/usecases/update_order_status.dart';
@@ -165,6 +169,7 @@ class _OwnerOrderCardState extends State<_OwnerOrderCard> {
     setState(() => _submitting = true);
     try {
       await sl<UpdateOrderStatus>()(widget.order.id, target);
+      _notifyCustomer(target);
     } catch (_) {
       if (!mounted) return;
       AppSnackBar.error(
@@ -174,6 +179,23 @@ class _OwnerOrderCardState extends State<_OwnerOrderCard> {
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  /// Fire-and-forget push to the customer. Push text is decided at send time
+  /// and we don't track each user's language, so every push is bilingual —
+  /// see `NotificationRemoteDataSource` doc.
+  void _notifyCustomer(OrderStatus target) {
+    final lAr = lookupAppLocalizations(const Locale('ar'));
+    final lEn = lookupAppLocalizations(const Locale('en'));
+    final statusAr = orderStatusView(lAr, target).label;
+    final statusEn = orderStatusView(lEn, target).label;
+    unawaited(sl<NotifyOrderEvent>()(
+      orderId: widget.order.id,
+      type: NotificationEventType.statusUpdate,
+      title: '${lAr.notifyOrderStatusTitle} / ${lEn.notifyOrderStatusTitle}',
+      body: '${lAr.notifyOrderStatusBody(statusAr)} / '
+          '${lEn.notifyOrderStatusBody(statusEn)}',
+    ));
   }
 
   Future<void> _reject() async {

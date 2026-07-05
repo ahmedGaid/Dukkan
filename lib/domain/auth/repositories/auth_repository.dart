@@ -27,4 +27,8 @@ abstract class AuthRepository {
   Future<void> sendPasswordReset(String email);
 
   Future<void> logOut();
+
+  /// Stores this device's FCM token on the signed-in user's `/users` doc
+  /// (P2b) — best-effort, called on every token refresh and auth change.
+  Future<void> saveFcmToken(String uid, String token);
 }

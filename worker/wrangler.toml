@@ -19,3 +19,10 @@ PUBLIC_BASE_URL = "https://REPLACE-WITH-YOUR-R2-PUBLIC-URL"
 
 # CORS. Lock to the app's origin in production; "*" is fine while testing.
 ALLOWED_ORIGIN = "*"
+
+# FIREBASE_SERVICE_ACCOUNT is a SECRET, not a var — it must never sit in this
+# file (committed to git). Set it once via:
+#   npx wrangler secret put FIREBASE_SERVICE_ACCOUNT
+# pasting the full JSON key from Firebase console -> Project settings ->
+# Service accounts -> Generate new private key. Used by POST /notify to mint
+# an access token for Firestore reads + FCM v1 sends. See worker/README.md.

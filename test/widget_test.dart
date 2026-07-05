@@ -37,6 +37,9 @@ class _SignedOutAuthRepository implements AuthRepository {
 
   @override
   Future<void> logOut() async {}
+
+  @override
+  Future<void> saveFcmToken(String uid, String token) async {}
 }
 
 void main() {

@@ -467,6 +467,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'We couldn\'t update this order — try again.';
 
   @override
+  String get notifyNewOrderTitle => 'New order!';
+
+  @override
+  String get notifyNewOrderBody =>
+      'You\'ve got a new order — open your shop to check it out.';
+
+  @override
+  String get notifyOrderStatusTitle => 'Order update';
+
+  @override
+  String notifyOrderStatusBody(Object status) {
+    return 'Your order is now $status.';
+  }
+
+  @override
   String get shopProductsEmptyTitle => 'This shop is still stocking up';
 
   @override

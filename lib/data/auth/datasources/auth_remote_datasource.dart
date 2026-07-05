@@ -107,6 +107,15 @@ class AuthRemoteDataSource {
 
   Future<void> logOut() => _auth.signOut();
 
+  /// Best-effort — a push token write must never surface an error to the UI.
+  Future<void> saveFcmToken(String uid, String token) async {
+    try {
+      await _users.doc(uid).update({'fcmToken': token});
+    } on FirebaseException catch (e) {
+      debugPrint('[Auth] saveFcmToken FirebaseException: ${e.code} — ${e.message}');
+    }
+  }
+
   AuthFailure _mapAuthError(FirebaseAuthException e) {
     final code = switch (e.code) {
       'invalid-credential' ||

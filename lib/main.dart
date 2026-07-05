@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -7,6 +9,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/di/injector.dart';
 import 'core/l10n/locale_controller.dart';
+import 'core/notifications/notification_service.dart';
+import 'core/notifications/root_messenger_key.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
@@ -31,6 +35,7 @@ Future<void> main() async {
         const Settings(webExperimentalForceLongPolling: true);
   }
   await initDependencies();
+  unawaited(sl<NotificationService>().init());
   runApp(const DukkanApp());
 }
 
@@ -59,6 +64,7 @@ class DukkanApp extends StatelessWidget {
             valueListenable: sl<LocaleController>(),
             builder: (context, locale, _) {
               return MaterialApp.router(
+                scaffoldMessengerKey: rootScaffoldMessengerKey,
                 onGenerateTitle: (context) =>
                     AppLocalizations.of(context)!.appName,
                 debugShowCheckedModeBanner: false,

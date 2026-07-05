@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/di/injector.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../domain/notifications/repositories/notification_repository.dart';
+import '../../../domain/notifications/usecases/notify_order_event.dart';
 import '../../../domain/order/entities/address.dart';
 import '../../../domain/order/entities/order_item.dart';
 import '../../../domain/order/usecases/place_order.dart';
@@ -70,6 +74,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           notes: notes.isEmpty ? null : notes,
         ),
       );
+      _notifyShopOwner(order.id);
       if (!mounted) return;
       context.read<CartBloc>().add(const CartCleared());
       context.go('/order-placed', extra: order);
@@ -78,6 +83,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
       setState(() => _submitting = false);
       AppSnackBar.error(context, AppLocalizations.of(context)!.checkoutErrorBody);
     }
+  }
+
+  /// Fire-and-forget push to the shop owner. Push text is decided at send
+  /// time and we don't track each user's language, so every push is
+  /// bilingual — see `NotificationRemoteDataSource` doc.
+  void _notifyShopOwner(String orderId) {
+    final lAr = lookupAppLocalizations(const Locale('ar'));
+    final lEn = lookupAppLocalizations(const Locale('en'));
+    unawaited(sl<NotifyOrderEvent>()(
+      orderId: orderId,
+      type: NotificationEventType.newOrder,
+      title: '${lAr.notifyNewOrderTitle} / ${lEn.notifyNewOrderTitle}',
+      body: '${lAr.notifyNewOrderBody} / ${lEn.notifyNewOrderBody}',
+    ));
   }
 
   @override

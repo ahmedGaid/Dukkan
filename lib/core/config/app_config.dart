@@ -1,16 +1,17 @@
 /// App-wide configuration constants.
 ///
-/// [uploadWorkerBaseUrl] is the Cloudflare Worker that fronts R2 image uploads
-/// (see `worker/` at the repo root). The app never talks to R2 directly — it
-/// POSTs image bytes to this Worker, which verifies the caller's Firebase ID
-/// token and stores the file.
+/// [workerBaseUrl] is the Cloudflare Worker that fronts both image uploads
+/// (R2) and push-notification sends (FCM v1) — see `worker/` at the repo
+/// root. The app never talks to R2 or FCM directly — it POSTs to this
+/// Worker, which verifies the caller's Firebase ID token and does the
+/// trusted work server-side.
 ///
 /// **Stub until the Worker is deployed.** Deploy `worker/` (`wrangler deploy`),
 /// then either paste the printed `*.workers.dev` URL over [_stub] below, or pass
 /// it without editing code:
 ///   `flutter run --dart-define=UPLOAD_WORKER_URL=https://…workers.dev`
-/// Until then [uploadConfigured] is false and the upload layer fails fast with a
-/// clear message instead of hitting a dead host.
+/// Until then [workerConfigured] is false and the upload/notify layers fail
+/// fast (or no-op) with a clear message instead of hitting a dead host.
 class AppConfig {
   const AppConfig._();
 
@@ -21,8 +22,8 @@ class AppConfig {
 
   static const String _stub = 'https://REPLACE-ME.workers.dev';
 
-  static const String uploadWorkerBaseUrl =
+  static const String workerBaseUrl =
       String.fromEnvironment('UPLOAD_WORKER_URL', defaultValue: _stub);
 
-  static bool get uploadConfigured => uploadWorkerBaseUrl != _stub;
+  static bool get workerConfigured => workerBaseUrl != _stub;
 }

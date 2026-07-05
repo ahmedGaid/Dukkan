@@ -178,6 +178,10 @@
   "orderRejectConfirmTitle": "ترفض الطلب؟",
   "orderRejectConfirmBody": "العميل هيوصله إشعار إن الطلب اترفض.",
   "orderActionErrorBody": "معرفناش نحدّث الطلب دلوقتي — جرّب تاني.",
+  "notifyNewOrderTitle": "طلب جديد!",
+  "notifyNewOrderBody": "وصلك طلب جديد، افتح دكانك وشوفه.",
+  "notifyOrderStatusTitle": "تحديث على طلبك",
+  "notifyOrderStatusBody": "طلبك بقى {status}.",
 
   "shopProductsEmptyTitle": "الدكان لسه بيرتّب رفوفه",
   "shopProductsEmptyBody": "المنتجات هتظهر هنا أول ما الدكان يضيفها.",

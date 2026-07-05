@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -7,6 +8,8 @@ import '../../data/auth/datasources/auth_remote_datasource.dart';
 import '../../data/auth/repositories/auth_repository_impl.dart';
 import '../../data/favorites/datasources/favorites_remote_datasource.dart';
 import '../../data/favorites/repositories/favorites_repository_impl.dart';
+import '../../data/notifications/datasources/notification_remote_datasource.dart';
+import '../../data/notifications/repositories/notification_repository_impl.dart';
 import '../../data/order/datasources/order_remote_datasource.dart';
 import '../../data/order/repositories/order_repository_impl.dart';
 import '../../data/product/datasources/product_local_datasource.dart';
@@ -27,6 +30,8 @@ import '../../domain/favorites/repositories/favorites_repository.dart';
 import '../../domain/favorites/usecases/toggle_favorite_product.dart';
 import '../../domain/favorites/usecases/toggle_favorite_shop.dart';
 import '../../domain/favorites/usecases/watch_favorites.dart';
+import '../../domain/notifications/repositories/notification_repository.dart';
+import '../../domain/notifications/usecases/notify_order_event.dart';
 import '../../domain/order/repositories/order_repository.dart';
 import '../../domain/order/usecases/cancel_order.dart';
 import '../../domain/order/usecases/place_order.dart';
@@ -61,6 +66,7 @@ import '../../presentation/search/bloc/search_bloc.dart';
 import '../../presentation/shop/bloc/products_bloc.dart';
 import '../l10n/locale_controller.dart';
 import '../network/network_info.dart';
+import '../notifications/notification_service.dart';
 import '../router/app_router.dart';
 import '../theme/theme_controller.dart';
 
@@ -83,6 +89,7 @@ Future<void> initDependencies() async {
   // Firebase
   sl.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
   sl.registerLazySingleton<FirebaseFirestore>(() => FirebaseFirestore.instance);
+  sl.registerLazySingleton<FirebaseMessaging>(() => FirebaseMessaging.instance);
 
   // Auth — data
   sl.registerLazySingleton<AuthRemoteDataSource>(
@@ -198,6 +205,19 @@ Future<void> initDependencies() async {
   // Storage — use case
   sl.registerLazySingleton(() => UploadImage(sl()));
 
+  // Notifications — data (best-effort push trigger via the same Worker as
+  // Storage; the Worker owns FCM auth/authorization — see
+  // worker/src/index.js). No local datasource: nothing to cache.
+  sl.registerLazySingleton<NotificationRemoteDataSource>(
+    () => HttpNotificationRemoteDataSource(auth: sl()),
+  );
+  sl.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(sl()),
+  );
+
+  // Notifications — use case
+  sl.registerLazySingleton(() => NotifyOrderEvent(sl()));
+
   // Cart — bloc (app lifetime: one basket across the whole session; no
   // repository — nothing to sync until PlaceOrder runs at checkout).
   sl.registerLazySingleton(() => CartBloc());
@@ -226,4 +246,15 @@ Future<void> initDependencies() async {
 
   // Router (reads AuthBloc)
   sl.registerLazySingleton(() => AppRouter(sl()));
+
+  // Notifications — service (app lifetime: permission + token lifecycle +
+  // foreground display + tap-to-navigate; started once from `main.dart`).
+  sl.registerLazySingleton(
+    () => NotificationService(
+      messaging: sl(),
+      authRepository: sl(),
+      authBloc: sl(),
+      appRouter: sl(),
+    ),
+  );
 }

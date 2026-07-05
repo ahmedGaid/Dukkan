@@ -30,7 +30,7 @@ class HttpImageUploadRemoteDataSource implements ImageUploadRemoteDataSource {
     required String contentType,
     required String folder,
   }) async {
-    if (!AppConfig.uploadConfigured) {
+    if (!AppConfig.workerConfigured) {
       throw const ServerFailure('Upload Worker URL not configured');
     }
     final user = _auth.currentUser;
@@ -38,7 +38,7 @@ class HttpImageUploadRemoteDataSource implements ImageUploadRemoteDataSource {
     final token = await user.getIdToken();
     if (token == null) throw const ServerFailure('No auth token');
 
-    final uri = Uri.parse('${AppConfig.uploadWorkerBaseUrl}/upload')
+    final uri = Uri.parse('${AppConfig.workerBaseUrl}/upload')
         .replace(queryParameters: {'folder': folder});
 
     // dart:io HttpClient (matches `NetworkInfoImpl`; no new dependency). This
