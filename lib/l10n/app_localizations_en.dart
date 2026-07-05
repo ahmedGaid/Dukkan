@@ -124,10 +124,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeCustomerPlaceholder => 'Your shops will appear here soon.';
 
   @override
-  String get homeOwnerPlaceholder =>
-      'Your shop dashboard will appear here soon.';
-
-  @override
   String get navHome => 'Home';
 
   @override
@@ -445,6 +441,75 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get shopOnboardingLogoErrorBody =>
       'We couldn\'t upload the logo — try again.';
+
+  @override
+  String get catalogEmptyTitle => 'No products yet';
+
+  @override
+  String get catalogEmptyBody =>
+      'Add your first product and it\'ll show up here.';
+
+  @override
+  String get catalogErrorBody =>
+      'We can\'t load your catalog right now — try again.';
+
+  @override
+  String get actionAddProduct => 'Add product';
+
+  @override
+  String get addProductTitle => 'Add product';
+
+  @override
+  String get editProductTitle => 'Edit product';
+
+  @override
+  String get fieldProductName => 'Product name (English)';
+
+  @override
+  String get fieldProductNameAr => 'Product name (Arabic)';
+
+  @override
+  String get fieldProductCategory => 'Category';
+
+  @override
+  String get fieldProductPrice => 'Price (EGP)';
+
+  @override
+  String get fieldProductStock => 'Stock';
+
+  @override
+  String get fieldProductPromoLabel => 'Mark as an offer';
+
+  @override
+  String get productImageLabel => 'Product photo';
+
+  @override
+  String get actionSave => 'Save';
+
+  @override
+  String get productFormErrorBody =>
+      'We couldn\'t save this product — try again.';
+
+  @override
+  String get productImageErrorBody =>
+      'We couldn\'t upload the photo — try again.';
+
+  @override
+  String get validatePriceInvalid => 'Enter a valid price';
+
+  @override
+  String get productDeleteConfirmTitle => 'Delete this product?';
+
+  @override
+  String get productDeleteConfirmBody =>
+      'It\'ll be removed from your shop right away.';
+
+  @override
+  String get actionDelete => 'Delete';
+
+  @override
+  String get productDeleteErrorBody =>
+      'We couldn\'t delete this product — try again.';
 
   @override
   String get promo1Title => 'Welcome to Dukkan';

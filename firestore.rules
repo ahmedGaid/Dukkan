@@ -46,9 +46,24 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Catalog products (S2): only the owner of the product's own shop can
+    // create/update/delete it, and a product can't be reassigned to another
+    // shop after creation.
     match /products/{productId} {
+      function ownsShop(shopId) {
+        return isSignedIn() &&
+          get(/databases/$(database)/documents/shops/$(shopId)).data.ownerUid
+            == request.auth.uid;
+      }
+
       allow read: if true;
-      allow write: if isSignedIn();
+
+      allow create: if ownsShop(request.resource.data.shopId);
+
+      allow update: if ownsShop(resource.data.shopId)
+        && request.resource.data.shopId == resource.data.shopId;
+
+      allow delete: if ownsShop(resource.data.shopId);
     }
 
     // A customer owns their own orders; a shop owner can read orders placed

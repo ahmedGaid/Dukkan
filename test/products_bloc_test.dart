@@ -50,6 +50,25 @@ class _FakeProductRepository implements ProductRepository {
   @override
   Future<Product> getProduct(String productId) =>
       throw UnimplementedError();
+
+  @override
+  Future<Product> createProduct({
+    required String shopId,
+    required String name,
+    required String nameAr,
+    required int priceMinor,
+    required String category,
+    required StockStatus stockStatus,
+    required bool isPromo,
+    String? imageUrl,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> updateProduct(Product product) => throw UnimplementedError();
+
+  @override
+  Future<void> deleteProduct(String productId) => throw UnimplementedError();
 }
 
 Shop _shop(String id) => Shop(

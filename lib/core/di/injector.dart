@@ -26,7 +26,10 @@ import '../../domain/order/usecases/place_order.dart';
 import '../../domain/order/usecases/watch_customer_orders.dart';
 import '../../domain/order/usecases/watch_order.dart';
 import '../../domain/product/repositories/product_repository.dart';
+import '../../domain/product/usecases/create_product.dart';
+import '../../domain/product/usecases/delete_product.dart';
 import '../../domain/product/usecases/get_product.dart';
+import '../../domain/product/usecases/update_product.dart';
 import '../../domain/product/usecases/watch_all_products.dart';
 import '../../domain/product/usecases/watch_products_by_shop.dart';
 import '../../domain/shop/repositories/shop_repository.dart';
@@ -114,6 +117,9 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => WatchProductsByShop(sl()));
   sl.registerLazySingleton(() => WatchAllProducts(sl()));
   sl.registerLazySingleton(() => GetProduct(sl()));
+  sl.registerLazySingleton(() => CreateProduct(sl()));
+  sl.registerLazySingleton(() => UpdateProduct(sl()));
+  sl.registerLazySingleton(() => DeleteProduct(sl()));
 
   // Product — bloc (page-scoped: one shop's catalog per shop-page open; the
   // shop id is the factory param).

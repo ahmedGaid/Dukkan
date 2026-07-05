@@ -10,9 +10,8 @@ import '../../../domain/shop/entities/shop.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/common/cart_icon_button.dart';
 import '../../widgets/common/empty_state.dart';
-import '../../widgets/common/shimmer_image.dart';
+import '../../widgets/common/shop_header.dart';
 import '../../widgets/common/skeletons.dart';
-import '../../widgets/common/status_chip.dart';
 import '../bloc/products_bloc.dart';
 import '../widgets/product_card.dart';
 
@@ -94,7 +93,7 @@ class _ShopContent extends StatelessWidget {
           AppSpacing.xl,
         ),
         children: [
-          if (shop != null) _ShopHeader(shop: shop),
+          if (shop != null) ShopHeader(shop: shop),
           if (state.categories.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.lg),
             _CategoryFilterRow(
@@ -116,72 +115,6 @@ class _ShopContent extends StatelessWidget {
             _ProductGrid(products: products, shopId: shopId),
         ],
       ),
-    );
-  }
-}
-
-class _ShopHeader extends StatelessWidget {
-  const _ShopHeader({required this.shop});
-
-  final Shop shop;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final text = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
-    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
-    final name = isArabic ? shop.nameAr : shop.name;
-
-    return Row(
-      children: [
-        ShimmerImage(
-          url: shop.logoUrl,
-          width: 72,
-          height: 72,
-          radius: AppRadius.lgAll,
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: text.titleLarge,
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Row(
-                children: [
-                  Icon(
-                    Icons.location_on_outlined,
-                    size: 15,
-                    color: scheme.onSurface.withValues(alpha: 0.5),
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Expanded(
-                    child: Text(
-                      shop.address,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: text.bodySmall?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              StatusChip(
-                label: shop.isOpen ? l10n.shopOpen : l10n.shopClosed,
-                tone: shop.isOpen ? StatusTone.positive : StatusTone.caution,
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

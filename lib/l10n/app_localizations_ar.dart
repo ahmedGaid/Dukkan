@@ -124,9 +124,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get homeCustomerPlaceholder => 'دكاكينك هتظهر هنا قريب.';
 
   @override
-  String get homeOwnerPlaceholder => 'لوحة دكانك هتظهر هنا قريب.';
-
-  @override
   String get navHome => 'الرئيسية';
 
   @override
@@ -436,6 +433,69 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get shopOnboardingLogoErrorBody =>
       'مش قادرين نرفع الصورة — جرّب تاني.';
+
+  @override
+  String get catalogEmptyTitle => 'لسه مفيش منتجات';
+
+  @override
+  String get catalogEmptyBody => 'ضيف أول منتج، وهيظهر هنا على طول.';
+
+  @override
+  String get catalogErrorBody => 'مش قادرين نجيب كتالوجك دلوقتي — جرّب تاني.';
+
+  @override
+  String get actionAddProduct => 'أضف منتج';
+
+  @override
+  String get addProductTitle => 'أضف منتج';
+
+  @override
+  String get editProductTitle => 'تعديل المنتج';
+
+  @override
+  String get fieldProductName => 'اسم المنتج (إنجليزي)';
+
+  @override
+  String get fieldProductNameAr => 'اسم المنتج (عربي)';
+
+  @override
+  String get fieldProductCategory => 'القسم';
+
+  @override
+  String get fieldProductPrice => 'السعر (جنيه)';
+
+  @override
+  String get fieldProductStock => 'المخزون';
+
+  @override
+  String get fieldProductPromoLabel => 'خليه عرض';
+
+  @override
+  String get productImageLabel => 'صورة المنتج';
+
+  @override
+  String get actionSave => 'احفظ';
+
+  @override
+  String get productFormErrorBody => 'مش قادرين نحفظ المنتج — جرّب تاني.';
+
+  @override
+  String get productImageErrorBody => 'مش قادرين نرفع الصورة — جرّب تاني.';
+
+  @override
+  String get validatePriceInvalid => 'اكتب سعر صحيح';
+
+  @override
+  String get productDeleteConfirmTitle => 'تحذف المنتج ده؟';
+
+  @override
+  String get productDeleteConfirmBody => 'هيتشال من دكانك على طول.';
+
+  @override
+  String get actionDelete => 'احذف';
+
+  @override
+  String get productDeleteErrorBody => 'مش قادرين نحذف المنتج — جرّب تاني.';
 
   @override
   String get promo1Title => 'أهلاً بيك في دكان';

@@ -36,4 +36,25 @@ class ProductRemoteDataSource {
     }
     return ProductModel.fromFirestore(doc.id, data);
   }
+
+  Future<ProductModel> createProduct(ProductModel product) async {
+    final doc = await _products.add(product.toFirestore());
+    return ProductModel(
+      id: doc.id,
+      shopId: product.shopId,
+      name: product.name,
+      nameAr: product.nameAr,
+      imageUrl: product.imageUrl,
+      priceMinor: product.priceMinor,
+      category: product.category,
+      stockStatus: product.stockStatus,
+      isPromo: product.isPromo,
+    );
+  }
+
+  Future<void> updateProduct(ProductModel product) =>
+      _products.doc(product.id).update(product.toFirestore());
+
+  Future<void> deleteProduct(String productId) =>
+      _products.doc(productId).delete();
 }

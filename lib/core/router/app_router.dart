@@ -13,6 +13,7 @@ import '../../domain/order/entities/order.dart';
 import '../../domain/product/entities/product.dart';
 import '../../domain/shop/usecases/get_shop_by_owner.dart';
 import '../../presentation/home/pages/home_page.dart';
+import '../../presentation/catalog/pages/product_form_page.dart';
 import '../../presentation/orders/pages/order_detail_page.dart';
 import '../../presentation/search/pages/search_page.dart';
 import '../../presentation/shop/pages/product_detail_page.dart';
@@ -57,6 +58,13 @@ class AppRouter {
       GoRoute(
         path: '/shop-onboarding',
         builder: (context, state) => const ShopOnboardingPage(),
+      ),
+      GoRoute(
+        path: '/catalog/product-form',
+        builder: (context, state) {
+          final args = state.extra as ProductFormArgs;
+          return ProductFormPage(shopId: args.shopId, product: args.product);
+        },
       ),
       GoRoute(
         path: '/shop/:id',

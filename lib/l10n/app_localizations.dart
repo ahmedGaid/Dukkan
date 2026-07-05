@@ -320,12 +320,6 @@ abstract class AppLocalizations {
   /// **'دكاكينك هتظهر هنا قريب.'**
   String get homeCustomerPlaceholder;
 
-  /// No description provided for @homeOwnerPlaceholder.
-  ///
-  /// In ar, this message translates to:
-  /// **'لوحة دكانك هتظهر هنا قريب.'**
-  String get homeOwnerPlaceholder;
-
   /// No description provided for @navHome.
   ///
   /// In ar, this message translates to:
@@ -931,6 +925,132 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'مش قادرين نرفع الصورة — جرّب تاني.'**
   String get shopOnboardingLogoErrorBody;
+
+  /// No description provided for @catalogEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش منتجات'**
+  String get catalogEmptyTitle;
+
+  /// No description provided for @catalogEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'ضيف أول منتج، وهيظهر هنا على طول.'**
+  String get catalogEmptyBody;
+
+  /// No description provided for @catalogErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نجيب كتالوجك دلوقتي — جرّب تاني.'**
+  String get catalogErrorBody;
+
+  /// No description provided for @actionAddProduct.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف منتج'**
+  String get actionAddProduct;
+
+  /// No description provided for @addProductTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف منتج'**
+  String get addProductTitle;
+
+  /// No description provided for @editProductTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل المنتج'**
+  String get editProductTitle;
+
+  /// No description provided for @fieldProductName.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم المنتج (إنجليزي)'**
+  String get fieldProductName;
+
+  /// No description provided for @fieldProductNameAr.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم المنتج (عربي)'**
+  String get fieldProductNameAr;
+
+  /// No description provided for @fieldProductCategory.
+  ///
+  /// In ar, this message translates to:
+  /// **'القسم'**
+  String get fieldProductCategory;
+
+  /// No description provided for @fieldProductPrice.
+  ///
+  /// In ar, this message translates to:
+  /// **'السعر (جنيه)'**
+  String get fieldProductPrice;
+
+  /// No description provided for @fieldProductStock.
+  ///
+  /// In ar, this message translates to:
+  /// **'المخزون'**
+  String get fieldProductStock;
+
+  /// No description provided for @fieldProductPromoLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'خليه عرض'**
+  String get fieldProductPromoLabel;
+
+  /// No description provided for @productImageLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'صورة المنتج'**
+  String get productImageLabel;
+
+  /// No description provided for @actionSave.
+  ///
+  /// In ar, this message translates to:
+  /// **'احفظ'**
+  String get actionSave;
+
+  /// No description provided for @productFormErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نحفظ المنتج — جرّب تاني.'**
+  String get productFormErrorBody;
+
+  /// No description provided for @productImageErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نرفع الصورة — جرّب تاني.'**
+  String get productImageErrorBody;
+
+  /// No description provided for @validatePriceInvalid.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب سعر صحيح'**
+  String get validatePriceInvalid;
+
+  /// No description provided for @productDeleteConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحذف المنتج ده؟'**
+  String get productDeleteConfirmTitle;
+
+  /// No description provided for @productDeleteConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيتشال من دكانك على طول.'**
+  String get productDeleteConfirmBody;
+
+  /// No description provided for @actionDelete.
+  ///
+  /// In ar, this message translates to:
+  /// **'احذف'**
+  String get actionDelete;
+
+  /// No description provided for @productDeleteErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نحذف المنتج — جرّب تاني.'**
+  String get productDeleteErrorBody;
 
   /// No description provided for @promo1Title.
   ///
