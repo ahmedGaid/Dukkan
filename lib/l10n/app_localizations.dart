@@ -446,6 +446,30 @@ abstract class AppLocalizations {
   /// **'دوس على القلب في أي دكان أو منتج بتحبه، وهيتحفظ هنا.'**
   String get favoritesEmptyBody;
 
+  /// No description provided for @favoriteActionErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نحفظها — جرّب تاني.'**
+  String get favoriteActionErrorBody;
+
+  /// No description provided for @favoritesSectionShops.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدكاكين'**
+  String get favoritesSectionShops;
+
+  /// No description provided for @favoritesSectionProducts.
+  ///
+  /// In ar, this message translates to:
+  /// **'المنتجات'**
+  String get favoritesSectionProducts;
+
+  /// No description provided for @favoritesErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نجيب مفضلاتك دلوقتي — جرّب تاني.'**
+  String get favoritesErrorBody;
+
   /// No description provided for @ordersEmptyTitle.
   ///
   /// In ar, this message translates to:
@@ -1141,42 +1165,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'مش قادرين نحذف المنتج — جرّب تاني.'**
   String get productDeleteErrorBody;
-
-  /// No description provided for @promo1Title.
-  ///
-  /// In ar, this message translates to:
-  /// **'أهلاً بيك في دكان'**
-  String get promo1Title;
-
-  /// No description provided for @promo1Body.
-  ///
-  /// In ar, this message translates to:
-  /// **'دكاكين حيّك، في جيبك.'**
-  String get promo1Body;
-
-  /// No description provided for @promo2Title.
-  ///
-  /// In ar, this message translates to:
-  /// **'توصيل من دكانك'**
-  String get promo2Title;
-
-  /// No description provided for @promo2Body.
-  ///
-  /// In ar, this message translates to:
-  /// **'اطلب اللي محتاجه، وهو ييجي لحد باب البيت.'**
-  String get promo2Body;
-
-  /// No description provided for @promo3Title.
-  ///
-  /// In ar, this message translates to:
-  /// **'أسعار حيّك'**
-  String get promo3Title;
-
-  /// No description provided for @promo3Body.
-  ///
-  /// In ar, this message translates to:
-  /// **'نفس أسعار الدكان اللي تحت بيتك، بالظبط.'**
-  String get promo3Body;
 }
 
 class _AppLocalizationsDelegate

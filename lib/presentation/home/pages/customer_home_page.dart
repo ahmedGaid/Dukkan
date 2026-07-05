@@ -139,23 +139,6 @@ class _HomeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final bloc = context.read<ShopsBloc>();
-    final banners = [
-      PromoBanner(
-        title: l10n.promo1Title,
-        body: l10n.promo1Body,
-        icon: Icons.storefront_outlined,
-      ),
-      PromoBanner(
-        title: l10n.promo2Title,
-        body: l10n.promo2Body,
-        icon: Icons.delivery_dining_outlined,
-      ),
-      PromoBanner(
-        title: l10n.promo3Title,
-        body: l10n.promo3Body,
-        icon: Icons.sell_outlined,
-      ),
-    ];
     final shops = state.visibleShops;
 
     return RefreshIndicator(
@@ -168,7 +151,14 @@ class _HomeContent extends StatelessWidget {
           AppSpacing.xl,
         ),
         children: [
-          PromoCarousel(banners: banners),
+          if (state.promoProducts.isNotEmpty)
+            PromoCarousel(
+              products: state.promoProducts,
+              onTap: (product) => context.push(
+                '/shop/${product.shopId}/product/${product.id}',
+                extra: product,
+              ),
+            ),
           if (state.categories.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.lg),
             _SectionTitle(l10n.sectionCategories),

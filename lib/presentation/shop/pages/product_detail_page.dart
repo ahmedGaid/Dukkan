@@ -11,9 +11,12 @@ import '../../../domain/product/usecases/get_product.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../cart/bloc/cart_bloc.dart';
 import '../../cart/cart_actions.dart';
+import '../../favorites/bloc/favorites_bloc.dart';
+import '../../favorites/favorite_actions.dart';
 import '../../widgets/common/app_snackbar.dart';
 import '../../widgets/common/cart_icon_button.dart';
 import '../../widgets/common/empty_state.dart';
+import '../../widgets/common/favorite_button.dart';
 import '../../widgets/common/price_tag.dart';
 import '../../widgets/common/quantity_stepper.dart';
 import '../../widgets/common/shimmer.dart';
@@ -90,7 +93,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
-        actions: const [CartIconButton()],
+        actions: [
+          if (product != null)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 4),
+              child: BlocSelector<FavoritesBloc, FavoritesState, bool>(
+                selector: (state) => state.isProductFavorite(product.id),
+                builder: (context, isFavorite) => FavoriteButton(
+                  isFavorite: isFavorite,
+                  onTap: () => toggleFavoriteProduct(context, product.id),
+                ),
+              ),
+            ),
+          const CartIconButton(),
+        ],
       ),
       body: Builder(
         builder: (context) {

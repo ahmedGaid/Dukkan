@@ -82,6 +82,10 @@
 
   "favoritesEmptyTitle": "لسه مفيش مفضلة",
   "favoritesEmptyBody": "دوس على القلب في أي دكان أو منتج بتحبه، وهيتحفظ هنا.",
+  "favoriteActionErrorBody": "معرفناش نحفظها — جرّب تاني.",
+  "favoritesSectionShops": "الدكاكين",
+  "favoritesSectionProducts": "المنتجات",
+  "favoritesErrorBody": "معرفناش نجيب مفضلاتك دلوقتي — جرّب تاني.",
   "ordersEmptyTitle": "لسه مفيش طلبات",
   "ordersEmptyBody": "أول ما تطلب من دكان، هتلاقي طلبك هنا وتتابعه خطوة بخطوة.",
   "moreTitle": "المزيد",
@@ -208,12 +212,5 @@
   "productDeleteConfirmTitle": "تحذف المنتج ده؟",
   "productDeleteConfirmBody": "هيتشال من دكانك على طول.",
   "actionDelete": "احذف",
-  "productDeleteErrorBody": "مش قادرين نحذف المنتج — جرّب تاني.",
-
-  "promo1Title": "أهلاً بيك في دكان",
-  "promo1Body": "دكاكين حيّك، في جيبك.",
-  "promo2Title": "توصيل من دكانك",
-  "promo2Body": "اطلب اللي محتاجه، وهو ييجي لحد باب البيت.",
-  "promo3Title": "أسعار حيّك",
-  "promo3Body": "نفس أسعار الدكان اللي تحت بيتك، بالظبط."
+  "productDeleteErrorBody": "مش قادرين نحذف المنتج — جرّب تاني."
 }

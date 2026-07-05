@@ -8,6 +8,7 @@ class ShopsState extends Equatable {
     this.shops = const [],
     this.categories = const [],
     this.selectedCategory,
+    this.promoProducts = const [],
   });
 
   final ShopsStatus status;
@@ -17,6 +18,10 @@ class ShopsState extends Equatable {
 
   /// Union of shop categories, drives the category grid.
   final List<String> categories;
+
+  /// Up to 8 real `isPromo` products across every shop — feeds the promo
+  /// carousel (P1). Empty hides the carousel entirely (no bare placeholder).
+  final List<Product> promoProducts;
 
   /// Active category filter, or null for "all".
   final String? selectedCategory;
@@ -35,6 +40,7 @@ class ShopsState extends Equatable {
     List<String>? categories,
     String? selectedCategory,
     bool clearCategory = false,
+    List<Product>? promoProducts,
   }) {
     return ShopsState(
       status: status ?? this.status,
@@ -42,9 +48,11 @@ class ShopsState extends Equatable {
       categories: categories ?? this.categories,
       selectedCategory:
           clearCategory ? null : (selectedCategory ?? this.selectedCategory),
+      promoProducts: promoProducts ?? this.promoProducts,
     );
   }
 
   @override
-  List<Object?> get props => [status, shops, categories, selectedCategory];
+  List<Object?> get props =>
+      [status, shops, categories, selectedCategory, promoProducts];
 }

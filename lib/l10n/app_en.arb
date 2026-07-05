@@ -73,6 +73,10 @@
 
   "favoritesEmptyTitle": "No favorites yet",
   "favoritesEmptyBody": "Tap the heart on any shop or product you love — it'll be saved here.",
+  "favoriteActionErrorBody": "We couldn't save that — try again.",
+  "favoritesSectionShops": "Shops",
+  "favoritesSectionProducts": "Products",
+  "favoritesErrorBody": "We can't load your favorites right now — try again.",
   "ordersEmptyTitle": "No orders yet",
   "ordersEmptyBody": "Once you order from a shop, you'll track it here step by step.",
   "moreTitle": "More",
@@ -199,12 +203,5 @@
   "productDeleteConfirmTitle": "Delete this product?",
   "productDeleteConfirmBody": "It'll be removed from your shop right away.",
   "actionDelete": "Delete",
-  "productDeleteErrorBody": "We couldn't delete this product — try again.",
-
-  "promo1Title": "Welcome to Dukkan",
-  "promo1Body": "Your neighborhood shops, in your pocket.",
-  "promo2Title": "Delivery from your shop",
-  "promo2Body": "Order what you need — it comes to your door.",
-  "promo3Title": "Neighborhood prices",
-  "promo3Body": "The same prices as the shop downstairs, exactly."
+  "productDeleteErrorBody": "We couldn't delete this product — try again."
 }

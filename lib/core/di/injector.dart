@@ -4,6 +4,8 @@ import 'package:get_it/get_it.dart';
 
 import '../../data/auth/datasources/auth_remote_datasource.dart';
 import '../../data/auth/repositories/auth_repository_impl.dart';
+import '../../data/favorites/datasources/favorites_remote_datasource.dart';
+import '../../data/favorites/repositories/favorites_repository_impl.dart';
 import '../../data/order/datasources/order_remote_datasource.dart';
 import '../../data/order/repositories/order_repository_impl.dart';
 import '../../data/product/datasources/product_local_datasource.dart';
@@ -20,6 +22,10 @@ import '../../domain/auth/usecases/log_out.dart';
 import '../../domain/auth/usecases/send_password_reset.dart';
 import '../../domain/auth/usecases/sign_up.dart';
 import '../../domain/auth/usecases/watch_auth_state.dart';
+import '../../domain/favorites/repositories/favorites_repository.dart';
+import '../../domain/favorites/usecases/toggle_favorite_product.dart';
+import '../../domain/favorites/usecases/toggle_favorite_shop.dart';
+import '../../domain/favorites/usecases/watch_favorites.dart';
 import '../../domain/order/repositories/order_repository.dart';
 import '../../domain/order/usecases/cancel_order.dart';
 import '../../domain/order/usecases/place_order.dart';
@@ -43,6 +49,8 @@ import '../../domain/storage/repositories/storage_repository.dart';
 import '../../domain/storage/usecases/upload_image.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/cart/bloc/cart_bloc.dart';
+import '../../presentation/favorites/bloc/favorites_bloc.dart';
+import '../../presentation/favorites/bloc/favorites_page_bloc.dart';
 import '../../presentation/home/bloc/shops_bloc.dart';
 import '../../presentation/orders/bloc/order_detail_bloc.dart';
 import '../../presentation/orders/bloc/orders_bloc.dart';
@@ -106,8 +114,9 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => GetShopByOwner(sl()));
   sl.registerLazySingleton(() => CreateShop(sl()));
 
-  // Shop — bloc (page-scoped: a fresh subscription per Home open)
-  sl.registerFactory(() => ShopsBloc(watchShops: sl()));
+  // Shop — bloc (page-scoped: a fresh subscription per Home open; also feeds
+  // the promo carousel from WatchAllProducts, see ShopsBloc doc)
+  sl.registerFactory(() => ShopsBloc(watchShops: sl(), watchAllProducts: sl()));
 
   // Product — data
   sl.registerLazySingleton(() => ProductRemoteDataSource(firestore: sl()));
@@ -183,6 +192,28 @@ Future<void> initDependencies() async {
   // Cart — bloc (app lifetime: one basket across the whole session; no
   // repository — nothing to sync until PlaceOrder runs at checkout).
   sl.registerLazySingleton(() => CartBloc());
+
+  // Favorites — data
+  sl.registerLazySingleton(() => FavoritesRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<FavoritesRepository>(
+    () => FavoritesRepositoryImpl(sl(), sl()),
+  );
+
+  // Favorites — use cases
+  sl.registerLazySingleton(() => WatchFavorites(sl()));
+  sl.registerLazySingleton(() => ToggleFavoriteShop(sl()));
+  sl.registerLazySingleton(() => ToggleFavoriteProduct(sl()));
+
+  // Favorites — bloc (app lifetime: one heart-state feed across Home/Shop/
+  // Search/ProductDetail/Favorites-tab; re-subscribes on every uid change,
+  // mirroring how AuthBloc drives the router).
+  sl.registerLazySingleton(() => FavoritesBloc(authBloc: sl(), watchFavorites: sl()));
+
+  // Favorites — page bloc (tab-scoped: combines the id feed above with the
+  // existing shops/products feeds, mirroring how SearchBloc combines them).
+  sl.registerFactory(
+    () => FavoritesPageBloc(favoritesBloc: sl(), watchShops: sl(), watchAllProducts: sl()),
+  );
 
   // Router (reads AuthBloc)
   sl.registerLazySingleton(() => AppRouter(sl()));

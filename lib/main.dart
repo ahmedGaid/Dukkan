@@ -13,6 +13,7 @@ import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 import 'presentation/auth/bloc/auth_bloc.dart';
 import 'presentation/cart/bloc/cart_bloc.dart';
+import 'presentation/favorites/bloc/favorites_bloc.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,13 +38,18 @@ class DukkanApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // AuthBloc first (router listens to it) and provided above the router so
-    // every routed page can read it. CartBloc is also app-lifetime — one
-    // basket across Home/Shop/Search/Cart/Checkout.
+    // AuthBloc first (router listens to it, FavoritesBloc watches it) and
+    // provided above the router so every routed page can read it. CartBloc
+    // and FavoritesBloc are also app-lifetime — one basket / one heart-state
+    // feed across Home/Shop/Search/Cart/Checkout/Favorites. FavoritesBloc
+    // uses the default lazy `create` (not `.value`) so its Firestore-backed
+    // usecase isn't resolved until first read — never touched while signed
+    // out, matching the DI convention below.
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>.value(value: sl<AuthBloc>()),
         BlocProvider<CartBloc>.value(value: sl<CartBloc>()),
+        BlocProvider<FavoritesBloc>(create: (_) => sl<FavoritesBloc>()),
       ],
       child: ValueListenableBuilder<Locale>(
         valueListenable: sl<LocaleController>(),

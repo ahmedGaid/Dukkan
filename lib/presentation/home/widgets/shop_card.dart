@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../domain/shop/entities/shop.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../favorites/bloc/favorites_bloc.dart';
+import '../../favorites/favorite_actions.dart';
 import '../../widgets/common/app_card.dart';
+import '../../widgets/common/favorite_button.dart';
 import '../../widgets/common/shimmer_image.dart';
 import '../../widgets/common/status_chip.dart';
 
@@ -67,6 +71,13 @@ class ShopCard extends StatelessWidget {
                   tone: shop.isOpen ? StatusTone.positive : StatusTone.caution,
                 ),
               ],
+            ),
+          ),
+          BlocSelector<FavoritesBloc, FavoritesState, bool>(
+            selector: (state) => state.isShopFavorite(shop.id),
+            builder: (context, isFavorite) => FavoriteButton(
+              isFavorite: isFavorite,
+              onTap: () => toggleFavoriteShop(context, shop.id),
             ),
           ),
         ],

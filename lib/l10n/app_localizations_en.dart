@@ -188,6 +188,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap the heart on any shop or product you love — it\'ll be saved here.';
 
   @override
+  String get favoriteActionErrorBody => 'We couldn\'t save that — try again.';
+
+  @override
+  String get favoritesSectionShops => 'Shops';
+
+  @override
+  String get favoritesSectionProducts => 'Products';
+
+  @override
+  String get favoritesErrorBody =>
+      'We can\'t load your favorites right now — try again.';
+
+  @override
   String get ordersEmptyTitle => 'No orders yet';
 
   @override
@@ -559,22 +572,4 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get productDeleteErrorBody =>
       'We couldn\'t delete this product — try again.';
-
-  @override
-  String get promo1Title => 'Welcome to Dukkan';
-
-  @override
-  String get promo1Body => 'Your neighborhood shops, in your pocket.';
-
-  @override
-  String get promo2Title => 'Delivery from your shop';
-
-  @override
-  String get promo2Body => 'Order what you need — it comes to your door.';
-
-  @override
-  String get promo3Title => 'Neighborhood prices';
-
-  @override
-  String get promo3Body => 'The same prices as the shop downstairs, exactly.';
 }

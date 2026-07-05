@@ -5,28 +5,19 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../domain/product/entities/product.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../widgets/common/price_tag.dart';
+import '../../widgets/common/shimmer_image.dart';
 
-/// One promo banner's content. In C2a these are brand welcome messages; P1
-/// wires the carousel to real `isPromo` product flags.
-class PromoBanner {
-  const PromoBanner({
-    required this.title,
-    required this.body,
-    required this.icon,
-  });
-
-  final String title;
-  final String body;
-  final IconData icon;
-}
-
-/// Calm mint banners with a dot indicator. Auto-advances gently unless
-/// reduced-motion is on (then it's swipe-only). One brand green — never the
-/// loud red ribbons of the reference app.
+/// Calm mint-gradient-scrimmed banners with a dot indicator, one real
+/// `isPromo` product each (P1 — replaces the static brand-welcome copy from
+/// C2a). Auto-advances gently unless reduced-motion is on (then swipe-only).
 class PromoCarousel extends StatefulWidget {
-  const PromoCarousel({super.key, required this.banners});
+  const PromoCarousel({super.key, required this.products, required this.onTap});
 
-  final List<PromoBanner> banners;
+  final List<Product> products;
+  final ValueChanged<Product> onTap;
 
   @override
   State<PromoCarousel> createState() => _PromoCarouselState();
@@ -45,14 +36,14 @@ class _PromoCarouselState extends State<PromoCarousel> {
   }
 
   void _maybeAutoAdvance(bool reduceMotion) {
-    if (reduceMotion || widget.banners.length < 2) {
+    if (reduceMotion || widget.products.length < 2) {
       _timer?.cancel();
       _timer = null;
       return;
     }
     _timer ??= Timer.periodic(const Duration(seconds: 5), (_) {
       if (!mounted || !_controller.hasClients) return;
-      final next = (_page + 1) % widget.banners.length;
+      final next = (_page + 1) % widget.products.length;
       _controller.animateToPage(
         next,
         duration: const Duration(milliseconds: 400),
@@ -72,70 +63,111 @@ class _PromoCarouselState extends State<PromoCarousel> {
           height: 132,
           child: PageView.builder(
             controller: _controller,
-            itemCount: widget.banners.length,
+            itemCount: widget.products.length,
             onPageChanged: (i) => setState(() => _page = i),
             itemBuilder: (context, i) => Padding(
               padding: const EdgeInsetsDirectional.only(end: AppSpacing.xs),
-              child: _Banner(banner: widget.banners[i]),
+              child: _Banner(
+                product: widget.products[i],
+                onTap: () => widget.onTap(widget.products[i]),
+              ),
             ),
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        _Dots(count: widget.banners.length, active: _page),
+        _Dots(count: widget.products.length, active: _page),
       ],
     );
   }
 }
 
 class _Banner extends StatelessWidget {
-  const _Banner({required this.banner});
+  const _Banner({required this.product, required this.onTap});
 
-  final PromoBanner banner;
+  final Product product;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final text = Theme.of(context).textTheme;
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    final name = isArabic ? product.nameAr : product.name;
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.xlAll,
-        gradient: const LinearGradient(
-          begin: AlignmentDirectional.topStart,
-          end: AlignmentDirectional.bottomEnd,
-          colors: [AppColors.primary, AppColors.primaryBright],
-        ),
-      ),
-      child: Stack(
-        children: [
-          // Soft watermark glyph in the trailing corner.
-          PositionedDirectional(
-            end: -8,
-            bottom: -12,
-            child: Icon(
-              banner.icon,
-              size: 96,
-              color: AppColors.surface.withValues(alpha: 0.14),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: AppRadius.xlAll,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ShimmerImage(
+              url: product.imageUrl,
+              radius: BorderRadius.zero,
+              fallbackIcon: Icons.shopping_basket_outlined,
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                banner.title,
-                style: text.titleMedium?.copyWith(color: AppColors.surface),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                banner.body,
-                style: text.bodyMedium?.copyWith(
-                  color: AppColors.surface.withValues(alpha: 0.9),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    AppColors.primary.withValues(alpha: 0.78),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ],
+            ),
+            PositionedDirectional(
+              top: AppSpacing.sm,
+              start: AppSpacing.sm,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBright,
+                  borderRadius: AppRadius.roundAll,
+                ),
+                child: Text(
+                  l10n.promoBadge,
+                  style: text.labelSmall?.copyWith(
+                    color: AppColors.surface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            PositionedDirectional(
+              bottom: AppSpacing.md,
+              start: AppSpacing.md,
+              end: AppSpacing.md,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: text.titleMedium?.copyWith(color: AppColors.surface),
+                  ),
+                  const SizedBox(height: 2),
+                  PriceTag(
+                    product.priceMinor,
+                    style: text.titleSmall?.copyWith(
+                      color: AppColors.surface,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

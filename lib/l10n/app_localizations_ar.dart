@@ -189,6 +189,18 @@ class AppLocalizationsAr extends AppLocalizations {
       'دوس على القلب في أي دكان أو منتج بتحبه، وهيتحفظ هنا.';
 
   @override
+  String get favoriteActionErrorBody => 'معرفناش نحفظها — جرّب تاني.';
+
+  @override
+  String get favoritesSectionShops => 'الدكاكين';
+
+  @override
+  String get favoritesSectionProducts => 'المنتجات';
+
+  @override
+  String get favoritesErrorBody => 'معرفناش نجيب مفضلاتك دلوقتي — جرّب تاني.';
+
+  @override
   String get ordersEmptyTitle => 'لسه مفيش طلبات';
 
   @override
@@ -541,22 +553,4 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get productDeleteErrorBody => 'مش قادرين نحذف المنتج — جرّب تاني.';
-
-  @override
-  String get promo1Title => 'أهلاً بيك في دكان';
-
-  @override
-  String get promo1Body => 'دكاكين حيّك، في جيبك.';
-
-  @override
-  String get promo2Title => 'توصيل من دكانك';
-
-  @override
-  String get promo2Body => 'اطلب اللي محتاجه، وهو ييجي لحد باب البيت.';
-
-  @override
-  String get promo3Title => 'أسعار حيّك';
-
-  @override
-  String get promo3Body => 'نفس أسعار الدكان اللي تحت بيتك، بالظبط.';
 }

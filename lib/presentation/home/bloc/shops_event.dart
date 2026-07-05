@@ -38,6 +38,17 @@ class _ShopsUpdated extends ShopsEvent {
   List<Object?> get props => [shops];
 }
 
+/// Internal: a new product list arrived — filtered to `isPromo` for the
+/// carousel.
+class _ShopsProductsUpdated extends ShopsEvent {
+  const _ShopsProductsUpdated(this.products);
+
+  final List<Product> products;
+
+  @override
+  List<Object?> get props => [products];
+}
+
 /// Internal: the stream errored.
 class _ShopsFailed extends ShopsEvent {
   const _ShopsFailed(this.error);

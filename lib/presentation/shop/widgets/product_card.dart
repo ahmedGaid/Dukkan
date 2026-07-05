@@ -9,7 +9,10 @@ import '../../../domain/product/entities/stock_status.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../cart/bloc/cart_bloc.dart';
 import '../../cart/cart_actions.dart';
+import '../../favorites/bloc/favorites_bloc.dart';
+import '../../favorites/favorite_actions.dart';
 import '../../widgets/common/app_card.dart';
+import '../../widgets/common/favorite_button.dart';
 import '../../widgets/common/price_tag.dart';
 import '../../widgets/common/quantity_stepper.dart';
 import '../../widgets/common/shimmer_image.dart';
@@ -76,7 +79,7 @@ class ProductCard extends StatelessWidget {
                   ),
                 if (product.stockStatus == StockStatus.lowStock)
                   PositionedDirectional(
-                    top: AppSpacing.sm,
+                    bottom: AppSpacing.sm,
                     end: AppSpacing.sm,
                     child: _Badge(
                       label: l10n.productStockLow,
@@ -84,6 +87,18 @@ class ProductCard extends StatelessWidget {
                       foreground: AppColors.warning,
                     ),
                   ),
+                PositionedDirectional(
+                  top: AppSpacing.sm,
+                  end: AppSpacing.sm,
+                  child: BlocSelector<FavoritesBloc, FavoritesState, bool>(
+                    selector: (state) => state.isProductFavorite(product.id),
+                    builder: (context, isFavorite) => FavoriteButton(
+                      isFavorite: isFavorite,
+                      size: 18,
+                      onTap: () => toggleFavoriteProduct(context, product.id),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
