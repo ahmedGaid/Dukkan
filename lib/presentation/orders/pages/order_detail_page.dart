@@ -17,6 +17,7 @@ import '../../widgets/common/status_chip.dart';
 import '../bloc/order_detail_bloc.dart';
 import '../order_status_view.dart';
 import '../widgets/order_status_stepper.dart';
+import '../widgets/star_rating_picker.dart';
 
 /// One order's tracking page — realtime status stepper, items, delivery
 /// address, and a cancel action while `isCancellable`. Owns its
@@ -71,10 +72,14 @@ class _OrderDetailView extends StatelessWidget {
       appBar: AppBar(title: Text(l10n.orderDetailTitle)),
       body: BlocConsumer<OrderDetailBloc, OrderDetailState>(
         listenWhen: (previous, current) =>
-            previous.cancelStatus != current.cancelStatus,
+            previous.cancelStatus != current.cancelStatus ||
+            previous.rateStatus != current.rateStatus,
         listener: (context, state) {
           if (state.cancelStatus == OrderCancelStatus.failure) {
             AppSnackBar.error(context, l10n.orderCancelErrorBody);
+          }
+          if (state.rateStatus == OrderRateStatus.failure) {
+            AppSnackBar.error(context, l10n.orderRateErrorBody);
           }
         },
         builder: (context, state) => switch (state.status) {
@@ -90,7 +95,11 @@ class _OrderDetailView extends StatelessWidget {
           OrderDetailStatus.loaded => _OrderDetailContent(
               order: state.order!,
               isCancelling: state.isCancelling,
+              isRating: state.isRating,
               onCancel: () => _confirmCancel(context),
+              onRate: (rating) => context
+                  .read<OrderDetailBloc>()
+                  .add(OrderDetailRateSubmitted(rating)),
             ),
         },
       ),
@@ -102,12 +111,16 @@ class _OrderDetailContent extends StatelessWidget {
   const _OrderDetailContent({
     required this.order,
     required this.isCancelling,
+    required this.isRating,
     required this.onCancel,
+    required this.onRate,
   });
 
   final Order order;
   final bool isCancelling;
+  final bool isRating;
   final VoidCallback onCancel;
+  final ValueChanged<int> onRate;
 
   @override
   Widget build(BuildContext context) {
@@ -148,6 +161,14 @@ class _OrderDetailContent extends StatelessWidget {
               Text(l10n.checkoutAddressSection, style: text.titleSmall),
               const SizedBox(height: AppSpacing.sm),
               _AddressCard(order: order),
+              if (order.status == OrderStatus.delivered) ...[
+                const SizedBox(height: AppSpacing.lg),
+                _RatingCard(
+                  rating: order.rating,
+                  isRating: isRating,
+                  onRate: onRate,
+                ),
+              ],
             ],
           ),
         ),
@@ -250,6 +271,54 @@ class _ItemsCard extends StatelessWidget {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shown only for a delivered order. Before rating: a prompt + tap-to-rate
+/// stars (submits on tap, no confirm step). After: a read-only star row —
+/// the same card slot, no layout jump between the two states.
+class _RatingCard extends StatelessWidget {
+  const _RatingCard({
+    required this.rating,
+    required this.isRating,
+    required this.onRate,
+  });
+
+  final int? rating;
+  final bool isRating;
+  final ValueChanged<int> onRate;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration:
+          BoxDecoration(color: scheme.surface, borderRadius: AppRadius.lgAll),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            rating == null ? l10n.orderRateTitle : l10n.orderRatedTitle,
+            style: text.titleSmall,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          if (rating == null) ...[
+            Text(
+              l10n.orderRateBody,
+              style: text.bodySmall
+                  ?.copyWith(color: scheme.onSurface.withValues(alpha: 0.6)),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            StarRatingPicker(onRate: isRating ? null : onRate),
+          ] else
+            StarRatingDisplay(filled: rating!),
         ],
       ),
     );

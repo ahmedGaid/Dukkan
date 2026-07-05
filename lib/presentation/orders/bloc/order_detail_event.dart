@@ -17,6 +17,16 @@ class OrderDetailCancelRequested extends OrderDetailEvent {
   const OrderDetailCancelRequested();
 }
 
+/// Customer tapped a star on the post-delivery rating row.
+class OrderDetailRateSubmitted extends OrderDetailEvent {
+  const OrderDetailRateSubmitted(this.rating);
+
+  final int rating;
+
+  @override
+  List<Object?> get props => [rating];
+}
+
 /// Internal: a new snapshot arrived from the stream.
 class _OrderArrived extends OrderDetailEvent {
   const _OrderArrived(this.order);
@@ -40,6 +50,16 @@ class _OrderWatchFailed extends OrderDetailEvent {
 /// Internal: the cancel call failed.
 class _OrderCancelFailed extends OrderDetailEvent {
   const _OrderCancelFailed(this.error);
+
+  final Object error;
+
+  @override
+  List<Object?> get props => [error];
+}
+
+/// Internal: the rate call failed.
+class _OrderRateFailed extends OrderDetailEvent {
+  const _OrderRateFailed(this.error);
 
   final Object error;
 

@@ -15,6 +15,9 @@ class OrderRemoteDataSource {
   CollectionReference<Map<String, dynamic>> get _orders =>
       _firestore.collection('orders');
 
+  CollectionReference<Map<String, dynamic>> get _shops =>
+      _firestore.collection('shops');
+
   Future<OrderModel> placeOrder({
     required String shopId,
     required String customerUid,
@@ -88,6 +91,33 @@ class OrderRemoteDataSource {
   Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
     try {
       await _orders.doc(orderId).update({'status': status.wire});
+    } on FirebaseException catch (e) {
+      throw ServerFailure(e.message ?? e.code);
+    }
+  }
+
+  /// Reads the order first (inside the transaction) so a second rate call on
+  /// an already-rated order throws instead of double-counting the shop's
+  /// aggregate — mirrors the favorites toggle's read-then-write guard.
+  Future<void> rateOrder({
+    required String orderId,
+    required String shopId,
+    required int rating,
+  }) async {
+    try {
+      final orderRef = _orders.doc(orderId);
+      final shopRef = _shops.doc(shopId);
+      await _firestore.runTransaction((tx) async {
+        final orderSnap = await tx.get(orderRef);
+        if (orderSnap.data()?['rating'] != null) {
+          throw const ServerFailure('Order already rated');
+        }
+        tx.update(orderRef, {'rating': rating});
+        tx.update(shopRef, {
+          'ratingSum': FieldValue.increment(rating),
+          'ratingCount': FieldValue.increment(1),
+        });
+      });
     } on FirebaseException catch (e) {
       throw ServerFailure(e.message ?? e.code);
     }

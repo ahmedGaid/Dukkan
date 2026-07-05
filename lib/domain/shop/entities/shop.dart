@@ -13,6 +13,8 @@ class Shop extends Equatable {
     required this.isOpen,
     required this.categories,
     this.logoUrl,
+    this.ratingSum = 0,
+    this.ratingCount = 0,
   });
 
   final String id;
@@ -24,7 +26,27 @@ class Shop extends Equatable {
   final bool isOpen;
   final List<String> categories;
 
+  /// Sum of every 1-5 star rating ever submitted (P3). Stored as an int sum
+  /// rather than a running double average — same "no float money" discipline
+  /// applied to ratings, average is derived at read time.
+  final int ratingSum;
+  final int ratingCount;
+
+  /// Null until the first rating lands — callers show nothing rather than
+  /// "0.0" for an unrated shop.
+  double? get averageRating => ratingCount == 0 ? null : ratingSum / ratingCount;
+
   @override
-  List<Object?> get props =>
-      [id, ownerUid, name, nameAr, logoUrl, address, isOpen, categories];
+  List<Object?> get props => [
+        id,
+        ownerUid,
+        name,
+        nameAr,
+        logoUrl,
+        address,
+        isOpen,
+        categories,
+        ratingSum,
+        ratingCount,
+      ];
 }

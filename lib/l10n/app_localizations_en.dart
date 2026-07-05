@@ -406,6 +406,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'We couldn\'t cancel your order — try again.';
 
   @override
+  String get orderRateTitle => 'Rate this shop';
+
+  @override
+  String get orderRateBody => 'How was your experience with this shop?';
+
+  @override
+  String get orderRatedTitle => 'Your rating';
+
+  @override
+  String get orderRateErrorBody => 'We couldn\'t save your rating — try again.';
+
+  @override
   String get navCatalog => 'Catalog';
 
   @override

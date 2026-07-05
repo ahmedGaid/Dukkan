@@ -5,6 +5,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../domain/shop/entities/shop.dart';
 import '../../../l10n/app_localizations.dart';
 import 'shimmer_image.dart';
+import 'shop_rating_badge.dart';
 import 'status_chip.dart';
 
 /// A دكان's identity block: logo, name, address, open/closed. Shared by the
@@ -64,9 +65,15 @@ class ShopHeader extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: AppSpacing.sm),
-              StatusChip(
-                label: shop.isOpen ? l10n.shopOpen : l10n.shopClosed,
-                tone: shop.isOpen ? StatusTone.positive : StatusTone.caution,
+              Row(
+                children: [
+                  StatusChip(
+                    label: shop.isOpen ? l10n.shopOpen : l10n.shopClosed,
+                    tone: shop.isOpen ? StatusTone.positive : StatusTone.caution,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  ShopRatingBadge(shop: shop),
+                ],
               ),
             ],
           ),

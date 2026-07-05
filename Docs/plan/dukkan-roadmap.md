@@ -108,7 +108,7 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
   - [ ] **P2b — Notifications (FCM).** Push (order status → customer, new order → owner). Adds
         `firebase_messaging` (+ foreground display). Sender backend TBD (Cloud Function/Blaze vs
         extend the Cloudflare Worker) — decide at block start.
-- [ ] **P3 — Ratings.** Shop rating after delivered order, average on shop card.
+- [x] **P3 — Ratings.** Shop rating after delivered order, average on shop card.
 
 ### Phase 4 — Release
 - [ ] **R1 — Store prep.** Adaptive icon + splash from logo, Arabic store listing copy,

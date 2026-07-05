@@ -402,6 +402,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orderCancelErrorBody => 'معرفناش نلغي طلبك دلوقتي — جرّب تاني.';
 
   @override
+  String get orderRateTitle => 'قيّم الدكان';
+
+  @override
+  String get orderRateBody => 'طلبك اتوصّلك، إيه رأيك في الدكان؟';
+
+  @override
+  String get orderRatedTitle => 'تقييمك';
+
+  @override
+  String get orderRateErrorBody => 'معرفناش نسجل تقييمك دلوقتي — جرّب تاني.';
+
+  @override
   String get navCatalog => 'الكتالوج';
 
   @override

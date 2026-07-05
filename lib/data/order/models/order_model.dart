@@ -18,6 +18,7 @@ class OrderModel extends Order {
     required super.createdAt,
     required super.deliveryAddress,
     super.notes,
+    super.rating,
   });
 
   factory OrderModel.fromFirestore(String id, Map<String, dynamic> data) {
@@ -42,6 +43,7 @@ class OrderModel extends Order {
         notes: rawAddress['notes'] as String?,
       ),
       notes: data['notes'] as String?,
+      rating: (data['rating'] as num?)?.toInt(),
     );
   }
 

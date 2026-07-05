@@ -9,6 +9,7 @@ import '../../favorites/favorite_actions.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/favorite_button.dart';
 import '../../widgets/common/shimmer_image.dart';
+import '../../widgets/common/shop_rating_badge.dart';
 import '../../widgets/common/status_chip.dart';
 
 /// A row in the nearby-shops list: logo, localized name, address, and an
@@ -66,9 +67,15 @@ class ShopCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                StatusChip(
-                  label: shop.isOpen ? l10n.shopOpen : l10n.shopClosed,
-                  tone: shop.isOpen ? StatusTone.positive : StatusTone.caution,
+                Row(
+                  children: [
+                    StatusChip(
+                      label: shop.isOpen ? l10n.shopOpen : l10n.shopClosed,
+                      tone: shop.isOpen ? StatusTone.positive : StatusTone.caution,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    ShopRatingBadge(shop: shop),
+                  ],
                 ),
               ],
             ),

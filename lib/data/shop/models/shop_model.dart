@@ -10,6 +10,8 @@ class ShopModel extends Shop {
     required super.isOpen,
     required super.categories,
     super.logoUrl,
+    super.ratingSum,
+    super.ratingCount,
   });
 
   factory ShopModel.fromFirestore(String id, Map<String, dynamic> data) {
@@ -22,6 +24,8 @@ class ShopModel extends Shop {
       address: data['address'] as String? ?? '',
       isOpen: data['isOpen'] as bool? ?? false,
       categories: List<String>.from(data['categories'] as List? ?? const []),
+      ratingSum: (data['ratingSum'] as num?)?.toInt() ?? 0,
+      ratingCount: (data['ratingCount'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -33,6 +37,8 @@ class ShopModel extends Shop {
         'address': address,
         'isOpen': isOpen,
         'categories': categories,
+        'ratingSum': ratingSum,
+        'ratingCount': ratingCount,
       };
 
   factory ShopModel.fromJson(Map<String, dynamic> json) => ShopModel(
@@ -44,6 +50,8 @@ class ShopModel extends Shop {
         address: json['address'] as String,
         isOpen: json['isOpen'] as bool,
         categories: List<String>.from(json['categories'] as List),
+        ratingSum: (json['ratingSum'] as num?)?.toInt() ?? 0,
+        ratingCount: (json['ratingCount'] as num?)?.toInt() ?? 0,
       );
 
   Map<String, dynamic> toJson() => {'id': id, ...toFirestore()};

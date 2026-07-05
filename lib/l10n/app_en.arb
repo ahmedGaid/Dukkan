@@ -149,6 +149,10 @@
   "orderCancelConfirmTitle": "Cancel this order?",
   "orderCancelConfirmBody": "You won't be able to undo this.",
   "orderCancelErrorBody": "We couldn't cancel your order — try again.",
+  "orderRateTitle": "Rate this shop",
+  "orderRateBody": "How was your experience with this shop?",
+  "orderRatedTitle": "Your rating",
+  "orderRateErrorBody": "We couldn't save your rating — try again.",
 
   "navCatalog": "Catalog",
   "navOrderDesk": "Orders",

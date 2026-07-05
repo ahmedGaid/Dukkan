@@ -31,6 +31,13 @@ class _FakeOrderRepository implements OrderRepository {
   Future<void> updateOrderStatus(String orderId, OrderStatus status) async {}
 
   @override
+  Future<void> rateOrder({
+    required String orderId,
+    required String shopId,
+    required int rating,
+  }) async {}
+
+  @override
   Future<Order> placeOrder({
     required String shopId,
     required String customerUid,

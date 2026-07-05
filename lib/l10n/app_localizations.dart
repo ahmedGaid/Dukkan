@@ -866,6 +866,30 @@ abstract class AppLocalizations {
   /// **'معرفناش نلغي طلبك دلوقتي — جرّب تاني.'**
   String get orderCancelErrorBody;
 
+  /// No description provided for @orderRateTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيّم الدكان'**
+  String get orderRateTitle;
+
+  /// No description provided for @orderRateBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبك اتوصّلك، إيه رأيك في الدكان؟'**
+  String get orderRateBody;
+
+  /// No description provided for @orderRatedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقييمك'**
+  String get orderRatedTitle;
+
+  /// No description provided for @orderRateErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نسجل تقييمك دلوقتي — جرّب تاني.'**
+  String get orderRateErrorBody;
+
   /// No description provided for @navCatalog.
   ///
   /// In ar, this message translates to:

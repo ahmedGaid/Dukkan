@@ -4,7 +4,9 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../domain/order/entities/order.dart';
+import '../../../domain/order/entities/order_status.dart';
 import '../../../domain/order/usecases/cancel_order.dart';
+import '../../../domain/order/usecases/rate_order.dart';
 import '../../../domain/order/usecases/watch_order.dart';
 
 part 'order_detail_event.dart';
@@ -20,20 +22,25 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     required String orderId,
     required WatchOrder watchOrder,
     required CancelOrder cancelOrder,
+    required RateOrder rateOrder,
   })  : _orderId = orderId,
         _watchOrder = watchOrder,
         _cancelOrder = cancelOrder,
+        _rateOrder = rateOrder,
         super(const OrderDetailState()) {
     on<OrderDetailStarted>(_onStarted);
     on<OrderDetailCancelRequested>(_onCancelRequested);
+    on<OrderDetailRateSubmitted>(_onRateSubmitted);
     on<_OrderArrived>(_onArrived);
     on<_OrderWatchFailed>(_onWatchFailed);
     on<_OrderCancelFailed>(_onCancelFailed);
+    on<_OrderRateFailed>(_onRateFailed);
   }
 
   final String _orderId;
   final WatchOrder _watchOrder;
   final CancelOrder _cancelOrder;
+  final RateOrder _rateOrder;
   StreamSubscription<Order>? _sub;
 
   Future<void> _onStarted(
@@ -53,6 +60,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
       status: OrderDetailStatus.loaded,
       order: event.order,
       cancelStatus: OrderCancelStatus.idle,
+      rateStatus: OrderRateStatus.idle,
     ));
   }
 
@@ -81,6 +89,34 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     Emitter<OrderDetailState> emit,
   ) {
     emit(state.copyWith(cancelStatus: OrderCancelStatus.failure));
+  }
+
+  Future<void> _onRateSubmitted(
+    OrderDetailRateSubmitted event,
+    Emitter<OrderDetailState> emit,
+  ) async {
+    final order = state.order;
+    if (order == null || order.status != OrderStatus.delivered ||
+        order.rating != null || state.isRating) {
+      return;
+    }
+    emit(state.copyWith(rateStatus: OrderRateStatus.submitting));
+    try {
+      await _rateOrder(
+        orderId: _orderId,
+        shopId: order.shopId,
+        rating: event.rating,
+      );
+    } catch (error) {
+      add(_OrderRateFailed(error));
+    }
+  }
+
+  void _onRateFailed(
+    _OrderRateFailed event,
+    Emitter<OrderDetailState> emit,
+  ) {
+    emit(state.copyWith(rateStatus: OrderRateStatus.failure));
   }
 
   @override

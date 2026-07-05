@@ -39,9 +39,21 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && request.resource.data.ownerUid == request.auth.uid;
 
-      allow update: if isSignedIn()
-        && resource.data.ownerUid == request.auth.uid
-        && request.resource.data.ownerUid == resource.data.ownerUid;
+      // A rating bump (P3, RateOrder) touches only ratingSum/ratingCount, by
+      // exactly one 1-5 star vote — any signed-in customer can do this (not
+      // just the owner), since it rides on their own delivered order.
+      function isValidRatingBump() {
+        let bump = request.resource.data.ratingSum - resource.data.get('ratingSum', 0);
+        return isSignedIn()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratingSum', 'ratingCount'])
+          && request.resource.data.ratingCount == resource.data.get('ratingCount', 0) + 1
+          && bump >= 1 && bump <= 5;
+      }
+
+      allow update: if (isSignedIn()
+          && resource.data.ownerUid == request.auth.uid
+          && request.resource.data.ownerUid == resource.data.ownerUid)
+        || isValidRatingBump();
 
       allow delete: if false;
     }
@@ -96,13 +108,25 @@ service cloud.firestore {
 
       // A customer cancelling their own pending/accepted order (CancelOrder),
       // or the shop owner advancing status (S3) — both status-only changes.
+      // A customer rating their own delivered order once (P3, RateOrder) —
+      // exactly one 1-5 star write, and only while unrated.
+      function isValidRating() {
+        return isOrderOwner()
+          && resource.data.status == 'delivered'
+          && !('rating' in resource.data)
+          && request.resource.data.rating is int
+          && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rating']);
+      }
+
       allow update: if (isOrderOwner()
           && resource.data.status in ['pending', 'accepted']
           && request.resource.data.status == 'cancelled'
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
         || (isShopOwner()
           && isValidOwnerTransition()
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+        || isValidRating();
 
       allow delete: if false;
     }

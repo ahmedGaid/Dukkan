@@ -31,4 +31,14 @@ abstract class OrderRepository {
   /// delivered) — the allowed transitions are enforced server-side by the
   /// Firestore rule, not re-validated here.
   Future<void> updateOrderStatus(String orderId, OrderStatus status);
+
+  /// Customer rates the shop (1-5) after a delivered order (P3). Stamps the
+  /// order's `rating` and bumps the shop's `ratingSum`/`ratingCount` in one
+  /// transaction. Second call on an already-rated order is a Firestore-rule
+  /// rejection, not re-validated here.
+  Future<void> rateOrder({
+    required String orderId,
+    required String shopId,
+    required int rating,
+  });
 }

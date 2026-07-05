@@ -48,4 +48,12 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<void> updateOrderStatus(String orderId, OrderStatus status) =>
       _remote.updateOrderStatus(orderId, status);
+
+  @override
+  Future<void> rateOrder({
+    required String orderId,
+    required String shopId,
+    required int rating,
+  }) =>
+      _remote.rateOrder(orderId: orderId, shopId: shopId, rating: rating);
 }

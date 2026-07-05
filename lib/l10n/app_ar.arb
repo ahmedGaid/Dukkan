@@ -158,6 +158,10 @@
   "orderCancelConfirmTitle": "تلغي الطلب؟",
   "orderCancelConfirmBody": "مش هتقدر ترجّعه بعد كده.",
   "orderCancelErrorBody": "معرفناش نلغي طلبك دلوقتي — جرّب تاني.",
+  "orderRateTitle": "قيّم الدكان",
+  "orderRateBody": "طلبك اتوصّلك، إيه رأيك في الدكان؟",
+  "orderRatedTitle": "تقييمك",
+  "orderRateErrorBody": "معرفناش نسجل تقييمك دلوقتي — جرّب تاني.",
 
   "navCatalog": "الكتالوج",
   "navOrderDesk": "الطلبات",

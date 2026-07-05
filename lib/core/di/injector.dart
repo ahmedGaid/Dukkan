@@ -30,6 +30,7 @@ import '../../domain/favorites/usecases/watch_favorites.dart';
 import '../../domain/order/repositories/order_repository.dart';
 import '../../domain/order/usecases/cancel_order.dart';
 import '../../domain/order/usecases/place_order.dart';
+import '../../domain/order/usecases/rate_order.dart';
 import '../../domain/order/usecases/update_order_status.dart';
 import '../../domain/order/usecases/watch_customer_orders.dart';
 import '../../domain/order/usecases/watch_order.dart';
@@ -165,6 +166,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => WatchOrder(sl()));
   sl.registerLazySingleton(() => CancelOrder(sl()));
   sl.registerLazySingleton(() => UpdateOrderStatus(sl()));
+  sl.registerLazySingleton(() => RateOrder(sl()));
 
   // Order — blocs (page-scoped: the customer uid / shop id / order id is the
   // factory param, mirroring ProductsBloc's shopId).
@@ -180,6 +182,7 @@ Future<void> initDependencies() async {
       orderId: orderId,
       watchOrder: sl(),
       cancelOrder: sl(),
+      rateOrder: sl(),
     ),
   );
 
