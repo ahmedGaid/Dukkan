@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/errors/failures.dart';
 import '../../../domain/auth/entities/user_role.dart';
@@ -42,6 +43,7 @@ class AuthRemoteDataSource {
       return AppUserModel.fromFirestore(fbUser.uid, data,
           authEmail: fbUser.email);
     } on FirebaseException catch (e) {
+      debugPrint('[Auth] loadProfile FirebaseException: ${e.code} — ${e.message}');
       throw ServerFailure(e.message ?? e.code);
     }
   }
@@ -118,6 +120,9 @@ class AuthRemoteDataSource {
       'network-request-failed' => AuthFailureCode.network,
       _ => AuthFailureCode.unknown,
     };
+    if (code == AuthFailureCode.unknown) {
+      debugPrint('[Auth] unmapped FirebaseAuthException: ${e.code} — ${e.message}');
+    }
     return AuthFailure(code, e.message ?? e.code);
   }
 }
