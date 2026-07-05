@@ -78,17 +78,31 @@ service cloud.firestore {
             == request.auth.uid;
       }
 
+      // Shop-owner status advances (S3): each `from -> to` pair below is the
+      // only next step the order desk offers (order_status_view.dart's
+      // orderPrimaryAction/orderSecondaryAction) — reject only from pending.
+      function isValidOwnerTransition() {
+        let from = resource.data.status;
+        let to = request.resource.data.status;
+        return (from == 'pending' && (to == 'accepted' || to == 'rejected'))
+          || (from == 'accepted' && to == 'preparing')
+          || (from == 'preparing' && to == 'outForDelivery')
+          || (from == 'outForDelivery' && to == 'delivered');
+      }
+
       allow read: if isOrderOwner() || isShopOwner();
 
       allow create: if isSelf(request.resource.data.customerUid);
 
-      // Only mutation today is a customer cancelling their own pending/
-      // accepted order (CancelOrder) — status-only change. Shop-owner status
-      // advances (accept/reject/preparing/...) land with S3 and extend this.
-      allow update: if isOrderOwner()
-        && resource.data.status in ['pending', 'accepted']
-        && request.resource.data.status == 'cancelled'
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+      // A customer cancelling their own pending/accepted order (CancelOrder),
+      // or the shop owner advancing status (S3) — both status-only changes.
+      allow update: if (isOrderOwner()
+          && resource.data.status in ['pending', 'accepted']
+          && request.resource.data.status == 'cancelled'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+        || (isShopOwner()
+          && isValidOwnerTransition()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
 
       allow delete: if false;
     }

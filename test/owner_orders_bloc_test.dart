@@ -5,21 +5,21 @@ import 'package:dukkan/domain/order/entities/order.dart';
 import 'package:dukkan/domain/order/entities/order_item.dart';
 import 'package:dukkan/domain/order/entities/order_status.dart';
 import 'package:dukkan/domain/order/repositories/order_repository.dart';
-import 'package:dukkan/domain/order/usecases/watch_customer_orders.dart';
-import 'package:dukkan/presentation/orders/bloc/orders_bloc.dart';
+import 'package:dukkan/domain/order/usecases/watch_shop_orders.dart';
+import 'package:dukkan/presentation/orders/bloc/owner_orders_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Drives the orders stream by hand so the bloc can be tested without
-/// Firebase (mirrors `_FakeShopRepository` in shops_bloc_test.dart).
+/// Drives the shop-orders stream by hand (mirrors `_FakeOrderRepository` in
+/// orders_bloc_test.dart).
 class _FakeOrderRepository implements OrderRepository {
   final controller = StreamController<List<Order>>.broadcast();
 
   @override
-  Stream<List<Order>> watchCustomerOrders(String customerUid) =>
-      controller.stream;
+  Stream<List<Order>> watchShopOrders(String shopId) => controller.stream;
 
   @override
-  Stream<List<Order>> watchShopOrders(String shopId) => const Stream.empty();
+  Stream<List<Order>> watchCustomerOrders(String customerUid) =>
+      const Stream.empty();
 
   @override
   Stream<Order> watchOrder(String orderId) => const Stream.empty();
@@ -63,13 +63,13 @@ Order _order(String id, OrderStatus status) => Order(
 
 void main() {
   late _FakeOrderRepository repo;
-  late OrdersBloc bloc;
+  late OwnerOrdersBloc bloc;
 
   setUp(() {
     repo = _FakeOrderRepository();
-    bloc = OrdersBloc(
-      customerUid: 'u1',
-      watchCustomerOrders: WatchCustomerOrders(repo),
+    bloc = OwnerOrdersBloc(
+      shopId: 's1',
+      watchShopOrders: WatchShopOrders(repo),
     );
   });
 
@@ -80,51 +80,51 @@ void main() {
 
   Future<void> tick() => Future<void>.delayed(Duration.zero);
 
-  test('loads orders from the customer stream', () async {
-    bloc.add(const OrdersStarted());
+  test('loads orders from the shop stream', () async {
+    bloc.add(const OwnerOrdersStarted());
     await tick();
 
     repo.controller.add([_order('a', OrderStatus.pending)]);
     await tick();
 
-    expect(bloc.state.status, OrdersStatus.loaded);
+    expect(bloc.state.status, OwnerOrdersStatus.loaded);
     expect(bloc.state.orders.single.id, 'a');
   });
 
   test('an empty feed still reaches loaded (not stuck loading)', () async {
-    bloc.add(const OrdersStarted());
+    bloc.add(const OwnerOrdersStarted());
     await tick();
 
     repo.controller.add(const []);
     await tick();
 
-    expect(bloc.state.status, OrdersStatus.loaded);
+    expect(bloc.state.status, OwnerOrdersStatus.loaded);
     expect(bloc.state.orders, isEmpty);
   });
 
   test('stream error surfaces as error status', () async {
-    bloc.add(const OrdersStarted());
+    bloc.add(const OwnerOrdersStarted());
     await tick();
 
     repo.controller.addError(Exception('boom'));
     await tick();
 
-    expect(bloc.state.status, OrdersStatus.error);
+    expect(bloc.state.status, OwnerOrdersStatus.error);
   });
 
   test('retry re-subscribes after an error', () async {
-    bloc.add(const OrdersStarted());
+    bloc.add(const OwnerOrdersStarted());
     await tick();
     repo.controller.addError(Exception('boom'));
     await tick();
-    expect(bloc.state.status, OrdersStatus.error);
+    expect(bloc.state.status, OwnerOrdersStatus.error);
 
-    bloc.add(const OrdersRetryRequested());
+    bloc.add(const OwnerOrdersRetryRequested());
     await tick();
     repo.controller.add([_order('a', OrderStatus.accepted)]);
     await tick();
 
-    expect(bloc.state.status, OrdersStatus.loaded);
+    expect(bloc.state.status, OwnerOrdersStatus.loaded);
     expect(bloc.state.orders.single.status, OrderStatus.accepted);
   });
 }

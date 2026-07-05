@@ -360,6 +360,51 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orderCancelErrorBody => 'معرفناش نلغي طلبك دلوقتي — جرّب تاني.';
 
   @override
+  String get navCatalog => 'الكتالوج';
+
+  @override
+  String get navOrderDesk => 'الطلبات';
+
+  @override
+  String get orderDeskTitle => 'الطلبات';
+
+  @override
+  String get orderDeskEmptyTitle => 'لسه مفيش طلبات';
+
+  @override
+  String get orderDeskEmptyBody => 'طلبات عملائك الجديدة هتظهر هنا.';
+
+  @override
+  String get orderDeskErrorBody => 'مش قادرين نجيب طلباتك دلوقتي — جرّب تاني.';
+
+  @override
+  String get orderDeskTodayLabel => 'النهاردة';
+
+  @override
+  String get actionAcceptOrder => 'قبول';
+
+  @override
+  String get actionRejectOrder => 'رفض';
+
+  @override
+  String get actionStartPreparing => 'ابدأ التجهيز';
+
+  @override
+  String get actionStartDelivery => 'ابعته للتوصيل';
+
+  @override
+  String get actionMarkDelivered => 'وصل الطلب';
+
+  @override
+  String get orderRejectConfirmTitle => 'ترفض الطلب؟';
+
+  @override
+  String get orderRejectConfirmBody => 'العميل هيوصله إشعار إن الطلب اترفض.';
+
+  @override
+  String get orderActionErrorBody => 'معرفناش نحدّث الطلب دلوقتي — جرّب تاني.';
+
+  @override
   String get shopProductsEmptyTitle => 'الدكان لسه بيرتّب رفوفه';
 
   @override

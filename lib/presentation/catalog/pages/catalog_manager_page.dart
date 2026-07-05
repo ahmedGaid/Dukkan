@@ -18,9 +18,8 @@ import 'product_form_page.dart';
 
 enum _LoadStatus { loading, error, loaded }
 
-/// Owner's home: their own shop's catalog, with add/edit/delete (S2).
-/// Replaces the F3 `_OwnerPlaceholder` — S3's order desk lands as a sibling
-/// entry point later, not a replacement of this page.
+/// Owner's catalog tab: their own shop's products, with add/edit/delete (S2).
+/// Sits alongside the order desk (S3) as the first tab of `OwnerHomeShell`.
 class CatalogManagerPage extends StatefulWidget {
   const CatalogManagerPage({super.key});
 

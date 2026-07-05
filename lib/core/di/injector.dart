@@ -23,8 +23,10 @@ import '../../domain/auth/usecases/watch_auth_state.dart';
 import '../../domain/order/repositories/order_repository.dart';
 import '../../domain/order/usecases/cancel_order.dart';
 import '../../domain/order/usecases/place_order.dart';
+import '../../domain/order/usecases/update_order_status.dart';
 import '../../domain/order/usecases/watch_customer_orders.dart';
 import '../../domain/order/usecases/watch_order.dart';
+import '../../domain/order/usecases/watch_shop_orders.dart';
 import '../../domain/product/repositories/product_repository.dart';
 import '../../domain/product/usecases/create_product.dart';
 import '../../domain/product/usecases/delete_product.dart';
@@ -44,6 +46,7 @@ import '../../presentation/cart/bloc/cart_bloc.dart';
 import '../../presentation/home/bloc/shops_bloc.dart';
 import '../../presentation/orders/bloc/order_detail_bloc.dart';
 import '../../presentation/orders/bloc/orders_bloc.dart';
+import '../../presentation/orders/bloc/owner_orders_bloc.dart';
 import '../../presentation/search/bloc/search_bloc.dart';
 import '../../presentation/shop/bloc/products_bloc.dart';
 import '../l10n/locale_controller.dart';
@@ -143,14 +146,19 @@ Future<void> initDependencies() async {
   // Order — use cases
   sl.registerLazySingleton(() => PlaceOrder(sl()));
   sl.registerLazySingleton(() => WatchCustomerOrders(sl()));
+  sl.registerLazySingleton(() => WatchShopOrders(sl()));
   sl.registerLazySingleton(() => WatchOrder(sl()));
   sl.registerLazySingleton(() => CancelOrder(sl()));
+  sl.registerLazySingleton(() => UpdateOrderStatus(sl()));
 
-  // Order — blocs (page-scoped: the customer uid / order id is the factory
-  // param, mirroring ProductsBloc's shopId).
+  // Order — blocs (page-scoped: the customer uid / shop id / order id is the
+  // factory param, mirroring ProductsBloc's shopId).
   sl.registerFactoryParam<OrdersBloc, String, void>(
     (customerUid, _) =>
         OrdersBloc(customerUid: customerUid, watchCustomerOrders: sl()),
+  );
+  sl.registerFactoryParam<OwnerOrdersBloc, String, void>(
+    (shopId, _) => OwnerOrdersBloc(shopId: shopId, watchShopOrders: sl()),
   );
   sl.registerFactoryParam<OrderDetailBloc, String, void>(
     (orderId, _) => OrderDetailBloc(

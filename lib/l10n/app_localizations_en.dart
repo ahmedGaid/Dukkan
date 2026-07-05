@@ -363,6 +363,55 @@ class AppLocalizationsEn extends AppLocalizations {
       'We couldn\'t cancel your order — try again.';
 
   @override
+  String get navCatalog => 'Catalog';
+
+  @override
+  String get navOrderDesk => 'Orders';
+
+  @override
+  String get orderDeskTitle => 'Orders';
+
+  @override
+  String get orderDeskEmptyTitle => 'No orders yet';
+
+  @override
+  String get orderDeskEmptyBody =>
+      'New orders from your customers will show up here.';
+
+  @override
+  String get orderDeskErrorBody =>
+      'We can\'t load your orders right now — try again.';
+
+  @override
+  String get orderDeskTodayLabel => 'Today';
+
+  @override
+  String get actionAcceptOrder => 'Accept';
+
+  @override
+  String get actionRejectOrder => 'Reject';
+
+  @override
+  String get actionStartPreparing => 'Start preparing';
+
+  @override
+  String get actionStartDelivery => 'Out for delivery';
+
+  @override
+  String get actionMarkDelivered => 'Mark delivered';
+
+  @override
+  String get orderRejectConfirmTitle => 'Reject this order?';
+
+  @override
+  String get orderRejectConfirmBody =>
+      'The customer will be notified it was rejected.';
+
+  @override
+  String get orderActionErrorBody =>
+      'We couldn\'t update this order — try again.';
+
+  @override
   String get shopProductsEmptyTitle => 'This shop is still stocking up';
 
   @override

@@ -1,6 +1,7 @@
 import '../../../domain/order/entities/address.dart';
 import '../../../domain/order/entities/order.dart';
 import '../../../domain/order/entities/order_item.dart';
+import '../../../domain/order/entities/order_status.dart';
 import '../../../domain/order/repositories/order_repository.dart';
 import '../datasources/order_remote_datasource.dart';
 
@@ -35,8 +36,16 @@ class OrderRepositoryImpl implements OrderRepository {
       _remote.watchCustomerOrders(customerUid);
 
   @override
+  Stream<List<Order>> watchShopOrders(String shopId) =>
+      _remote.watchShopOrders(shopId);
+
+  @override
   Stream<Order> watchOrder(String orderId) => _remote.watchOrder(orderId);
 
   @override
   Future<void> cancelOrder(String orderId) => _remote.cancelOrder(orderId);
+
+  @override
+  Future<void> updateOrderStatus(String orderId, OrderStatus status) =>
+      _remote.updateOrderStatus(orderId, status);
 }

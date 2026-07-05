@@ -25,10 +25,16 @@ class _FakeOrderRepository implements OrderRepository {
       const Stream.empty();
 
   @override
+  Stream<List<Order>> watchShopOrders(String shopId) => const Stream.empty();
+
+  @override
   Future<void> cancelOrder(String orderId) async {
     cancelCalls++;
     if (cancelShouldFail) throw Exception('boom');
   }
+
+  @override
+  Future<void> updateOrderStatus(String orderId, OrderStatus status) async {}
 
   @override
   Future<Order> placeOrder({

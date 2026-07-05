@@ -1,6 +1,7 @@
 import '../entities/address.dart';
 import '../entities/order.dart';
 import '../entities/order_item.dart';
+import '../entities/order_status.dart';
 
 /// Order boundary. Orders always go straight to Firestore — no offline cache
 /// (COD ops need a live write anyway); realtime status comes from snapshots.
@@ -16,9 +17,18 @@ abstract class OrderRepository {
 
   Stream<List<Order>> watchCustomerOrders(String customerUid);
 
+  /// The owner's order desk (S3) — newest first, same query shape as
+  /// [watchCustomerOrders] but keyed by shop instead of customer.
+  Stream<List<Order>> watchShopOrders(String shopId);
+
   Stream<Order> watchOrder(String orderId);
 
   /// Throws [AuthFailure]-free domain error if the order is past
   /// `OrderStatus.isCancellable` — see `order_status.dart`.
   Future<void> cancelOrder(String orderId);
+
+  /// Owner-side status advance (accept/reject/preparing/outForDelivery/
+  /// delivered) — the allowed transitions are enforced server-side by the
+  /// Firestore rule, not re-validated here.
+  Future<void> updateOrderStatus(String orderId, OrderStatus status);
 }

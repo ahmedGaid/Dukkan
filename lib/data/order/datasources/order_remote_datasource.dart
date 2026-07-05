@@ -55,6 +55,18 @@ class OrderRemoteDataSource {
         );
   }
 
+  Stream<List<OrderModel>> watchShopOrders(String shopId) {
+    return _orders
+        .where('shopId', isEqualTo: shopId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snap) => snap.docs
+              .map((doc) => OrderModel.fromFirestore(doc.id, doc.data()))
+              .toList(),
+        );
+  }
+
   Stream<OrderModel> watchOrder(String orderId) {
     return _orders.doc(orderId).snapshots().map((doc) {
       final data = doc.data();
@@ -68,6 +80,14 @@ class OrderRemoteDataSource {
   Future<void> cancelOrder(String orderId) async {
     try {
       await _orders.doc(orderId).update({'status': OrderStatus.cancelled.wire});
+    } on FirebaseException catch (e) {
+      throw ServerFailure(e.message ?? e.code);
+    }
+  }
+
+  Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
+    try {
+      await _orders.doc(orderId).update({'status': status.wire});
     } on FirebaseException catch (e) {
       throw ServerFailure(e.message ?? e.code);
     }

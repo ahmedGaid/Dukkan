@@ -39,3 +39,34 @@ import '../widgets/common/status_chip.dart';
       ),
   };
 }
+
+/// Owner order-desk action for the given status — the primary advance
+/// (accept/start-preparing/out-for-delivery/mark-delivered) and, only from
+/// `pending`, a secondary reject. `null` on every terminal status.
+({String label, OrderStatus target})? orderPrimaryAction(
+  AppLocalizations l10n,
+  OrderStatus status,
+) {
+  return switch (status) {
+    OrderStatus.pending =>
+      (label: l10n.actionAcceptOrder, target: OrderStatus.accepted),
+    OrderStatus.accepted =>
+      (label: l10n.actionStartPreparing, target: OrderStatus.preparing),
+    OrderStatus.preparing =>
+      (label: l10n.actionStartDelivery, target: OrderStatus.outForDelivery),
+    OrderStatus.outForDelivery =>
+      (label: l10n.actionMarkDelivered, target: OrderStatus.delivered),
+    OrderStatus.delivered ||
+    OrderStatus.cancelled ||
+    OrderStatus.rejected =>
+      null,
+  };
+}
+
+({String label, OrderStatus target})? orderSecondaryAction(
+  AppLocalizations l10n,
+  OrderStatus status,
+) {
+  if (status != OrderStatus.pending) return null;
+  return (label: l10n.actionRejectOrder, target: OrderStatus.rejected);
+}

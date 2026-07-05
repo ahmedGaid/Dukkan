@@ -75,6 +75,9 @@ Rules:
 | Order status: delivered | اتوصّل | تم التسليم |
 | Order status: cancelled | ملغي | اتلغى |
 | Order status: rejected | مرفوض | اترفض |
+| Owner accepts order | قبول | الموافقة |
+| Owner rejects order | رفض | الرفض |
+| Owner catalog tab | الكتالوج | المنتجات |
 
 - Human statuses ("جارٍ تجهيز طلبك"), blame-free errors ("حصلت مشكلة — جرّب تاني").
 - RTL is the default layout. LTR (English) must read identically well.

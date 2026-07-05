@@ -782,6 +782,96 @@ abstract class AppLocalizations {
   /// **'معرفناش نلغي طلبك دلوقتي — جرّب تاني.'**
   String get orderCancelErrorBody;
 
+  /// No description provided for @navCatalog.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكتالوج'**
+  String get navCatalog;
+
+  /// No description provided for @navOrderDesk.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات'**
+  String get navOrderDesk;
+
+  /// No description provided for @orderDeskTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات'**
+  String get orderDeskTitle;
+
+  /// No description provided for @orderDeskEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش طلبات'**
+  String get orderDeskEmptyTitle;
+
+  /// No description provided for @orderDeskEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبات عملائك الجديدة هتظهر هنا.'**
+  String get orderDeskEmptyBody;
+
+  /// No description provided for @orderDeskErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نجيب طلباتك دلوقتي — جرّب تاني.'**
+  String get orderDeskErrorBody;
+
+  /// No description provided for @orderDeskTodayLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'النهاردة'**
+  String get orderDeskTodayLabel;
+
+  /// No description provided for @actionAcceptOrder.
+  ///
+  /// In ar, this message translates to:
+  /// **'قبول'**
+  String get actionAcceptOrder;
+
+  /// No description provided for @actionRejectOrder.
+  ///
+  /// In ar, this message translates to:
+  /// **'رفض'**
+  String get actionRejectOrder;
+
+  /// No description provided for @actionStartPreparing.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابدأ التجهيز'**
+  String get actionStartPreparing;
+
+  /// No description provided for @actionStartDelivery.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابعته للتوصيل'**
+  String get actionStartDelivery;
+
+  /// No description provided for @actionMarkDelivered.
+  ///
+  /// In ar, this message translates to:
+  /// **'وصل الطلب'**
+  String get actionMarkDelivered;
+
+  /// No description provided for @orderRejectConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'ترفض الطلب؟'**
+  String get orderRejectConfirmTitle;
+
+  /// No description provided for @orderRejectConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'العميل هيوصله إشعار إن الطلب اترفض.'**
+  String get orderRejectConfirmBody;
+
+  /// No description provided for @orderActionErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نحدّث الطلب دلوقتي — جرّب تاني.'**
+  String get orderActionErrorBody;
+
   /// No description provided for @shopProductsEmptyTitle.
   ///
   /// In ar, this message translates to:
