@@ -81,7 +81,7 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
         name, Arabic-folded, debounced); designed prompt/no-results/error/loading states. SearchBloc.
 - [x] **C3 — Cart + checkout.** Per-shop cart, quantity stepper, checkout with manual address
       entry (maps deferred), COD confirm, order placed screen.
-- [ ] **C4 — Orders.** Orders list, order detail with status stepper, cancel
+- [x] **C4 — Orders.** Orders list, order detail with status stepper, cancel
       (pending/accepted only), realtime status via Firestore snapshots.
 
 ### Phase 2 — Shop owner core

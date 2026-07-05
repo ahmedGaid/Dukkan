@@ -11,6 +11,7 @@ import '../../presentation/cart/pages/order_placed_page.dart';
 import '../../domain/order/entities/order.dart';
 import '../../domain/product/entities/product.dart';
 import '../../presentation/home/pages/home_page.dart';
+import '../../presentation/orders/pages/order_detail_page.dart';
 import '../../presentation/search/pages/search_page.dart';
 import '../../presentation/shop/pages/product_detail_page.dart';
 import '../../presentation/shop/pages/shop_page.dart';
@@ -74,6 +75,11 @@ class AppRouter {
         path: '/order-placed',
         builder: (context, state) =>
             OrderPlacedPage(order: state.extra as Order),
+      ),
+      GoRoute(
+        path: '/order/:id',
+        builder: (context, state) =>
+            OrderDetailPage(orderId: state.pathParameters['id']!),
       ),
     ],
   );

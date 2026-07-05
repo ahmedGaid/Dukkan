@@ -710,6 +710,84 @@ abstract class AppLocalizations {
   /// **'الدكان هيبدأ يجهّز طلبك على طول.'**
   String get orderPlacedBody;
 
+  /// No description provided for @ordersErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نجيب طلباتك دلوقتي — جرّب تاني.'**
+  String get ordersErrorBody;
+
+  /// No description provided for @orderDetailTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفاصيل الطلب'**
+  String get orderDetailTitle;
+
+  /// No description provided for @orderStatusPending.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار التأكيد'**
+  String get orderStatusPending;
+
+  /// No description provided for @orderStatusAccepted.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقبول'**
+  String get orderStatusAccepted;
+
+  /// No description provided for @orderStatusPreparing.
+  ///
+  /// In ar, this message translates to:
+  /// **'بيتجهّز'**
+  String get orderStatusPreparing;
+
+  /// No description provided for @orderStatusOutForDelivery.
+  ///
+  /// In ar, this message translates to:
+  /// **'في الطريق إليك'**
+  String get orderStatusOutForDelivery;
+
+  /// No description provided for @orderStatusDelivered.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتوصّل'**
+  String get orderStatusDelivered;
+
+  /// No description provided for @orderStatusCancelled.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملغي'**
+  String get orderStatusCancelled;
+
+  /// No description provided for @orderStatusRejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرفوض'**
+  String get orderStatusRejected;
+
+  /// No description provided for @actionCancelOrder.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء الطلب'**
+  String get actionCancelOrder;
+
+  /// No description provided for @orderCancelConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تلغي الطلب؟'**
+  String get orderCancelConfirmTitle;
+
+  /// No description provided for @orderCancelConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش هتقدر ترجّعه بعد كده.'**
+  String get orderCancelConfirmBody;
+
+  /// No description provided for @orderCancelErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نلغي طلبك دلوقتي — جرّب تاني.'**
+  String get orderCancelErrorBody;
+
   /// No description provided for @shopProductsEmptyTitle.
   ///
   /// In ar, this message translates to:

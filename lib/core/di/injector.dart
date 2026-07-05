@@ -33,6 +33,8 @@ import '../../domain/shop/usecases/watch_shops.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/cart/bloc/cart_bloc.dart';
 import '../../presentation/home/bloc/shops_bloc.dart';
+import '../../presentation/orders/bloc/order_detail_bloc.dart';
+import '../../presentation/orders/bloc/orders_bloc.dart';
 import '../../presentation/search/bloc/search_bloc.dart';
 import '../../presentation/shop/bloc/products_bloc.dart';
 import '../l10n/locale_controller.dart';
@@ -129,6 +131,20 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => WatchCustomerOrders(sl()));
   sl.registerLazySingleton(() => WatchOrder(sl()));
   sl.registerLazySingleton(() => CancelOrder(sl()));
+
+  // Order — blocs (page-scoped: the customer uid / order id is the factory
+  // param, mirroring ProductsBloc's shopId).
+  sl.registerFactoryParam<OrdersBloc, String, void>(
+    (customerUid, _) =>
+        OrdersBloc(customerUid: customerUid, watchCustomerOrders: sl()),
+  );
+  sl.registerFactoryParam<OrderDetailBloc, String, void>(
+    (orderId, _) => OrderDetailBloc(
+      orderId: orderId,
+      watchOrder: sl(),
+      cancelOrder: sl(),
+    ),
+  );
 
   // Cart — bloc (app lifetime: one basket across the whole session; no
   // repository — nothing to sync until PlaceOrder runs at checkout).

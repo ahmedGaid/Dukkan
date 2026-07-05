@@ -324,6 +324,45 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orderPlacedBody => 'الدكان هيبدأ يجهّز طلبك على طول.';
 
   @override
+  String get ordersErrorBody => 'مش قادرين نجيب طلباتك دلوقتي — جرّب تاني.';
+
+  @override
+  String get orderDetailTitle => 'تفاصيل الطلب';
+
+  @override
+  String get orderStatusPending => 'بانتظار التأكيد';
+
+  @override
+  String get orderStatusAccepted => 'مقبول';
+
+  @override
+  String get orderStatusPreparing => 'بيتجهّز';
+
+  @override
+  String get orderStatusOutForDelivery => 'في الطريق إليك';
+
+  @override
+  String get orderStatusDelivered => 'اتوصّل';
+
+  @override
+  String get orderStatusCancelled => 'ملغي';
+
+  @override
+  String get orderStatusRejected => 'مرفوض';
+
+  @override
+  String get actionCancelOrder => 'إلغاء الطلب';
+
+  @override
+  String get orderCancelConfirmTitle => 'تلغي الطلب؟';
+
+  @override
+  String get orderCancelConfirmBody => 'مش هتقدر ترجّعه بعد كده.';
+
+  @override
+  String get orderCancelErrorBody => 'معرفناش نلغي طلبك دلوقتي — جرّب تاني.';
+
+  @override
   String get shopProductsEmptyTitle => 'الدكان لسه بيرتّب رفوفه';
 
   @override

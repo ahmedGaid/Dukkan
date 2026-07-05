@@ -326,6 +326,47 @@ class AppLocalizationsEn extends AppLocalizations {
       'The shop will start preparing your order soon.';
 
   @override
+  String get ordersErrorBody =>
+      'We can\'t load your orders right now — try again.';
+
+  @override
+  String get orderDetailTitle => 'Order details';
+
+  @override
+  String get orderStatusPending => 'Awaiting confirmation';
+
+  @override
+  String get orderStatusAccepted => 'Accepted';
+
+  @override
+  String get orderStatusPreparing => 'Preparing';
+
+  @override
+  String get orderStatusOutForDelivery => 'Out for delivery';
+
+  @override
+  String get orderStatusDelivered => 'Delivered';
+
+  @override
+  String get orderStatusCancelled => 'Cancelled';
+
+  @override
+  String get orderStatusRejected => 'Rejected';
+
+  @override
+  String get actionCancelOrder => 'Cancel order';
+
+  @override
+  String get orderCancelConfirmTitle => 'Cancel this order?';
+
+  @override
+  String get orderCancelConfirmBody => 'You won\'t be able to undo this.';
+
+  @override
+  String get orderCancelErrorBody =>
+      'We couldn\'t cancel your order — try again.';
+
+  @override
   String get shopProductsEmptyTitle => 'This shop is still stocking up';
 
   @override
