@@ -56,7 +56,12 @@ Future<void> main() async {
       await _seedCustomer(customerUid, log);
     }
 
-    log.writeln('Seed complete.');
+    // Don't leave the device authenticated as a seed account — otherwise the
+    // next launch of the real app opens as the seed owner/customer instead of
+    // whoever was signed in before. Sign out so the app returns to its login.
+    await FirebaseAuth.instance.signOut();
+
+    log.writeln('Seed complete. Signed out — log in as your own account.');
   } catch (e) {
     log.writeln('Seed FAILED: $e');
   }
