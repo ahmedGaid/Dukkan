@@ -1,0 +1,13 @@
+# Release signing config for Dukkan — Android.
+#
+# Copy this file to android/key.properties (NEVER commit the real one — it is
+# gitignored) and fill in the values for the keystore you generated. See
+# Docs/RELEASE.md for the keytool command that creates the keystore.
+#
+# storeFile MUST be an absolute path to your .jks file, or a path relative to
+# the android/app directory. Keep the .jks OUTSIDE the repo.
+
+storePassword=CHANGE_ME
+keyPassword=CHANGE_ME
+keyAlias=dukkan
+storeFile=C:/keys/dukkan-release.jks
