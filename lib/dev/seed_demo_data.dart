@@ -21,6 +21,14 @@ import '../firebase_options.dart';
 const _seedEmail = 'seed-owner@dukkan.dev';
 const _seedPassword = 'DukkanSeed123!';
 
+// Customer to fill with orders + favorites, passed at runtime so no real
+// password ever lands in source:
+//   flutter run -t lib/dev/seed_demo_data.dart -d <device> \
+//     --dart-define=SEED_CUSTOMER_EMAIL=you@example.com \
+//     --dart-define=SEED_CUSTOMER_PASSWORD=yourpassword
+const _customerEmail = String.fromEnvironment('SEED_CUSTOMER_EMAIL');
+const _customerPassword = String.fromEnvironment('SEED_CUSTOMER_PASSWORD');
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -29,14 +37,38 @@ Future<void> main() async {
 
   final log = StringBuffer();
   try {
-    final uid = await _signInSeedOwner();
-    log.writeln('Signed in as seed owner ($uid).');
-    await _seed(uid, log);
+    // Phase 1 — owner: catalog (shops + products) + the owner's own profile,
+    // written while signed in as the seed owner so the /shops + /products +
+    // /users(self) rules pass.
+    final ownerUid = await _signInSeedOwner();
+    log.writeln('Signed in as seed owner ($ownerUid).');
+    await _seed(ownerUid, log);
+
+    // Phase 2 — customer: profile + favorites + order history, written while
+    // signed in AS that customer (rules gate /users and /orders to the owner).
+    if (_customerEmail.isEmpty || _customerPassword.isEmpty) {
+      log.writeln('No SEED_CUSTOMER_* creds — skipped customer data '
+          '(orders/favorites). Pass --dart-define to fill them.');
+    } else {
+      await FirebaseAuth.instance.signOut();
+      final customerUid = await _signInCustomer();
+      log.writeln('Signed in as customer ($customerUid).');
+      await _seedCustomer(customerUid, log);
+    }
+
     log.writeln('Seed complete.');
   } catch (e) {
     log.writeln('Seed FAILED: $e');
   }
   _SeedApp.log.value = log.toString();
+}
+
+Future<String> _signInCustomer() async {
+  final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
+    email: _customerEmail.trim(),
+    password: _customerPassword,
+  );
+  return cred.user!.uid;
 }
 
 Future<String> _signInSeedOwner() async {
@@ -59,6 +91,16 @@ Future<String> _signInSeedOwner() async {
 
 Future<void> _seed(String ownerUid, StringBuffer log) async {
   final firestore = FirebaseFirestore.instance;
+
+  // The owner's own /users profile — so logging in as the seed owner lands on
+  // the owner UI (order desk) instead of falling back to a customer.
+  await firestore.collection('users').doc(ownerUid).set({
+    'name': 'صاحب الدكان',
+    'email': _seedEmail,
+    'role': 'owner',
+    'phone': '01000000000',
+    'createdAt': FieldValue.serverTimestamp(),
+  });
 
   // Shops must land in their own commit BEFORE products: the /products create
   // rule does a get() on the parent shop to verify ownership, and rules never
@@ -83,6 +125,30 @@ Future<void> _seed(String ownerUid, StringBuffer log) async {
       '${_demoProducts().length} products.');
 }
 
+/// Customer-side demo: profile (with favorites) + a spread of orders across
+/// every status. Runs while signed in AS the customer.
+Future<void> _seedCustomer(String customerUid, StringBuffer log) async {
+  final firestore = FirebaseFirestore.instance;
+
+  await firestore.collection('users').doc(customerUid).set({
+    'name': 'أحمد',
+    'email': _customerEmail,
+    'role': 'customer',
+    'phone': '01234567890',
+    'favoriteShopIds': ['shop_demo_1', 'shop_demo_3'],
+    'favoriteProductIds': ['p1', 'p5', 'p13', 'p23'],
+    'createdAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  final orders = _demoOrders(customerUid);
+  for (final order in orders) {
+    await firestore.collection('orders').doc(order['id'] as String).set(order);
+  }
+
+  log.writeln('Wrote customer profile + 4 favorites and '
+      '${orders.length} orders.');
+}
+
 List<Map<String, dynamic>> _demoShops(String ownerUid) => [
       {
         'id': 'shop_demo_1',
@@ -92,6 +158,8 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': '12 شارع الجمهورية، وسط البلد، القاهرة',
         'isOpen': true,
         'categories': ['خضروات وفواكه', 'ألبان', 'مشروبات', 'معلبات'],
+        'ratingSum': 44, // 10 votes, ~4.4 avg
+        'ratingCount': 10,
       },
       {
         'id': 'shop_demo_2',
@@ -101,12 +169,38 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': '45 شارع النصر، مدينة نصر، القاهرة',
         'isOpen': true,
         'categories': ['مخبوزات', 'لحوم ودواجن', 'منظفات', 'مشروبات'],
+        'ratingSum': 33, // 7 votes, ~4.7 avg
+        'ratingCount': 7,
+      },
+      {
+        'id': 'shop_demo_3',
+        'ownerUid': ownerUid,
+        'name': 'Green Basket',
+        'nameAr': 'السلة الخضراء',
+        'address': '8 شارع مصدق، الدقي، الجيزة',
+        'isOpen': true,
+        'categories': ['خضروات وفواكه', 'ألبان', 'معلبات'],
+        'ratingSum': 19, // 4 votes, ~4.8 avg
+        'ratingCount': 4,
+      },
+      {
+        'id': 'shop_demo_4',
+        'ownerUid': ownerUid,
+        'name': 'City Market',
+        'nameAr': 'ماركت المدينة',
+        'address': '120 شارع الهرم، الجيزة',
+        'isOpen': false, // closed — shows the "مغلق" state
+        'categories': ['مشروبات', 'منظفات', 'معلبات', 'مخبوزات'],
+        'ratingSum': 21, // 6 votes, ~3.5 avg
+        'ratingCount': 6,
       },
     ];
 
 List<Map<String, dynamic>> _demoProducts() {
   const shop1 = 'shop_demo_1';
   const shop2 = 'shop_demo_2';
+  const shop3 = 'shop_demo_3';
+  const shop4 = 'shop_demo_4';
   return [
     _product('p1', shop1, 'Tomatoes (1kg)', 'طماطم (1 كجم)', 1500, 'خضروات وفواكه', promo: true),
     _product('p2', shop1, 'Cucumbers (1kg)', 'خيار (1 كجم)', 1200, 'خضروات وفواكه'),
@@ -128,6 +222,137 @@ List<Map<String, dynamic>> _demoProducts() {
     _product('p18', shop2, 'Laundry Powder 1kg', 'مسحوق غسيل 1 كجم', 8000, 'منظفات'),
     _product('p19', shop2, 'Iced Tea 500ml', 'شاي مثلج 500 مل', 1500, 'مشروبات'),
     _product('p20', shop2, 'Orange Juice 1L', 'عصير برتقال 1 لتر', 3000, 'مشروبات', out: true),
+    // shop_demo_3 — Green Basket (fresh + dairy)
+    _product('p21', shop3, 'Potatoes (1kg)', 'بطاطس (1 كجم)', 1300, 'خضروات وفواكه'),
+    _product('p22', shop3, 'Apples (1kg)', 'تفاح (1 كجم)', 4000, 'خضروات وفواكه', promo: true),
+    _product('p23', shop3, 'Strawberries (500g)', 'فراولة (500 جم)', 3500, 'خضروات وفواكه'),
+    _product('p24', shop3, 'Onions (1kg)', 'بصل (1 كجم)', 900, 'خضروات وفواكه'),
+    _product('p25', shop3, 'Feta Cheese 250g', 'جبنة فيتا 250 جم', 4800, 'ألبان'),
+    _product('p26', shop3, 'Butter 200g', 'زبدة 200 جم', 5500, 'ألبان', low: true),
+    _product('p27', shop3, 'Canned Tuna', 'تونة معلبة', 3200, 'معلبات'),
+    // shop_demo_4 — City Market (drinks + household)
+    _product('p28', shop4, 'Sparkling Water 1L', 'مياه غازية 1 لتر', 1200, 'مشروبات'),
+    _product('p29', shop4, 'Energy Drink 250ml', 'مشروب طاقة 250 مل', 2500, 'مشروبات', promo: true),
+    _product('p30', shop4, 'Floor Cleaner 1L', 'منظف أرضيات 1 لتر', 5000, 'منظفات'),
+    _product('p31', shop4, 'Tissue Box', 'علبة مناديل', 2000, 'منظفات'),
+    _product('p32', shop4, 'Rusk (Baksimat)', 'بقسماط', 1800, 'مخبوزات', out: true),
+  ];
+}
+
+/// Orders spanning every status so طلباتي shows a realistic history: an active
+/// order on the way, one being prepared, a just-placed one, plus delivered
+/// (one rated), cancelled, and rejected history. Ordered newest-first via
+/// createdAt so the list reads top-to-bottom by recency.
+List<Map<String, dynamic>> _demoOrders(String customerUid) {
+  final now = DateTime.now();
+  Timestamp ago(Duration d) => Timestamp.fromDate(now.subtract(d));
+
+  Map<String, dynamic> item(
+    String productId,
+    String name,
+    String nameAr,
+    int priceMinor,
+    int quantity,
+  ) => {
+        'productId': productId,
+        'name': name,
+        'nameAr': nameAr,
+        'priceMinor': priceMinor,
+        'quantity': quantity,
+      };
+
+  const cairo = {'line1': '12 شارع الجمهورية، الدور 3', 'city': 'القاهرة'};
+
+  return [
+    {
+      'id': 'order_demo_1',
+      'shopId': 'shop_demo_1',
+      'customerUid': customerUid,
+      'items': [
+        item('p1', 'Tomatoes (1kg)', 'طماطم (1 كجم)', 1500, 2),
+        item('p5', 'Milk 1L', 'لبن 1 لتر', 3500, 1),
+      ],
+      'totalMinor': 6500,
+      'status': 'outForDelivery',
+      'createdAt': ago(const Duration(minutes: 25)),
+      'deliveryAddress': cairo,
+    },
+    {
+      'id': 'order_demo_2',
+      'shopId': 'shop_demo_2',
+      'customerUid': customerUid,
+      'items': [
+        item('p14', 'Chicken (1kg)', 'دجاج (1 كجم)', 9000, 1),
+        item('p11', 'Baladi Bread (5pcs)', 'عيش بلدي (5 أرغفة)', 500, 3),
+      ],
+      'totalMinor': 10500,
+      'status': 'preparing',
+      'createdAt': ago(const Duration(hours: 1, minutes: 10)),
+      'deliveryAddress': cairo,
+    },
+    {
+      'id': 'order_demo_3',
+      'shopId': 'shop_demo_3',
+      'customerUid': customerUid,
+      'items': [
+        item('p22', 'Apples (1kg)', 'تفاح (1 كجم)', 4000, 1),
+        item('p23', 'Strawberries (500g)', 'فراولة (500 جم)', 3500, 2),
+      ],
+      'totalMinor': 11000,
+      'status': 'pending',
+      'createdAt': ago(const Duration(hours: 3)),
+      'deliveryAddress': cairo,
+    },
+    {
+      'id': 'order_demo_4',
+      'shopId': 'shop_demo_1',
+      'customerUid': customerUid,
+      'items': [
+        item('p8', 'Cola 1.5L', 'كولا 1.5 لتر', 2000, 2),
+        item('p9', 'Bottled Water 1.5L', 'مياه معدنية 1.5 لتر', 800, 6),
+      ],
+      'totalMinor': 8800,
+      'status': 'delivered',
+      'rating': 5,
+      'createdAt': ago(const Duration(days: 2)),
+      'deliveryAddress': cairo,
+    },
+    {
+      'id': 'order_demo_5',
+      'shopId': 'shop_demo_2',
+      'customerUid': customerUid,
+      'items': [
+        item('p17', 'Dish Soap 750ml', 'سائل جلي 750 مل', 4500, 1),
+      ],
+      'totalMinor': 4500,
+      'status': 'delivered',
+      'createdAt': ago(const Duration(days: 4)),
+      'deliveryAddress': cairo,
+    },
+    {
+      'id': 'order_demo_6',
+      'shopId': 'shop_demo_3',
+      'customerUid': customerUid,
+      'items': [
+        item('p25', 'Feta Cheese 250g', 'جبنة فيتا 250 جم', 4800, 1),
+      ],
+      'totalMinor': 4800,
+      'status': 'cancelled',
+      'createdAt': ago(const Duration(days: 6)),
+      'deliveryAddress': cairo,
+    },
+    {
+      'id': 'order_demo_7',
+      'shopId': 'shop_demo_4',
+      'customerUid': customerUid,
+      'items': [
+        item('p29', 'Energy Drink 250ml', 'مشروب طاقة 250 مل', 2500, 4),
+      ],
+      'totalMinor': 10000,
+      'status': 'rejected',
+      'createdAt': ago(const Duration(days: 8)),
+      'deliveryAddress': cairo,
+    },
   ];
 }
 
