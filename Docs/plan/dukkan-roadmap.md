@@ -119,7 +119,7 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       Arabic + English store listing copy **DONE** (`Docs/RELEASE_LISTING.md`).
       **Screenshots + feature graphic still pending** — need the app running with seeded data
       (blocked on Firestore `(default)` DB). Capture list is in RELEASE_LISTING.md.
-- [ ] **R1b — Official icon pack swap (added 2026-07-10, no blocker).** User delivered the
+- [x] **R1b — Official icon pack swap (added 2026-07-10, DONE 2026-07-10).** User delivered the
       OFFICIAL multi-platform logo pack at **`Dukkan Logo Assets/`** (repo root):
       `Android/` adaptive foreground+background 432 + legacy 48–192 · `iOS/` 40–1024 ·
       `Web/` favicons 16–48 + apple-touch-180 + social-avatar-512 ·
