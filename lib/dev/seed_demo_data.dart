@@ -194,6 +194,40 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'ratingSum': 21, // 6 votes, ~3.5 avg
         'ratingCount': 6,
       },
+      // Real Ismailia / Abu Atwa neighborhood shops.
+      {
+        'id': 'shop_demo_5',
+        'ownerUid': ownerUid,
+        'name': 'Othman',
+        'nameAr': 'عثمان',
+        'address': 'الشارع التجاري، أبوعطوة، الإسماعيلية',
+        'isOpen': true,
+        'categories': ['خضروات وفواكه', 'ألبان', 'مشروبات', 'معلبات', 'منظفات'],
+        'ratingSum': 47, // 10 votes, ~4.7 avg
+        'ratingCount': 10,
+      },
+      {
+        'id': 'shop_demo_6',
+        'ownerUid': ownerUid,
+        'name': 'Al Tawheed',
+        'nameAr': 'التوحيد',
+        'address': 'الشارع التجاري، أبوعطوة، الإسماعيلية',
+        'isOpen': true,
+        'categories': ['مشروبات', 'معلبات', 'مخبوزات', 'منظفات'],
+        'ratingSum': 40, // 9 votes, ~4.4 avg
+        'ratingCount': 9,
+      },
+      {
+        'id': 'shop_demo_7',
+        'ownerUid': ownerUid,
+        'name': 'El Semti',
+        'nameAr': 'السمطي',
+        'address': 'الزغابة، أمام فرن عبد الحي، أبوعطوة، الإسماعيلية',
+        'isOpen': true,
+        'categories': ['خضروات وفواكه', 'لحوم ودواجن', 'ألبان', 'مخبوزات'],
+        'ratingSum': 23, // 5 votes, ~4.6 avg
+        'ratingCount': 5,
+      },
     ];
 
 List<Map<String, dynamic>> _demoProducts() {
@@ -201,6 +235,9 @@ List<Map<String, dynamic>> _demoProducts() {
   const shop2 = 'shop_demo_2';
   const shop3 = 'shop_demo_3';
   const shop4 = 'shop_demo_4';
+  const shop5 = 'shop_demo_5';
+  const shop6 = 'shop_demo_6';
+  const shop7 = 'shop_demo_7';
   return [
     _product('p1', shop1, 'Tomatoes (1kg)', 'طماطم (1 كجم)', 1500, 'خضروات وفواكه', promo: true),
     _product('p2', shop1, 'Cucumbers (1kg)', 'خيار (1 كجم)', 1200, 'خضروات وفواكه'),
@@ -236,6 +273,30 @@ List<Map<String, dynamic>> _demoProducts() {
     _product('p30', shop4, 'Floor Cleaner 1L', 'منظف أرضيات 1 لتر', 5000, 'منظفات'),
     _product('p31', shop4, 'Tissue Box', 'علبة مناديل', 2000, 'منظفات'),
     _product('p32', shop4, 'Rusk (Baksimat)', 'بقسماط', 1800, 'مخبوزات', out: true),
+    // shop_demo_5 — عثمان (general grocery, الشارع التجاري)
+    _product('p33', shop5, 'Tomatoes (1kg)', 'طماطم (1 كجم)', 1400, 'خضروات وفواكه', promo: true),
+    _product('p34', shop5, 'Potatoes (1kg)', 'بطاطس (1 كجم)', 1250, 'خضروات وفواكه'),
+    _product('p35', shop5, 'Eggs (30)', 'بيض (طبق 30)', 13500, 'ألبان'),
+    _product('p36', shop5, 'Milk 1L', 'لبن 1 لتر', 3400, 'ألبان'),
+    _product('p37', shop5, 'Cola 1.5L', 'كولا 1.5 لتر', 2000, 'مشروبات'),
+    _product('p38', shop5, 'Sunflower Oil 1L', 'زيت عباد الشمس 1 لتر', 6500, 'معلبات', low: true),
+    _product('p39', shop5, 'Rice (1kg)', 'أرز (1 كجم)', 3000, 'معلبات'),
+    _product('p40', shop5, 'Dish Soap 750ml', 'سائل جلي 750 مل', 4300, 'منظفات'),
+    // shop_demo_6 — التوحيد (drinks + canned + bakery, نفس الشارع)
+    _product('p41', shop6, 'Water 1.5L (6-pack)', 'مياه 1.5 لتر (6 عبوات)', 4500, 'مشروبات', promo: true),
+    _product('p42', shop6, 'Juice 1L', 'عصير 1 لتر', 2800, 'مشروبات'),
+    _product('p43', shop6, 'Canned Tuna', 'تونة معلبة', 3100, 'معلبات'),
+    _product('p44', shop6, 'Canned Beans', 'فول معلب', 1000, 'معلبات'),
+    _product('p45', shop6, 'Baladi Bread (5pcs)', 'عيش بلدي (5 أرغفة)', 500, 'مخبوزات'),
+    _product('p46', shop6, 'Fino Bread', 'عيش فينو', 1500, 'مخبوزات'),
+    _product('p47', shop6, 'Laundry Powder 1kg', 'مسحوق غسيل 1 كجم', 7800, 'منظفات', out: true),
+    // shop_demo_7 — السمطي (fresh + butcher, الزغابة أمام فرن عبد الحي)
+    _product('p48', shop7, 'Oranges (1kg)', 'برتقال (1 كجم)', 1700, 'خضروات وفواكه', promo: true),
+    _product('p49', shop7, 'Bananas (1kg)', 'موز (1 كجم)', 2100, 'خضروات وفواكه'),
+    _product('p50', shop7, 'Chicken (1kg)', 'دجاج (1 كجم)', 8800, 'لحوم ودواجن'),
+    _product('p51', shop7, 'Minced Meat (1kg)', 'لحمة مفرومة (1 كجم)', 24500, 'لحوم ودواجن', low: true),
+    _product('p52', shop7, 'White Cheese 500g', 'جبنة بيضاء 500 جم', 6300, 'ألبان'),
+    _product('p53', shop7, 'Baladi Bread (5pcs)', 'عيش بلدي (5 أرغفة)', 500, 'مخبوزات'),
   ];
 }
 
