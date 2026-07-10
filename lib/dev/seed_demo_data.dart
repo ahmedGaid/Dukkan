@@ -59,19 +59,26 @@ Future<String> _signInSeedOwner() async {
 
 Future<void> _seed(String ownerUid, StringBuffer log) async {
   final firestore = FirebaseFirestore.instance;
-  final batch = firestore.batch();
 
+  // Shops must land in their own commit BEFORE products: the /products create
+  // rule does a get() on the parent shop to verify ownership, and rules never
+  // see other writes from the same atomic batch — so a single combined batch
+  // would fail permission-denied on every product.
+  final shopBatch = firestore.batch();
   for (final shop in _demoShops(ownerUid)) {
-    batch.set(firestore.collection('shops').doc(shop['id'] as String), shop);
+    shopBatch.set(firestore.collection('shops').doc(shop['id'] as String), shop);
   }
+  await shopBatch.commit();
+
+  final productBatch = firestore.batch();
   for (final product in _demoProducts()) {
-    batch.set(
+    productBatch.set(
       firestore.collection('products').doc(product['id'] as String),
       product,
     );
   }
+  await productBatch.commit();
 
-  await batch.commit();
   log.writeln('Wrote ${_demoShops(ownerUid).length} shops and '
       '${_demoProducts().length} products.');
 }
