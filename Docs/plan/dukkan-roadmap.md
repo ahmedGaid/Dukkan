@@ -42,12 +42,13 @@ Applies on top of the `dukkan-brand` checklist, not instead of it.
 ## Firestore shape (v1 sketch — refine per session)
 
 ```
-/users/{uid}       role: 'customer'|'owner', name, phone, address?
+/users/{uid}       role: 'customer'|'owner'|'courier' (courier = Phase 5), name, phone, address?
+/shops/{shopId}/couriers/{uid}   uid, name, phone, joinedAt   (Phase 5 membership)
 /shops/{shopId}    ownerUid, name, nameAr, logoUrl, address, isOpen, categories[]
 /products/{id}     shopId, name, nameAr, imageUrl, priceMinor (int, piasters),
                    category, stockStatus, isPromo
 /orders/{id}       shopId, customerUid, items[], totalMinor, status, createdAt,
-                   deliveryAddress, notes?
+                   deliveryAddress, notes?, courierUid? (Phase 5)
 ```
 Status flow: `pending → accepted → preparing → outForDelivery → delivered | cancelled | rejected`
 
@@ -131,6 +132,25 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       later iOS build + any web/social surface. Rebuild on device, eyeball launcher + splash
       light/dark. Gates green.
 - [ ] **R2 — Ship.** Crashlytics, release build signing, Play internal testing track.
+
+### Phase 5 — Courier role (مندوب التوصيل) — added 2026-07-10, runs after R2
+> Third user role beside customer/owner: courier signs up, joins shops by invite code, owner
+> assigns orders, courier drives `preparing → outForDelivery → delivered`. Owner self-delivery
+> stays the no-courier fallback. **Session authority: `Docs/plan/courier-role-plan/` —
+> load `FILE_00_INDEX.md` first, then one FILE_NN per session.**
+> Data: `role: 'courier'` on `/users`; `/shops/{id}/couriers/{uid}` membership subcollection;
+> nullable `courierUid` on `/orders`. Canonical Arabic term: **مندوب التوصيل** (never ديليفري/طيار).
+- [ ] **D1 — Role foundation.** `UserRole.courier` end-to-end: enum/model/signup third card/
+      router/placeholder shell/settings label/users rules/i18n. (`FILE_01`)
+- [ ] **D2 — Shop link.** Membership subcollection + rules, courier join-by-code page, owner
+      couriers page with invite code + remove. (`FILE_02`)
+- [ ] **D3 — Order assignment.** `courierUid` on orders, owner assign action in order desk,
+      courier read + delivery-leg transition rules. (`FILE_03`)
+- [ ] **D4 — Courier shell.** Realtime deliveries list (active/history), delivery detail,
+      استلمت الطلب / تم التسليم actions, designed states. (`FILE_04`)
+- [ ] **D5 — Notifications + polish.** Assignment push via Worker `/notify`, brand/dark/RTL audit,
+      lexicon entry, courier journey added to the E2E master prompt. (`FILE_05`)
+- [ ] **D6 — Acceptance.** Full acceptance + regression sign-off. (`FILE_06`)
 
 ## Standing regression (added 2026-07-10)
 
