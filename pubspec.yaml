@@ -58,6 +58,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  # Build-time asset generators (R1 store prep) — dev-only, not shipped.
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.6
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -84,3 +87,27 @@ flutter:
     - family: Inter
       fonts:
         - asset: assets/fonts/Inter-Variable.ttf
+
+# --- R1 store prep: launcher icon (white minimal tile, D+awning mark) ---
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/brand/icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/brand/icon_foreground.png"
+
+# --- R1 store prep: splash (mark on white / dark-green, Android 12+ aware) ---
+flutter_native_splash:
+  android: true
+  ios: false
+  web: false
+  color: "#FFFFFF"
+  image: assets/brand/splash.png
+  color_dark: "#0A0F0D"
+  image_dark: assets/brand/splash_dark.png
+  android_12:
+    color: "#FFFFFF"
+    image: assets/brand/splash.png
+    color_dark: "#0A0F0D"
+    image_dark: assets/brand/splash_dark.png

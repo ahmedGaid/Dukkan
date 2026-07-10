@@ -114,8 +114,11 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       the real device (customer + owner journeys, four-layer verification, fix loop). Must be
       GREEN (or GREEN-WITH-SKIPS with only human-blocked items) before R2. Prereq: Firestore
       `(default)` DB exists + seed run (see `dukkan-status` blockers).
-- [ ] **R1 — Store prep.** Adaptive icon + splash from logo, Arabic store listing copy,
-      screenshots.
+- [~] **R1 — Store prep.** Adaptive icon + splash from logo **DONE** (white minimal tile,
+      D+awning mark auto-extracted; `flutter_launcher_icons` + `flutter_native_splash` wired).
+      Arabic + English store listing copy **DONE** (`Docs/RELEASE_LISTING.md`).
+      **Screenshots + feature graphic still pending** — need the app running with seeded data
+      (blocked on Firestore `(default)` DB). Capture list is in RELEASE_LISTING.md.
 - [ ] **R2 — Ship.** Crashlytics, release build signing, Play internal testing track.
 
 ## Standing regression (added 2026-07-10)
