@@ -110,9 +110,20 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
 - [x] **P3 — Ratings.** Shop rating after delivered order, average on shop card.
 
 ### Phase 4 — Release
+- [ ] **R0 — First full E2E regression.** Run `Docs/testing/E2E_MASTER_PROMPT.md` end to end on
+      the real device (customer + owner journeys, four-layer verification, fix loop). Must be
+      GREEN (or GREEN-WITH-SKIPS with only human-blocked items) before R2. Prereq: Firestore
+      `(default)` DB exists + seed run (see `dukkan-status` blockers).
 - [ ] **R1 — Store prep.** Adaptive icon + splash from logo, Arabic store listing copy,
       screenshots.
 - [ ] **R2 — Ship.** Crashlytics, release build signing, Play internal testing track.
+
+## Standing regression (added 2026-07-10)
+
+`Docs/testing/E2E_MASTER_PROMPT.md` is the master daily E2E test prompt (same pattern as
+Conductor's). Self-maintaining: every run adds journeys for newly shipped features. After R0 it
+runs daily (scheduled agent) and before every release build. Reports land in
+`Docs/testing/e2e-reports/YYYY-MM-DD/`.
 
 ## Session protocol (same as Conductor)
 
