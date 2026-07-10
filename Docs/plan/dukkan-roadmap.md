@@ -119,6 +119,17 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       Arabic + English store listing copy **DONE** (`Docs/RELEASE_LISTING.md`).
       **Screenshots + feature graphic still pending** — need the app running with seeded data
       (blocked on Firestore `(default)` DB). Capture list is in RELEASE_LISTING.md.
+- [ ] **R1b — Official icon pack swap (added 2026-07-10, no blocker).** User delivered the
+      OFFICIAL multi-platform logo pack at **`Dukkan Logo Assets/`** (repo root):
+      `Android/` adaptive foreground+background 432 + legacy 48–192 · `iOS/` 40–1024 ·
+      `Web/` favicons 16–48 + apple-touch-180 + social-avatar-512 ·
+      `Mark-Transparent/` light+dark marks 128–1024. It SUPERSEDES the R1 auto-extracted mark.
+      Do: point `flutter_launcher_icons` at `Android/adaptive-foreground-432.png` +
+      `adaptive-background-432.png` (+ legacy fallback), regenerate; regenerate splash from
+      `Mark-Transparent/dukkan-mark-light-1024.png` (dark variant from `-dark-`); replace
+      `assets/brand/` marks with the official transparent marks; keep iOS/ + Web/ staged for
+      later iOS build + any web/social surface. Rebuild on device, eyeball launcher + splash
+      light/dark. Gates green.
 - [ ] **R2 — Ship.** Crashlytics, release build signing, Play internal testing track.
 
 ## Standing regression (added 2026-07-10)
