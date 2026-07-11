@@ -369,7 +369,7 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': '12 شارع الجمهورية، وسط البلد، القاهرة',
         'isOpen': true,
         'categories': ['خضروات وفواكه', 'ألبان', 'مشروبات', 'معلبات'],
-        'logoUrl': _seedImage('grocery-store', 'shop_demo_1', 200),
+        'logoUrl': 'assets/shops/grocery.png',
         'ratingSum': 44, // 10 votes, ~4.4 avg
         'ratingCount': 10,
       },
@@ -381,7 +381,7 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': '45 شارع النصر، مدينة نصر، القاهرة',
         'isOpen': true,
         'categories': ['مخبوزات', 'لحوم ودواجن', 'منظفات', 'مشروبات'],
-        'logoUrl': _seedImage('supermarket', 'shop_demo_2', 200),
+        'logoUrl': 'assets/shops/bakery.png',
         'ratingSum': 33, // 7 votes, ~4.7 avg
         'ratingCount': 7,
       },
@@ -393,7 +393,7 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': '8 شارع مصدق، الدقي، الجيزة',
         'isOpen': true,
         'categories': ['خضروات وفواكه', 'ألبان', 'معلبات'],
-        'logoUrl': _seedImage('greengrocer', 'shop_demo_3', 200),
+        'logoUrl': 'assets/shops/vege.png',
         'ratingSum': 19, // 4 votes, ~4.8 avg
         'ratingCount': 4,
       },
@@ -405,7 +405,7 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': '120 شارع الهرم، الجيزة',
         'isOpen': false, // closed — shows the "مغلق" state
         'categories': ['مشروبات', 'منظفات', 'معلبات', 'مخبوزات'],
-        'logoUrl': _seedImage('supermarket', 'shop_demo_4', 200),
+        'logoUrl': 'assets/shops/drinks.png',
         'ratingSum': 21, // 6 votes, ~3.5 avg
         'ratingCount': 6,
       },
@@ -418,7 +418,7 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': 'الشارع التجاري، أبوعطوة، الإسماعيلية',
         'isOpen': true,
         'categories': ['خضروات وفواكه', 'ألبان', 'مشروبات', 'معلبات', 'منظفات'],
-        'logoUrl': _seedImage('grocery-store', 'shop_demo_5', 200),
+        'logoUrl': 'assets/shops/general.png',
         'ratingSum': 47, // 10 votes, ~4.7 avg
         'ratingCount': 10,
       },
@@ -430,7 +430,7 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': 'الشارع التجاري، أبوعطوة، الإسماعيلية',
         'isOpen': true,
         'categories': ['مشروبات', 'معلبات', 'مخبوزات', 'منظفات'],
-        'logoUrl': _seedImage('grocery-store', 'shop_demo_6', 200),
+        'logoUrl': 'assets/shops/cleaning.png',
         'ratingSum': 40, // 9 votes, ~4.4 avg
         'ratingCount': 9,
       },
@@ -442,19 +442,11 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': 'الزغابة، أمام فرن عبد الحي، أبوعطوة، الإسماعيلية',
         'isOpen': true,
         'categories': ['خضروات وفواكه', 'لحوم ودواجن', 'ألبان', 'مخبوزات'],
-        'logoUrl': _seedImage('butcher-shop', 'shop_demo_7', 200),
+        'logoUrl': 'assets/shops/meat.png',
         'ratingSum': 23, // 5 votes, ~4.6 avg
         'ratingCount': 5,
       },
     ];
-
-/// Deterministic loremflickr placeholder — used for SHOP logos only (a real
-/// storefront photo suits a shop avatar; Servier's set is food-only). `lock`,
-/// derived from [seedId], pins one stable photo per shop across re-seeds.
-String _seedImage(String keyword, String seedId, int size) {
-  final lock = int.tryParse(seedId.replaceAll(RegExp(r'\D'), '')) ?? 1;
-  return 'https://loremflickr.com/$size/$size/$keyword?lock=$lock';
-}
 
 /// A clean flat food illustration from Servier Medical Art (SMART), a
 /// CC-licensed set hosted on Wikimedia Commons. [subject] is the SMART food

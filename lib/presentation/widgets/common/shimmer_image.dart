@@ -35,6 +35,18 @@ class ShimmerImage extends StatelessWidget {
     final url = this.url;
     if (url == null || url.isEmpty) return _fallback(context);
 
+    // A bundled asset path (e.g. demo seed shop logos) rather than a remote
+    // URL — load it from the app bundle, no network/shimmer needed.
+    if (url.startsWith('assets/')) {
+      return Image.asset(
+        url,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (context, _, _) => _fallback(context),
+      );
+    }
+
     return Image.network(
       url,
       width: width,
