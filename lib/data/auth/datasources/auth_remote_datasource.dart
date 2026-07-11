@@ -26,12 +26,22 @@ class AuthRemoteDataSource {
   Stream<User?> rawAuthChanges() => _auth.authStateChanges();
 
   /// Loads the `/users/{uid}` profile for a signed-in Firebase user. Falls back
-  /// to a customer profile from the Auth record if the doc is missing (broken
-  /// state — shouldn't happen once signUp always writes it).
+  /// to a customer profile from the Auth record if the doc is still missing
+  /// after waiting for it (broken state — shouldn't happen once signUp always
+  /// writes it).
   Future<AppUserModel> loadProfile(User fbUser) async {
     try {
-      final snap = await _users.doc(fbUser.uid).get();
-      final data = snap.data();
+      var data = (await _users.doc(fbUser.uid).get()).data();
+      // The Auth-state stream can fire before signUp()'s own `/users` write
+      // commits (account creation races the Firestore set). Wait for the doc
+      // to actually appear rather than guessing a fixed delay — a fixed delay
+      // is either wasted time on a fast write or too short on a slow one.
+      data ??= await _users
+          .doc(fbUser.uid)
+          .snapshots()
+          .map((snap) => snap.data())
+          .firstWhere((d) => d != null, orElse: () => null)
+          .timeout(const Duration(seconds: 5), onTimeout: () => null);
       if (data == null) {
         return AppUserModel(
           uid: fbUser.uid,
