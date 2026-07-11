@@ -5,6 +5,9 @@ plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    // Crashlytics (R2) — reads android/app/google-services.json.
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 // Release signing is driven by android/key.properties (never committed — see

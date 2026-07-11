@@ -44,6 +44,7 @@ dependencies:
   firebase_auth: ^6.5.4
   cloud_firestore: ^6.6.0
   firebase_messaging: ^16.0.4
+  firebase_crashlytics: ^5.0.5
   flutter_bloc: ^9.1.1
   shared_preferences: ^2.5.3
   image_picker: ^1.2.3

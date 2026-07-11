@@ -59,11 +59,14 @@ SDK Manager) and enable Windows Developer Mode. If it fails on
 First upload also asks you to enrol in **Play App Signing** — accept it; Google
 holds the app-signing key and your `.jks` becomes the *upload* key.
 
-## Still pending (needs decisions / a device to verify)
+## Still pending (needs a device to verify)
 
-- **Crashlytics (R2):** not wired yet. Needs a new dependency
-  (`firebase_crashlytics`) plus native Gradle config (the `com.google.gms.google-services`
-  and `com.google.firebase.crashlytics` plugins + `google-services.json`), none of
-  which can be verified without a real build. Deferred pending a dep decision.
+- **Crashlytics (R2):** wired 2026-07-11 — `firebase_crashlytics` dep, `com.google.gms.google-services`
+  + `com.google.firebase.crashlytics` Gradle plugins, `lib/main.dart` routes
+  `FlutterError.onError` + `PlatformDispatcher.instance.onError` to Crashlytics
+  (skipped on web — no web target). Collection is on in release, off in debug
+  builds. Release AAB builds clean with the plugins applied. **Not yet verified
+  on-device** — needs a real crash (or `FirebaseCrashlytics.instance.crash()` test
+  call) to confirm an event actually reaches the Firebase console.
 - **R1 store screenshots:** need the app running on a device/emulator — blocked by
   the same missing Android SDK / Developer Mode.
