@@ -980,6 +980,42 @@ abstract class AppLocalizations {
   /// **'معرفناش نحدّث الطلب دلوقتي — جرّب تاني.'**
   String get orderActionErrorBody;
 
+  /// No description provided for @orderCustomerSection.
+  ///
+  /// In ar, this message translates to:
+  /// **'العميل'**
+  String get orderCustomerSection;
+
+  /// No description provided for @orderPaymentMethod.
+  ///
+  /// In ar, this message translates to:
+  /// **'طريقة الدفع'**
+  String get orderPaymentMethod;
+
+  /// No description provided for @orderSubtotalLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المجموع الفرعي'**
+  String get orderSubtotalLabel;
+
+  /// No description provided for @orderDeliveryFeeLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'رسوم التوصيل'**
+  String get orderDeliveryFeeLabel;
+
+  /// No description provided for @orderDriverSection.
+  ///
+  /// In ar, this message translates to:
+  /// **'المندوب'**
+  String get orderDriverSection;
+
+  /// No description provided for @orderTimelineTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'سجل الطلب'**
+  String get orderTimelineTitle;
+
   /// No description provided for @notifyNewOrderTitle.
   ///
   /// In ar, this message translates to:

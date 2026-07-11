@@ -144,12 +144,22 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
 > shell مندوب التوصيل) · commission ledger + founder finance page. 7-status enum UNCHANGED.
 > **Session authority: `Docs/plan/marketplace-v2-plan/` — load `FILE_00_INDEX.md` first, then
 > one FILE_NN per session (M1–M14 = FILE_01–FILE_14).**
-- [~] **M1–M2 — Order details.** M1 **DONE** — `statusHistory` log: `StatusChange` entity,
+- [x] **M1–M2 — Order details.** M1 **DONE** — `statusHistory` log: `StatusChange` entity,
       `Order.statusHistory` field, model parse/serialize, datasource appends on create + every
       transition (`FieldValue.arrayUnion`, `currentUid` from injected `FirebaseAuth`), rules allow
-      `statusHistory` alongside `status`. Gates green (analyze 0, test 56/56, parity 196). Device
-      smoke test (Firestore console check, old-doc no-crash) still pending — no device connected
-      this session. M2 (owner order-details page with timeline UI) not started.
+      `statusHistory` alongside `status`. **M2 DONE** — one role-aware `OrderDetailPage` (owner
+      flag via `/order/:id?owner=true`, set from `order_desk_page.dart`'s now-tappable
+      `_OwnerOrderCard`): owner-only customer name/phone card (fetched via new
+      `AuthRepository.getUserById`/`GetUserById` use case, no new dep — phone is selectable text,
+      no `url_launcher`), payment-method + subtotal/delivery-fee/total card, a `driverUid`-gated
+      placeholder card (field added to `Order`/`OrderModel`, always null until M9 wires it), and
+      an `_OrderTimeline` (both roles) rendering `statusHistory` oldest-first with a single-row
+      fallback for pre-M1 orders. Gates green (analyze 0, test 58/58, parity 202). Two new lexicon
+      rows added (`BRAND.md`): "Order history/timeline" → سجل الطلب, "Driver" → المندوب. Device
+      smoke test (both M1 and M2) still pending — no device connected this session; **the M1
+      `firestore.rules` update (statusHistory in the update diff whitelist) is also still
+      undeployed** — deploy via Firebase console before any real order write is tested on device,
+      or status/statusHistory writes will be rejected by the currently-live (pre-M1) rules.
 - [ ] **M3–M5 — Taxonomy + browse.** `/categories` seed, `subcategoryId` on products, dependent
       form dropdowns, home chips polish + category carried into shop page filter.
 - [ ] **M6–M7 — Collections.** Owner-scoped collections CRUD + product assignment + customer view.

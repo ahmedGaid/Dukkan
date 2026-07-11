@@ -459,6 +459,24 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orderActionErrorBody => 'معرفناش نحدّث الطلب دلوقتي — جرّب تاني.';
 
   @override
+  String get orderCustomerSection => 'العميل';
+
+  @override
+  String get orderPaymentMethod => 'طريقة الدفع';
+
+  @override
+  String get orderSubtotalLabel => 'المجموع الفرعي';
+
+  @override
+  String get orderDeliveryFeeLabel => 'رسوم التوصيل';
+
+  @override
+  String get orderDriverSection => 'المندوب';
+
+  @override
+  String get orderTimelineTitle => 'سجل الطلب';
+
+  @override
   String get notifyNewOrderTitle => 'طلب جديد!';
 
   @override

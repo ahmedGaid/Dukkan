@@ -21,6 +21,7 @@ class OrderModel extends Order {
     super.notes,
     super.rating,
     super.statusHistory,
+    super.driverUid,
   });
 
   factory OrderModel.fromFirestore(String id, Map<String, dynamic> data) {
@@ -49,6 +50,7 @@ class OrderModel extends Order {
       statusHistory: (data['statusHistory'] as List? ?? const [])
           .map((e) => _statusChangeFromMap(Map<String, dynamic>.from(e as Map)))
           .toList(),
+      driverUid: data['driverUid'] as String?,
     );
   }
 

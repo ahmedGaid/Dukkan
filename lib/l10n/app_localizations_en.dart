@@ -467,6 +467,24 @@ class AppLocalizationsEn extends AppLocalizations {
       'We couldn\'t update this order — try again.';
 
   @override
+  String get orderCustomerSection => 'Customer';
+
+  @override
+  String get orderPaymentMethod => 'Payment method';
+
+  @override
+  String get orderSubtotalLabel => 'Subtotal';
+
+  @override
+  String get orderDeliveryFeeLabel => 'Delivery fee';
+
+  @override
+  String get orderDriverSection => 'Driver';
+
+  @override
+  String get orderTimelineTitle => 'Order history';
+
+  @override
   String get notifyNewOrderTitle => 'New order!';
 
   @override

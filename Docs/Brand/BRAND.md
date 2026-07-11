@@ -78,6 +78,8 @@ Rules:
 | Owner accepts order | قبول | الموافقة |
 | Owner rejects order | رفض | الرفض |
 | Owner catalog tab | الكتالوج | المنتجات |
+| Order history/timeline | سجل الطلب | تايم لاين |
+| Driver (delivery) | المندوب | السائق |
 
 - Human statuses ("جارٍ تجهيز طلبك"), blame-free errors ("حصلت مشكلة — جرّب تاني").
 - RTL is the default layout. LTR (English) must read identically well.

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/di/injector.dart';
@@ -233,6 +234,7 @@ class _OwnerOrderCardState extends State<_OwnerOrderCard> {
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),
+      onTap: () => context.push('/order/${order.id}?owner=true'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

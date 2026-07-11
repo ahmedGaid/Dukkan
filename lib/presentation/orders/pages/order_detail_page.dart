@@ -5,9 +5,11 @@ import 'package:intl/intl.dart';
 import '../../../core/di/injector.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../domain/auth/entities/app_user.dart';
 import '../../../domain/order/entities/order.dart';
 import '../../../domain/order/entities/order_item.dart';
 import '../../../domain/order/entities/order_status.dart';
+import '../../../domain/order/entities/status_change.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/common/app_snackbar.dart';
 import '../../widgets/common/empty_state.dart';
@@ -20,25 +22,34 @@ import '../widgets/order_status_stepper.dart';
 import '../widgets/star_rating_picker.dart';
 
 /// One order's tracking page — realtime status stepper, items, delivery
-/// address, and a cancel action while `isCancellable`. Owns its
-/// [OrderDetailBloc] (order id is the factory param).
+/// address, and a cancel action while `isCancellable`. Reused for the owner
+/// order-desk (M2): `isOwner` gates the customer/payment/fee/driver blocks
+/// and the bloc additionally resolves the customer's `/users` profile. Owns
+/// its [OrderDetailBloc] (order id + isOwner are the factory params).
 class OrderDetailPage extends StatelessWidget {
-  const OrderDetailPage({super.key, required this.orderId});
+  const OrderDetailPage({
+    super.key,
+    required this.orderId,
+    this.isOwner = false,
+  });
 
   final String orderId;
+  final bool isOwner;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<OrderDetailBloc>(param1: orderId)
+      create: (_) => sl<OrderDetailBloc>(param1: orderId, param2: isOwner)
         ..add(const OrderDetailStarted()),
-      child: const _OrderDetailView(),
+      child: _OrderDetailView(isOwner: isOwner),
     );
   }
 }
 
 class _OrderDetailView extends StatelessWidget {
-  const _OrderDetailView();
+  const _OrderDetailView({required this.isOwner});
+
+  final bool isOwner;
 
   Future<void> _confirmCancel(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
@@ -94,6 +105,8 @@ class _OrderDetailView extends StatelessWidget {
             ),
           OrderDetailStatus.loaded => _OrderDetailContent(
               order: state.order!,
+              isOwner: isOwner,
+              customer: state.customer,
               isCancelling: state.isCancelling,
               isRating: state.isRating,
               onCancel: () => _confirmCancel(context),
@@ -110,6 +123,8 @@ class _OrderDetailView extends StatelessWidget {
 class _OrderDetailContent extends StatelessWidget {
   const _OrderDetailContent({
     required this.order,
+    required this.isOwner,
+    required this.customer,
     required this.isCancelling,
     required this.isRating,
     required this.onCancel,
@@ -117,6 +132,11 @@ class _OrderDetailContent extends StatelessWidget {
   });
 
   final Order order;
+  final bool isOwner;
+
+  /// The customer's `/users` profile — owner view only, resolved by the bloc.
+  /// Null while it's still loading or the doc is missing.
+  final AppUser? customer;
   final bool isCancelling;
   final bool isRating;
   final VoidCallback onCancel;
@@ -161,7 +181,7 @@ class _OrderDetailContent extends StatelessWidget {
               Text(l10n.checkoutAddressSection, style: text.titleSmall),
               const SizedBox(height: AppSpacing.sm),
               _AddressCard(order: order),
-              if (order.status == OrderStatus.delivered) ...[
+              if (!isOwner && order.status == OrderStatus.delivered) ...[
                 const SizedBox(height: AppSpacing.lg),
                 _RatingCard(
                   rating: order.rating,
@@ -169,10 +189,28 @@ class _OrderDetailContent extends StatelessWidget {
                   onRate: onRate,
                 ),
               ],
+              if (isOwner && customer != null) ...[
+                const SizedBox(height: AppSpacing.lg),
+                Text(l10n.orderCustomerSection, style: text.titleSmall),
+                const SizedBox(height: AppSpacing.sm),
+                _OwnerCustomerCard(customer: customer!),
+              ],
+              if (isOwner) ...[
+                const SizedBox(height: AppSpacing.lg),
+                _OwnerPaymentCard(order: order),
+              ],
+              if (isOwner && order.driverUid != null) ...[
+                const SizedBox(height: AppSpacing.lg),
+                _DriverCard(driverUid: order.driverUid!),
+              ],
+              const SizedBox(height: AppSpacing.lg),
+              Text(l10n.orderTimelineTitle, style: text.titleSmall),
+              const SizedBox(height: AppSpacing.sm),
+              _OrderTimeline(order: order),
             ],
           ),
         ),
-        if (order.status.isCancellable)
+        if (!isOwner && order.status.isCancellable)
           DecoratedBox(
             decoration: BoxDecoration(
               color: scheme.surface,
@@ -364,6 +402,221 @@ class _AddressCard extends StatelessWidget {
                   ),
                 ],
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Owner-only: the customer's name + phone (M2). Phone shows as selectable
+/// text rather than a `tel:` link — `url_launcher` isn't a dependency here
+/// and this session doesn't add one.
+class _OwnerCustomerCard extends StatelessWidget {
+  const _OwnerCustomerCard({required this.customer});
+
+  final AppUser customer;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    final phone = customer.phone;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration:
+          BoxDecoration(color: scheme.surface, borderRadius: AppRadius.lgAll),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.person_outline,
+                  size: 20, color: scheme.onSurface.withValues(alpha: 0.6)),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(customer.name, style: text.bodyMedium),
+              ),
+            ],
+          ),
+          if (phone != null && phone.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Row(
+              children: [
+                Icon(Icons.call_outlined,
+                    size: 20, color: scheme.onSurface.withValues(alpha: 0.6)),
+                const SizedBox(width: AppSpacing.sm),
+                SelectableText(phone, style: text.bodyMedium),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Owner-only: payment method + subtotal/delivery-fee/total (M2). Delivery
+/// fee is always 0 and subtotal equals the order total until a later session
+/// adds real fee fields — see `FILE_02_OWNER_ORDER_DETAILS.md` Task A.
+class _OwnerPaymentCard extends StatelessWidget {
+  const _OwnerPaymentCard({required this.order});
+
+  final Order order;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+
+    Widget row(String label, Widget value) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+          child: Row(
+            children: [
+              Expanded(child: Text(label, style: text.bodyMedium)),
+              value,
+            ],
+          ),
+        );
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration:
+          BoxDecoration(color: scheme.surface, borderRadius: AppRadius.lgAll),
+      child: Column(
+        children: [
+          row(l10n.orderPaymentMethod, Text(l10n.codLabel, style: text.bodyMedium)),
+          const Divider(height: AppSpacing.lg),
+          row(l10n.orderSubtotalLabel, PriceTag(order.totalMinor)),
+          row(l10n.orderDeliveryFeeLabel, const PriceTag(0)),
+          row(
+            l10n.cartTotal,
+            PriceTag(
+              order.totalMinor,
+              style: text.titleSmall
+                  ?.copyWith(color: scheme.primary, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Owner-only placeholder (M2) — renders only once `order.driverUid` is set.
+/// No order ever sets it yet (Phase 5 M9 adds shared-driver assignment); this
+/// just gives that session a widget + data slot to wire into, per
+/// `FILE_02_OWNER_ORDER_DETAILS.md` Task A.
+class _DriverCard extends StatelessWidget {
+  const _DriverCard({required this.driverUid});
+
+  final String driverUid;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration:
+          BoxDecoration(color: scheme.surface, borderRadius: AppRadius.lgAll),
+      child: Row(
+        children: [
+          Icon(Icons.delivery_dining_outlined,
+              size: 20, color: scheme.onSurface.withValues(alpha: 0.6)),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(child: Text(l10n.orderDriverSection, style: text.bodyMedium)),
+          Text(driverUid,
+              style: text.bodySmall
+                  ?.copyWith(color: scheme.onSurface.withValues(alpha: 0.6))),
+        ],
+      ),
+    );
+  }
+}
+
+/// Bottom-of-page status timeline (M2, Task B): oldest first, one row per
+/// [StatusChange]. Old seeded orders have an empty `statusHistory` — that
+/// falls back to a single row built from the order's current status +
+/// createdAt, never a blank section (designed-states rule).
+class _OrderTimeline extends StatelessWidget {
+  const _OrderTimeline({required this.order});
+
+  final Order order;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).languageCode;
+    final scheme = Theme.of(context).colorScheme;
+    final history = order.statusHistory.isNotEmpty
+        ? order.statusHistory
+        : [
+            StatusChange(
+              status: order.status,
+              at: order.createdAt,
+              byUid: order.customerUid,
+            ),
+          ];
+    final timeFormat = DateFormat.yMMMd(locale).add_Hm();
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration:
+          BoxDecoration(color: scheme.surface, borderRadius: AppRadius.lgAll),
+      child: Column(
+        children: [
+          for (var i = 0; i < history.length; i++) ...[
+            _TimelineRow(
+              label: orderStatusView(l10n, history[i].status).label,
+              tone: orderStatusView(l10n, history[i].status).tone,
+              time: timeFormat.format(history[i].at),
+              isLast: i == history.length - 1,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _TimelineRow extends StatelessWidget {
+  const _TimelineRow({
+    required this.label,
+    required this.tone,
+    required this.time,
+    required this.isLast,
+  });
+
+  final String label;
+  final StatusTone tone;
+  final String time;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : AppSpacing.sm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          StatusChip(label: label, tone: tone),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              time,
+              style: text.bodySmall
+                  ?.copyWith(color: scheme.onSurface.withValues(alpha: 0.6)),
+              textAlign: TextAlign.end,
             ),
           ),
         ],

@@ -21,6 +21,7 @@ import '../../data/shop/repositories/shop_repository_impl.dart';
 import '../../data/storage/datasources/image_upload_remote_datasource.dart';
 import '../../data/storage/repositories/storage_repository_impl.dart';
 import '../../domain/auth/repositories/auth_repository.dart';
+import '../../domain/auth/usecases/get_user_by_id.dart';
 import '../../domain/auth/usecases/log_in.dart';
 import '../../domain/auth/usecases/log_out.dart';
 import '../../domain/auth/usecases/send_password_reset.dart';
@@ -103,6 +104,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => SignUp(sl()));
   sl.registerLazySingleton(() => SendPasswordReset(sl()));
   sl.registerLazySingleton(() => LogOut(sl()));
+  sl.registerLazySingleton(() => GetUserById(sl()));
 
   // Auth — bloc (app lifetime)
   sl.registerLazySingleton(
@@ -186,12 +188,14 @@ Future<void> initDependencies() async {
   sl.registerFactoryParam<OwnerOrdersBloc, String, void>(
     (shopId, _) => OwnerOrdersBloc(shopId: shopId, watchShopOrders: sl()),
   );
-  sl.registerFactoryParam<OrderDetailBloc, String, void>(
-    (orderId, _) => OrderDetailBloc(
+  sl.registerFactoryParam<OrderDetailBloc, String, bool>(
+    (orderId, isOwner) => OrderDetailBloc(
       orderId: orderId,
       watchOrder: sl(),
       cancelOrder: sl(),
       rateOrder: sl(),
+      getUserById: sl(),
+      isOwner: isOwner,
     ),
   );
 

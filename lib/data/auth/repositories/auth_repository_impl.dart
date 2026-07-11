@@ -71,6 +71,9 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> saveFcmToken(String uid, String token) =>
       _remote.saveFcmToken(uid, token);
 
+  @override
+  Future<AppUser?> getUserById(String uid) => _remote.getUserById(uid);
+
   /// Not wired to any lifecycle yet (the repo is an app-lifetime singleton);
   /// here for completeness if the container is ever torn down in tests.
   void dispose() {

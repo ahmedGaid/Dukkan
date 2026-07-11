@@ -17,12 +17,17 @@ class OrderDetailState extends Equatable {
     this.order,
     this.cancelStatus = OrderCancelStatus.idle,
     this.rateStatus = OrderRateStatus.idle,
+    this.customer,
   });
 
   final OrderDetailStatus status;
   final Order? order;
   final OrderCancelStatus cancelStatus;
   final OrderRateStatus rateStatus;
+
+  /// The customer's `/users` profile — owner view only (M2), resolved once
+  /// per order. Null while loading, missing, or on the customer's own view.
+  final AppUser? customer;
 
   bool get isCancelling => cancelStatus == OrderCancelStatus.submitting;
   bool get isRating => rateStatus == OrderRateStatus.submitting;
@@ -32,15 +37,18 @@ class OrderDetailState extends Equatable {
     Order? order,
     OrderCancelStatus? cancelStatus,
     OrderRateStatus? rateStatus,
+    AppUser? customer,
   }) {
     return OrderDetailState(
       status: status ?? this.status,
       order: order ?? this.order,
       cancelStatus: cancelStatus ?? this.cancelStatus,
       rateStatus: rateStatus ?? this.rateStatus,
+      customer: customer ?? this.customer,
     );
   }
 
   @override
-  List<Object?> get props => [status, order, cancelStatus, rateStatus];
+  List<Object?> get props =>
+      [status, order, cancelStatus, rateStatus, customer];
 }

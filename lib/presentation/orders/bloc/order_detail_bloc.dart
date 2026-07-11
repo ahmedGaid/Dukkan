@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../domain/auth/entities/app_user.dart';
+import '../../../domain/auth/usecases/get_user_by_id.dart';
 import '../../../domain/order/entities/order.dart';
 import '../../../domain/order/entities/order_status.dart';
 import '../../../domain/order/usecases/cancel_order.dart';
@@ -16,17 +18,24 @@ part 'order_detail_state.dart';
 /// status; cancel is a one-shot [CancelOrder] call — the resulting status
 /// change comes back through the same stream, so a success needs no local
 /// patch. Page-scoped: the order id is the factory param (mirrors
-/// [ProductsBloc]'s shopId).
+/// [ProductsBloc]'s shopId). When `isOwner` (M2, the owner order-details
+/// page), it additionally resolves the customer's `/users` profile once the
+/// order's `customerUid` is known — a display-only lookup via [GetUserById],
+/// never surfaced as a page-level failure if it comes back null.
 class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
   OrderDetailBloc({
     required String orderId,
     required WatchOrder watchOrder,
     required CancelOrder cancelOrder,
     required RateOrder rateOrder,
+    GetUserById? getUserById,
+    bool isOwner = false,
   })  : _orderId = orderId,
         _watchOrder = watchOrder,
         _cancelOrder = cancelOrder,
         _rateOrder = rateOrder,
+        _getUserById = getUserById,
+        _isOwner = isOwner,
         super(const OrderDetailState()) {
     on<OrderDetailStarted>(_onStarted);
     on<OrderDetailCancelRequested>(_onCancelRequested);
@@ -35,12 +44,15 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     on<_OrderWatchFailed>(_onWatchFailed);
     on<_OrderCancelFailed>(_onCancelFailed);
     on<_OrderRateFailed>(_onRateFailed);
+    on<_CustomerArrived>(_onCustomerArrived);
   }
 
   final String _orderId;
   final WatchOrder _watchOrder;
   final CancelOrder _cancelOrder;
   final RateOrder _rateOrder;
+  final GetUserById? _getUserById;
+  final bool _isOwner;
   StreamSubscription<Order>? _sub;
 
   Future<void> _onStarted(
@@ -62,6 +74,29 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
       cancelStatus: OrderCancelStatus.idle,
       rateStatus: OrderRateStatus.idle,
     ));
+    // Fetch once per order, not on every realtime snapshot.
+    if (_isOwner &&
+        _getUserById != null &&
+        state.customer?.uid != event.order.customerUid) {
+      _loadCustomer(event.order.customerUid);
+    }
+  }
+
+  Future<void> _loadCustomer(String customerUid) async {
+    AppUser? customer;
+    try {
+      customer = await _getUserById!(customerUid);
+    } catch (_) {
+      customer = null;
+    }
+    add(_CustomerArrived(customer));
+  }
+
+  void _onCustomerArrived(
+    _CustomerArrived event,
+    Emitter<OrderDetailState> emit,
+  ) {
+    if (event.customer != null) emit(state.copyWith(customer: event.customer));
   }
 
   void _onWatchFailed(_OrderWatchFailed event, Emitter<OrderDetailState> emit) {

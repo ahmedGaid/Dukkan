@@ -31,4 +31,8 @@ abstract class AuthRepository {
   /// Stores this device's FCM token on the signed-in user's `/users` doc
   /// (P2b) — best-effort, called on every token refresh and auth change.
   Future<void> saveFcmToken(String uid, String token);
+
+  /// Fetches another user's profile by uid (e.g. the owner order-details
+  /// page reading a customer's name/phone). Null if the doc doesn't exist.
+  Future<AppUser?> getUserById(String uid);
 }

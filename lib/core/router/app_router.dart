@@ -98,8 +98,10 @@ class AppRouter {
       ),
       GoRoute(
         path: '/order/:id',
-        builder: (context, state) =>
-            OrderDetailPage(orderId: state.pathParameters['id']!),
+        builder: (context, state) => OrderDetailPage(
+          orderId: state.pathParameters['id']!,
+          isOwner: state.uri.queryParameters['owner'] == 'true',
+        ),
       ),
     ],
   );

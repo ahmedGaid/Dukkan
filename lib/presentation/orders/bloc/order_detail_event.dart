@@ -66,3 +66,14 @@ class _OrderRateFailed extends OrderDetailEvent {
   @override
   List<Object?> get props => [error];
 }
+
+/// Internal: the owner-view customer profile fetch resolved (owner view
+/// only) — null if the lookup failed or the doc doesn't exist.
+class _CustomerArrived extends OrderDetailEvent {
+  const _CustomerArrived(this.customer);
+
+  final AppUser? customer;
+
+  @override
+  List<Object?> get props => [customer];
+}

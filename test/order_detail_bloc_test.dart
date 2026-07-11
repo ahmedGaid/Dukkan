@@ -1,5 +1,9 @@
 import 'dart:async';
 
+import 'package:dukkan/domain/auth/entities/app_user.dart';
+import 'package:dukkan/domain/auth/entities/user_role.dart';
+import 'package:dukkan/domain/auth/repositories/auth_repository.dart';
+import 'package:dukkan/domain/auth/usecases/get_user_by_id.dart';
 import 'package:dukkan/domain/order/entities/address.dart';
 import 'package:dukkan/domain/order/entities/order.dart';
 import 'package:dukkan/domain/order/entities/order_item.dart';
@@ -10,6 +14,47 @@ import 'package:dukkan/domain/order/usecases/rate_order.dart';
 import 'package:dukkan/domain/order/usecases/watch_order.dart';
 import 'package:dukkan/presentation/orders/bloc/order_detail_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+/// Fake so the owner-view customer fetch (M2) is testable without Firebase.
+class _FakeAuthRepository implements AuthRepository {
+  int getUserByIdCalls = 0;
+  AppUser? userToReturn;
+
+  @override
+  Future<AppUser?> getUserById(String uid) async {
+    getUserByIdCalls++;
+    return userToReturn;
+  }
+
+  @override
+  Stream<AppUser?> authStateChanges() => const Stream.empty();
+
+  @override
+  AppUser? get currentUser => null;
+
+  @override
+  Future<AppUser> logIn({required String email, required String password}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<AppUser> signUp({
+    required String name,
+    required String email,
+    required String password,
+    required UserRole role,
+    String? phone,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> sendPasswordReset(String email) => throw UnimplementedError();
+
+  @override
+  Future<void> logOut() => throw UnimplementedError();
+
+  @override
+  Future<void> saveFcmToken(String uid, String token) async {}
+}
 
 /// Drives one order's stream by hand and lets a test force `cancelOrder` to
 /// throw, so the failure path is reachable without Firebase.
@@ -242,5 +287,62 @@ void main() {
     await tick();
 
     expect(bloc.state.rateStatus, OrderRateStatus.idle);
+  });
+
+  test('owner view fetches the customer profile once per order', () async {
+    final authRepo = _FakeAuthRepository()
+      ..userToReturn = const AppUser(
+        uid: 'u1',
+        email: 'c@x.com',
+        name: 'Customer One',
+        role: UserRole.customer,
+        phone: '0100000000',
+      );
+    final ownerBloc = OrderDetailBloc(
+      orderId: 'o1',
+      watchOrder: WatchOrder(repo),
+      cancelOrder: CancelOrder(repo),
+      rateOrder: RateOrder(repo),
+      getUserById: GetUserById(authRepo),
+      isOwner: true,
+    );
+    addTearDown(ownerBloc.close);
+
+    ownerBloc.add(const OrderDetailStarted());
+    await tick();
+    repo.controller.add(_order(OrderStatus.pending));
+    await tick();
+    await tick();
+
+    expect(authRepo.getUserByIdCalls, 1);
+    expect(ownerBloc.state.customer?.name, 'Customer One');
+
+    // A later snapshot for the same order (same customerUid) must not
+    // refetch — the profile is fetched once per order, not per snapshot.
+    repo.controller.add(_order(OrderStatus.accepted));
+    await tick();
+    await tick();
+
+    expect(authRepo.getUserByIdCalls, 1);
+  });
+
+  test('customer view never fetches a profile', () async {
+    final authRepo = _FakeAuthRepository();
+    final customerBloc = OrderDetailBloc(
+      orderId: 'o1',
+      watchOrder: WatchOrder(repo),
+      cancelOrder: CancelOrder(repo),
+      rateOrder: RateOrder(repo),
+      getUserById: GetUserById(authRepo),
+    );
+    addTearDown(customerBloc.close);
+
+    customerBloc.add(const OrderDetailStarted());
+    await tick();
+    repo.controller.add(_order(OrderStatus.pending));
+    await tick();
+
+    expect(authRepo.getUserByIdCalls, 0);
+    expect(customerBloc.state.customer, isNull);
   });
 }

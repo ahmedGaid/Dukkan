@@ -18,6 +18,7 @@ class Order extends Equatable {
     this.notes,
     this.rating,
     this.statusHistory = const [],
+    this.driverUid,
   });
 
   final String id;
@@ -38,6 +39,11 @@ class Order extends Equatable {
   /// for orders created before this field existed (seeded v1 orders).
   final List<StatusChange> statusHistory;
 
+  /// Assigned delivery driver (Phase 5 M9 — shared driver pool). Null until
+  /// that session wires assignment; the owner detail page (M2) already
+  /// renders a driver block behind this null check so M9 only adds data.
+  final String? driverUid;
+
   @override
   List<Object?> get props => [
         id,
@@ -51,5 +57,6 @@ class Order extends Equatable {
         notes,
         rating,
         statusHistory,
+        driverUid,
       ];
 }

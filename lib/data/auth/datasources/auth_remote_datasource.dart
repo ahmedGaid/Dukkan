@@ -117,6 +117,21 @@ class AuthRemoteDataSource {
 
   Future<void> logOut() => _auth.signOut();
 
+  /// Fetches another user's `/users/{uid}` profile (owner order-details page
+  /// reading a customer's name/phone). Returns null on a missing doc or any
+  /// Firestore error — this is a display-only lookup, never worth surfacing
+  /// as a page-level failure.
+  Future<AppUserModel?> getUserById(String uid) async {
+    try {
+      final data = (await _users.doc(uid).get()).data();
+      if (data == null) return null;
+      return AppUserModel.fromFirestore(uid, data);
+    } on FirebaseException catch (e) {
+      debugPrint('[Auth] getUserById FirebaseException: ${e.code} — ${e.message}');
+      return null;
+    }
+  }
+
   /// Best-effort — a push token write must never surface an error to the UI.
   Future<void> saveFcmToken(String uid, String token) async {
     try {
