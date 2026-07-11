@@ -181,6 +181,34 @@ never a double (Shoppy lesson; locked decision).
 2. Logout → back to login; protected routes unreachable (deep-link probe: `adb shell am start`
    with an order route while logged out → lands on login, not a crash).
 
+### J13 — Drivers (M8–M11, shared pool)
+1. Courier signup → profile starts `suspended`; app blocks courier shell until founder activates
+   via console (`/drivers/{uid}.suspended = false`). Online switch works once active.
+2. Owner assignment sheet on a `preparing` order lists only online + active + non-suspended +
+   in-area + under-capacity drivers; each row shows areas + `n / max` occupancy.
+3. Race check: two shops racing to assign the same near-capacity driver — the loser gets a clear
+   Arabic rejection (capacity), not a corrupted assignment (transaction correctness).
+4. Reject paths: offline driver, wrong-area driver, already-taken order — each a clear Arabic
+   message, no partial write.
+5. Same driver stays visible/assignable to a second shop until capacity fills; `n / max` increments
+   on assignment and decrements correctly on both `delivered` and `cancelled`.
+6. Courier device: advances `preparing → outForDelivery → delivered` only, no skip, no
+   out-of-order transition. Owner self-delivery (no driver) still works unchanged end to end.
+7. Assignment push received on the courier device (or logged as
+   `SKIPPED-NEEDS-HUMAN — Worker not deployed` if the Worker isn't live).
+
+### J14 — Commission + finance (M12–M13)
+1. Place a new order → Firestore order doc snapshots `commissionBps` + the computed commission
+   amount (round-half-up, integer piasters) from `/config/platform` at creation time — never
+   recomputed later.
+2. Advance to `delivered` → commission flips to payable. Cancel a `pending`/`accepted` order →
+   commission never becomes payable.
+3. Change `/config/platform` rate → only orders placed **after** the change use the new bps;
+   already-snapshotted orders are unaffected.
+4. Finance page (`/finance`, founder account only): non-founder account is bounced by the router;
+   rules deny a non-founder aggregate read even via direct query. Founder sees six metrics, all
+   **delivered-only** sums, with the COD-ledger note visible and correct.
+
 ## Phase 3 — Cross-cutting quality sweeps
 
 - **C1 Runtime log review:** compile every exception/error captured since Phase 0 from `flutter run`

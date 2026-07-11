@@ -369,6 +369,18 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       M8–M12; the new `/orders` rules branch is also still undeployed
       alongside M1/M3/M6/M8–M12. **Next: M14 — Acceptance.**
 - [ ] **M14 — Acceptance.** Full acceptance + regression sign-off.
+      **Code-only portion DONE 2026-07-12** (`FILE_14_ACCEPTANCE.md`) — gates green
+      (analyze 0, test 118/118, parity 261, unchanged this session), confirmed
+      `core/money.dart` and the 7-status enum untouched since M1–M13, confirmed
+      the driver/category/subcategory/collection Arabic terms are each one
+      canonical word in `Docs/Brand/BRAND.md`, added J13 (drivers) + J14
+      (commission/finance) journeys to `E2E_MASTER_PROMPT.md` Phase 2.
+      **Still pending (device, on `R5CNC0NK6ZT`):** the on-device acceptance
+      checklist A–E in `FILE_14_ACCEPTANCE.md` (order details/history, taxonomy,
+      collections/chips, drivers, commission), the v1 regression checklist, the
+      micro-polish pass, and rules/index deploy verification — all folded into
+      **Phase 6 R0** below since that's the same device session. M14 sign-off
+      closes only after R0 runs green.
 
 ### Phase 6 — Final gate (moved here from Phase 4 on 2026-07-11)
 - [ ] **R0 — Full E2E regression.** Run `Docs/testing/E2E_MASTER_PROMPT.md` end to end on the
