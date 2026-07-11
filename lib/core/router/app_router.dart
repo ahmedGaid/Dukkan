@@ -68,8 +68,10 @@ class AppRouter {
       ),
       GoRoute(
         path: '/shop/:id',
-        builder: (context, state) =>
-            ShopPage(shopId: state.pathParameters['id']!),
+        builder: (context, state) => ShopPage(
+          shopId: state.pathParameters['id']!,
+          initialCategory: state.extra as String?,
+        ),
         routes: [
           // Nested so the shop id stays in the path. The grid seeds `extra` with
           // the tapped product (no refetch); a cold open falls back to GetProduct.

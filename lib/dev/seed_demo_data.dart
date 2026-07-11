@@ -126,9 +126,125 @@ Future<void> _seed(String ownerUid, StringBuffer log) async {
   }
   await productBatch.commit();
 
-  log.writeln('Wrote ${_demoShops(ownerUid).length} shops and '
-      '${_demoProducts().length} products.');
+  await _seedTaxonomy(firestore);
+
+  log.writeln('Wrote ${_demoShops(ownerUid).length} shops, '
+      '${_demoProducts().length} products, and ${_taxonomy.length} '
+      'categories.');
 }
+
+/// `/categories` (M3) — fixed, seed-managed tree; `firestore.rules` denies
+/// all client writes to this collection (`allow write: if false`), so this
+/// step only succeeds if that line is temporarily relaxed to
+/// `allow write: if isSignedIn();` for the re-seed, then restored. Top-level
+/// ids are the SAME Arabic strings already used as `Shop.categories` /
+/// `Product.category` (see `_demoShops`/`_demoProducts` below), so existing
+/// home-chip filtering keeps matching without a translation table.
+Future<void> _seedTaxonomy(FirebaseFirestore firestore) async {
+  final batch = firestore.batch();
+  for (final category in _taxonomy) {
+    batch.set(
+      firestore.collection('categories').doc(category['id'] as String),
+      {
+        'nameAr': category['nameAr'],
+        'nameEn': category['nameEn'],
+        'sort': category['sort'],
+        'subcategories': category['subcategories'],
+      },
+    );
+  }
+  await batch.commit();
+}
+
+Map<String, dynamic> _subcat(String id, String nameAr, String nameEn) =>
+    {'id': id, 'nameAr': nameAr, 'nameEn': nameEn};
+
+final _taxonomy = <Map<String, dynamic>>[
+  {
+    'id': 'خضروات وفواكه',
+    'nameAr': 'خضروات وفواكه',
+    'nameEn': 'Vegetables & Fruits',
+    'sort': 1,
+    'subcategories': [
+      _subcat('fruits', 'فواكه', 'Fruits'),
+      _subcat('vegetables', 'خضروات', 'Vegetables'),
+    ],
+  },
+  {
+    'id': 'ألبان',
+    'nameAr': 'ألبان',
+    'nameEn': 'Dairy',
+    'sort': 2,
+    'subcategories': [
+      _subcat('milk', 'لبن', 'Milk'),
+      _subcat('cheese', 'جبن', 'Cheese'),
+      _subcat('yogurt', 'زبادي', 'Yogurt'),
+      _subcat('butter', 'زبدة', 'Butter'),
+      _subcat('eggs', 'بيض', 'Eggs'),
+    ],
+  },
+  {
+    'id': 'مشروبات',
+    'nameAr': 'مشروبات',
+    'nameEn': 'Drinks',
+    'sort': 3,
+    'subcategories': [
+      _subcat('juice', 'عصير', 'Juice'),
+      _subcat('water', 'مياه', 'Water'),
+      _subcat('soda', 'مشروبات غازية', 'Soda'),
+      _subcat('energyDrinks', 'مشروبات طاقة', 'Energy Drinks'),
+      _subcat('icedTea', 'شاي مثلج', 'Iced Tea'),
+    ],
+  },
+  {
+    'id': 'معلبات',
+    'nameAr': 'معلبات',
+    'nameEn': 'Canned & Pantry',
+    'sort': 4,
+    'subcategories': [
+      _subcat('oils', 'زيوت', 'Oils'),
+      _subcat('rice', 'أرز', 'Rice'),
+      _subcat('tuna', 'تونة', 'Tuna'),
+      _subcat('beans', 'فول', 'Fava Beans'),
+    ],
+  },
+  {
+    'id': 'مخبوزات',
+    'nameAr': 'مخبوزات',
+    'nameEn': 'Bakery',
+    'sort': 5,
+    'subcategories': [
+      _subcat('baladiBread', 'عيش بلدي', 'Baladi Bread'),
+      _subcat('toastBread', 'توست', 'Toast Bread'),
+      _subcat('croissant', 'كرواسون', 'Croissant'),
+      _subcat('finoBread', 'عيش فينو', 'Fino Bread'),
+      _subcat('rusk', 'بقسماط', 'Rusk'),
+    ],
+  },
+  {
+    'id': 'لحوم ودواجن',
+    'nameAr': 'لحوم ودواجن',
+    'nameEn': 'Meat & Poultry',
+    'sort': 6,
+    'subcategories': [
+      _subcat('chicken', 'دجاج', 'Chicken'),
+      _subcat('mincedMeat', 'لحمة مفرومة', 'Minced Meat'),
+      _subcat('kofta', 'كفتة', 'Kofta'),
+    ],
+  },
+  {
+    'id': 'منظفات',
+    'nameAr': 'منظفات',
+    'nameEn': 'Cleaning',
+    'sort': 7,
+    'subcategories': [
+      _subcat('dishSoap', 'سائل جلي', 'Dish Soap'),
+      _subcat('laundryPowder', 'مسحوق غسيل', 'Laundry Powder'),
+      _subcat('floorCleaner', 'منظف أرضيات', 'Floor Cleaner'),
+      _subcat('tissues', 'مناديل', 'Tissues'),
+    ],
+  },
+];
 
 /// Customer-side demo: profile (with favorites) + a spread of orders across
 /// every status. Runs while signed in AS the customer.
@@ -256,64 +372,64 @@ List<Map<String, dynamic>> _demoProducts() {
   const shop6 = 'shop_demo_6';
   const shop7 = 'shop_demo_7';
   return [
-    _product('p1', shop1, 'Tomatoes (1kg)', 'طماطم (1 كجم)', 1500, 'خضروات وفواكه', promo: true),
-    _product('p2', shop1, 'Cucumbers (1kg)', 'خيار (1 كجم)', 1200, 'خضروات وفواكه'),
-    _product('p3', shop1, 'Bananas (1kg)', 'موز (1 كجم)', 2200, 'خضروات وفواكه'),
-    _product('p4', shop1, 'Oranges (1kg)', 'برتقال (1 كجم)', 1800, 'خضروات وفواكه'),
-    _product('p5', shop1, 'Milk 1L', 'لبن 1 لتر', 3500, 'ألبان'),
-    _product('p6', shop1, 'White Cheese 500g', 'جبنة بيضاء 500 جم', 6500, 'ألبان', low: true),
-    _product('p7', shop1, 'Yogurt Cup', 'زبادي كوب', 1200, 'ألبان'),
-    _product('p8', shop1, 'Cola 1.5L', 'كولا 1.5 لتر', 2000, 'مشروبات', promo: true),
-    _product('p9', shop1, 'Bottled Water 1.5L', 'مياه معدنية 1.5 لتر', 800, 'مشروبات'),
-    _product('p10', shop1, 'Canned Fava Beans', 'فول معلب', 1000, 'معلبات', out: true),
-    _product('p11', shop2, 'Baladi Bread (5pcs)', 'عيش بلدي (5 أرغفة)', 500, 'مخبوزات'),
-    _product('p12', shop2, 'Toast Bread', 'توست', 2500, 'مخبوزات'),
-    _product('p13', shop2, 'Croissant', 'كرواسون', 1500, 'مخبوزات', promo: true),
-    _product('p14', shop2, 'Chicken (1kg)', 'دجاج (1 كجم)', 9000, 'لحوم ودواجن'),
-    _product('p15', shop2, 'Minced Meat (1kg)', 'لحمة مفرومة (1 كجم)', 25000, 'لحوم ودواجن'),
-    _product('p16', shop2, 'Frozen Kofta (1kg)', 'كفتة مجمدة (1 كجم)', 18000, 'لحوم ودواجن', low: true),
-    _product('p17', shop2, 'Dish Soap 750ml', 'سائل جلي 750 مل', 4500, 'منظفات'),
-    _product('p18', shop2, 'Laundry Powder 1kg', 'مسحوق غسيل 1 كجم', 8000, 'منظفات'),
-    _product('p19', shop2, 'Iced Tea 500ml', 'شاي مثلج 500 مل', 1500, 'مشروبات'),
-    _product('p20', shop2, 'Orange Juice 1L', 'عصير برتقال 1 لتر', 3000, 'مشروبات', out: true),
+    _product('p1', shop1, 'Tomatoes (1kg)', 'طماطم (1 كجم)', 1500, 'خضروات وفواكه', 'vegetables', promo: true),
+    _product('p2', shop1, 'Cucumbers (1kg)', 'خيار (1 كجم)', 1200, 'خضروات وفواكه', 'vegetables'),
+    _product('p3', shop1, 'Bananas (1kg)', 'موز (1 كجم)', 2200, 'خضروات وفواكه', 'fruits'),
+    _product('p4', shop1, 'Oranges (1kg)', 'برتقال (1 كجم)', 1800, 'خضروات وفواكه', 'fruits'),
+    _product('p5', shop1, 'Milk 1L', 'لبن 1 لتر', 3500, 'ألبان', 'milk'),
+    _product('p6', shop1, 'White Cheese 500g', 'جبنة بيضاء 500 جم', 6500, 'ألبان', 'cheese', low: true),
+    _product('p7', shop1, 'Yogurt Cup', 'زبادي كوب', 1200, 'ألبان', 'yogurt'),
+    _product('p8', shop1, 'Cola 1.5L', 'كولا 1.5 لتر', 2000, 'مشروبات', 'soda', promo: true),
+    _product('p9', shop1, 'Bottled Water 1.5L', 'مياه معدنية 1.5 لتر', 800, 'مشروبات', 'water'),
+    _product('p10', shop1, 'Canned Fava Beans', 'فول معلب', 1000, 'معلبات', 'beans', out: true),
+    _product('p11', shop2, 'Baladi Bread (5pcs)', 'عيش بلدي (5 أرغفة)', 500, 'مخبوزات', 'baladiBread'),
+    _product('p12', shop2, 'Toast Bread', 'توست', 2500, 'مخبوزات', 'toastBread'),
+    _product('p13', shop2, 'Croissant', 'كرواسون', 1500, 'مخبوزات', 'croissant', promo: true),
+    _product('p14', shop2, 'Chicken (1kg)', 'دجاج (1 كجم)', 9000, 'لحوم ودواجن', 'chicken'),
+    _product('p15', shop2, 'Minced Meat (1kg)', 'لحمة مفرومة (1 كجم)', 25000, 'لحوم ودواجن', 'mincedMeat'),
+    _product('p16', shop2, 'Frozen Kofta (1kg)', 'كفتة مجمدة (1 كجم)', 18000, 'لحوم ودواجن', 'kofta', low: true),
+    _product('p17', shop2, 'Dish Soap 750ml', 'سائل جلي 750 مل', 4500, 'منظفات', 'dishSoap'),
+    _product('p18', shop2, 'Laundry Powder 1kg', 'مسحوق غسيل 1 كجم', 8000, 'منظفات', 'laundryPowder'),
+    _product('p19', shop2, 'Iced Tea 500ml', 'شاي مثلج 500 مل', 1500, 'مشروبات', 'icedTea'),
+    _product('p20', shop2, 'Orange Juice 1L', 'عصير برتقال 1 لتر', 3000, 'مشروبات', 'juice', out: true),
     // shop_demo_3 — Green Basket (fresh + dairy)
-    _product('p21', shop3, 'Potatoes (1kg)', 'بطاطس (1 كجم)', 1300, 'خضروات وفواكه'),
-    _product('p22', shop3, 'Apples (1kg)', 'تفاح (1 كجم)', 4000, 'خضروات وفواكه', promo: true),
-    _product('p23', shop3, 'Strawberries (500g)', 'فراولة (500 جم)', 3500, 'خضروات وفواكه'),
-    _product('p24', shop3, 'Onions (1kg)', 'بصل (1 كجم)', 900, 'خضروات وفواكه'),
-    _product('p25', shop3, 'Feta Cheese 250g', 'جبنة فيتا 250 جم', 4800, 'ألبان'),
-    _product('p26', shop3, 'Butter 200g', 'زبدة 200 جم', 5500, 'ألبان', low: true),
-    _product('p27', shop3, 'Canned Tuna', 'تونة معلبة', 3200, 'معلبات'),
+    _product('p21', shop3, 'Potatoes (1kg)', 'بطاطس (1 كجم)', 1300, 'خضروات وفواكه', 'vegetables'),
+    _product('p22', shop3, 'Apples (1kg)', 'تفاح (1 كجم)', 4000, 'خضروات وفواكه', 'fruits', promo: true),
+    _product('p23', shop3, 'Strawberries (500g)', 'فراولة (500 جم)', 3500, 'خضروات وفواكه', 'fruits'),
+    _product('p24', shop3, 'Onions (1kg)', 'بصل (1 كجم)', 900, 'خضروات وفواكه', 'vegetables'),
+    _product('p25', shop3, 'Feta Cheese 250g', 'جبنة فيتا 250 جم', 4800, 'ألبان', 'cheese'),
+    _product('p26', shop3, 'Butter 200g', 'زبدة 200 جم', 5500, 'ألبان', 'butter', low: true),
+    _product('p27', shop3, 'Canned Tuna', 'تونة معلبة', 3200, 'معلبات', 'tuna'),
     // shop_demo_4 — City Market (drinks + household)
-    _product('p28', shop4, 'Sparkling Water 1L', 'مياه غازية 1 لتر', 1200, 'مشروبات'),
-    _product('p29', shop4, 'Energy Drink 250ml', 'مشروب طاقة 250 مل', 2500, 'مشروبات', promo: true),
-    _product('p30', shop4, 'Floor Cleaner 1L', 'منظف أرضيات 1 لتر', 5000, 'منظفات'),
-    _product('p31', shop4, 'Tissue Box', 'علبة مناديل', 2000, 'منظفات'),
-    _product('p32', shop4, 'Rusk (Baksimat)', 'بقسماط', 1800, 'مخبوزات', out: true),
+    _product('p28', shop4, 'Sparkling Water 1L', 'مياه غازية 1 لتر', 1200, 'مشروبات', 'water'),
+    _product('p29', shop4, 'Energy Drink 250ml', 'مشروب طاقة 250 مل', 2500, 'مشروبات', 'energyDrinks', promo: true),
+    _product('p30', shop4, 'Floor Cleaner 1L', 'منظف أرضيات 1 لتر', 5000, 'منظفات', 'floorCleaner'),
+    _product('p31', shop4, 'Tissue Box', 'علبة مناديل', 2000, 'منظفات', 'tissues'),
+    _product('p32', shop4, 'Rusk (Baksimat)', 'بقسماط', 1800, 'مخبوزات', 'rusk', out: true),
     // shop_demo_5 — عثمان (general grocery, الشارع التجاري)
-    _product('p33', shop5, 'Tomatoes (1kg)', 'طماطم (1 كجم)', 1400, 'خضروات وفواكه', promo: true),
-    _product('p34', shop5, 'Potatoes (1kg)', 'بطاطس (1 كجم)', 1250, 'خضروات وفواكه'),
-    _product('p35', shop5, 'Eggs (30)', 'بيض (طبق 30)', 13500, 'ألبان'),
-    _product('p36', shop5, 'Milk 1L', 'لبن 1 لتر', 3400, 'ألبان'),
-    _product('p37', shop5, 'Cola 1.5L', 'كولا 1.5 لتر', 2000, 'مشروبات'),
-    _product('p38', shop5, 'Sunflower Oil 1L', 'زيت عباد الشمس 1 لتر', 6500, 'معلبات', low: true),
-    _product('p39', shop5, 'Rice (1kg)', 'أرز (1 كجم)', 3000, 'معلبات'),
-    _product('p40', shop5, 'Dish Soap 750ml', 'سائل جلي 750 مل', 4300, 'منظفات'),
+    _product('p33', shop5, 'Tomatoes (1kg)', 'طماطم (1 كجم)', 1400, 'خضروات وفواكه', 'vegetables', promo: true),
+    _product('p34', shop5, 'Potatoes (1kg)', 'بطاطس (1 كجم)', 1250, 'خضروات وفواكه', 'vegetables'),
+    _product('p35', shop5, 'Eggs (30)', 'بيض (طبق 30)', 13500, 'ألبان', 'eggs'),
+    _product('p36', shop5, 'Milk 1L', 'لبن 1 لتر', 3400, 'ألبان', 'milk'),
+    _product('p37', shop5, 'Cola 1.5L', 'كولا 1.5 لتر', 2000, 'مشروبات', 'soda'),
+    _product('p38', shop5, 'Sunflower Oil 1L', 'زيت عباد الشمس 1 لتر', 6500, 'معلبات', 'oils', low: true),
+    _product('p39', shop5, 'Rice (1kg)', 'أرز (1 كجم)', 3000, 'معلبات', 'rice'),
+    _product('p40', shop5, 'Dish Soap 750ml', 'سائل جلي 750 مل', 4300, 'منظفات', 'dishSoap'),
     // shop_demo_6 — التوحيد (drinks + canned + bakery, نفس الشارع)
-    _product('p41', shop6, 'Water 1.5L (6-pack)', 'مياه 1.5 لتر (6 عبوات)', 4500, 'مشروبات', promo: true),
-    _product('p42', shop6, 'Juice 1L', 'عصير 1 لتر', 2800, 'مشروبات'),
-    _product('p43', shop6, 'Canned Tuna', 'تونة معلبة', 3100, 'معلبات'),
-    _product('p44', shop6, 'Canned Beans', 'فول معلب', 1000, 'معلبات'),
-    _product('p45', shop6, 'Baladi Bread (5pcs)', 'عيش بلدي (5 أرغفة)', 500, 'مخبوزات'),
-    _product('p46', shop6, 'Fino Bread', 'عيش فينو', 1500, 'مخبوزات'),
-    _product('p47', shop6, 'Laundry Powder 1kg', 'مسحوق غسيل 1 كجم', 7800, 'منظفات', out: true),
+    _product('p41', shop6, 'Water 1.5L (6-pack)', 'مياه 1.5 لتر (6 عبوات)', 4500, 'مشروبات', 'water', promo: true),
+    _product('p42', shop6, 'Juice 1L', 'عصير 1 لتر', 2800, 'مشروبات', 'juice'),
+    _product('p43', shop6, 'Canned Tuna', 'تونة معلبة', 3100, 'معلبات', 'tuna'),
+    _product('p44', shop6, 'Canned Beans', 'فول معلب', 1000, 'معلبات', 'beans'),
+    _product('p45', shop6, 'Baladi Bread (5pcs)', 'عيش بلدي (5 أرغفة)', 500, 'مخبوزات', 'baladiBread'),
+    _product('p46', shop6, 'Fino Bread', 'عيش فينو', 1500, 'مخبوزات', 'finoBread'),
+    _product('p47', shop6, 'Laundry Powder 1kg', 'مسحوق غسيل 1 كجم', 7800, 'منظفات', 'laundryPowder', out: true),
     // shop_demo_7 — السمطي (fresh + butcher, الزغابة أمام فرن عبد الحي)
-    _product('p48', shop7, 'Oranges (1kg)', 'برتقال (1 كجم)', 1700, 'خضروات وفواكه', promo: true),
-    _product('p49', shop7, 'Bananas (1kg)', 'موز (1 كجم)', 2100, 'خضروات وفواكه'),
-    _product('p50', shop7, 'Chicken (1kg)', 'دجاج (1 كجم)', 8800, 'لحوم ودواجن'),
-    _product('p51', shop7, 'Minced Meat (1kg)', 'لحمة مفرومة (1 كجم)', 24500, 'لحوم ودواجن', low: true),
-    _product('p52', shop7, 'White Cheese 500g', 'جبنة بيضاء 500 جم', 6300, 'ألبان'),
-    _product('p53', shop7, 'Baladi Bread (5pcs)', 'عيش بلدي (5 أرغفة)', 500, 'مخبوزات'),
+    _product('p48', shop7, 'Oranges (1kg)', 'برتقال (1 كجم)', 1700, 'خضروات وفواكه', 'fruits', promo: true),
+    _product('p49', shop7, 'Bananas (1kg)', 'موز (1 كجم)', 2100, 'خضروات وفواكه', 'fruits'),
+    _product('p50', shop7, 'Chicken (1kg)', 'دجاج (1 كجم)', 8800, 'لحوم ودواجن', 'chicken'),
+    _product('p51', shop7, 'Minced Meat (1kg)', 'لحمة مفرومة (1 كجم)', 24500, 'لحوم ودواجن', 'mincedMeat', low: true),
+    _product('p52', shop7, 'White Cheese 500g', 'جبنة بيضاء 500 جم', 6300, 'ألبان', 'cheese'),
+    _product('p53', shop7, 'Baladi Bread (5pcs)', 'عيش بلدي (5 أرغفة)', 500, 'مخبوزات', 'baladiBread'),
   ];
 }
 
@@ -440,7 +556,8 @@ Map<String, dynamic> _product(
   String name,
   String nameAr,
   int priceMinor,
-  String category, {
+  String category,
+  String subcategoryId, {
   bool promo = false,
   bool low = false,
   bool out = false,
@@ -458,6 +575,7 @@ Map<String, dynamic> _product(
     'imageUrl': _seedImage(id, 600),
     'priceMinor': priceMinor,
     'category': category,
+    'subcategoryId': subcategoryId,
     'stockStatus': status,
     'isPromo': promo,
   };

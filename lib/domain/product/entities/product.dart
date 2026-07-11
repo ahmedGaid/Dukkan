@@ -15,6 +15,7 @@ class Product extends Equatable {
     required this.stockStatus,
     required this.isPromo,
     this.imageUrl,
+    this.subcategoryId,
   });
 
   final String id;
@@ -27,6 +28,11 @@ class Product extends Equatable {
   final StockStatus stockStatus;
   final bool isPromo;
 
+  /// Links to a `/categories/{categoryId}` subcategory (M3). Nullable — the
+  /// 53 products seeded before this session don't have one yet; `category`
+  /// stays the source of truth for filtering until every product is edited.
+  final String? subcategoryId;
+
   @override
   List<Object?> get props => [
         id,
@@ -38,5 +44,6 @@ class Product extends Equatable {
         category,
         stockStatus,
         isPromo,
+        subcategoryId,
       ];
 }

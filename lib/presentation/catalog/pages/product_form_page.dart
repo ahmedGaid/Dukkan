@@ -13,11 +13,14 @@ import '../../../domain/product/usecases/create_product.dart';
 import '../../../domain/product/usecases/update_product.dart';
 import '../../../domain/storage/entities/storage_folder.dart';
 import '../../../domain/storage/usecases/upload_image.dart';
+import '../../../domain/taxonomy/entities/category.dart';
+import '../../../domain/taxonomy/usecases/get_taxonomy.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/common/app_button.dart';
 import '../../widgets/common/app_snackbar.dart';
 import '../../widgets/common/app_text_field.dart';
 import '../../widgets/common/shimmer_image.dart';
+import '../../widgets/common/skeletons.dart';
 
 /// Navigation payload for `/catalog/product-form` — [product] null means
 /// create, non-null means edit (S2).
@@ -61,8 +64,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
   late final _name = TextEditingController(text: widget.product?.name ?? '');
   late final _nameAr =
       TextEditingController(text: widget.product?.nameAr ?? '');
-  late final _category =
-      TextEditingController(text: widget.product?.category ?? '');
   late final _price =
       TextEditingController(text: _initialPriceText(widget.product));
   late StockStatus _stockStatus =
@@ -72,13 +73,27 @@ class _ProductFormPageState extends State<ProductFormPage> {
   String? _imagePath;
   bool _submitting = false;
 
+  // Taxonomy (M3/M4) — `category` on a product IS the parent category's id
+  // (Task B/D: written automatically from the selected subcategory), so an
+  // edited product's own `category` field already gives us the pre-selected
+  // category without scanning the tree for it.
+  late Future<List<Category>> _taxonomyFuture = sl<GetTaxonomy>()();
+  String? _categoryId;
+  String? _subcategoryId;
+
   bool get _isEdit => widget.product != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _categoryId = widget.product?.category;
+    _subcategoryId = widget.product?.subcategoryId;
+  }
 
   @override
   void dispose() {
     _name.dispose();
     _nameAr.dispose();
-    _category.dispose();
     _price.dispose();
     super.dispose();
   }
@@ -135,13 +150,17 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
     try {
       final existing = widget.product;
+      // Both selections are validator-enforced above, so `!` is safe here.
+      final categoryId = _categoryId!;
+      final subcategoryId = _subcategoryId!;
       if (existing == null) {
         await sl<CreateProduct>()(
           shopId: widget.shopId,
           name: _name.text.trim(),
           nameAr: _nameAr.text.trim(),
           priceMinor: priceMinor,
-          category: _category.text.trim(),
+          category: categoryId,
+          subcategoryId: subcategoryId,
           stockStatus: _stockStatus,
           isPromo: _isPromo,
           imageUrl: imageUrl,
@@ -153,7 +172,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
           name: _name.text.trim(),
           nameAr: _nameAr.text.trim(),
           priceMinor: priceMinor,
-          category: _category.text.trim(),
+          category: categoryId,
+          subcategoryId: subcategoryId,
           stockStatus: _stockStatus,
           isPromo: _isPromo,
           imageUrl: imageUrl,
@@ -211,13 +231,18 @@ class _ProductFormPageState extends State<ProductFormPage> {
                   validator: (v) =>
                       (v == null || v.trim().isEmpty) ? l10n.validateRequired : null,
                 ),
-                AppTextField(
-                  label: l10n.fieldProductCategory,
-                  controller: _category,
-                  textInputAction: TextInputAction.next,
-                  prefixIcon: Icons.category_outlined,
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? l10n.validateRequired : null,
+                _TaxonomyFields(
+                  future: _taxonomyFuture,
+                  categoryId: _categoryId,
+                  subcategoryId: _subcategoryId,
+                  onCategoryChanged: (id) => setState(() {
+                    _categoryId = id;
+                    _subcategoryId = null;
+                  }),
+                  onSubcategoryChanged: (id) =>
+                      setState(() => _subcategoryId = id),
+                  onRetry: () =>
+                      setState(() => _taxonomyFuture = sl<GetTaxonomy>()()),
                 ),
                 AppTextField(
                   label: l10n.fieldProductPrice,
@@ -276,6 +301,131 @@ class _ProductFormPageState extends State<ProductFormPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Category → subcategory dropdowns (M4). Loads the fixed ~5-category tree
+/// once per form open (a `FutureBuilder` over a single small read, matching
+/// this page's no-bloc style); the second dropdown is empty/disabled until a
+/// category is picked. Taxonomy is small enough that a search UI inside the
+/// dropdowns isn't needed yet — `DropdownMenu(enableFilter: true)` is the
+/// upgrade path if the tree grows.
+class _TaxonomyFields extends StatelessWidget {
+  const _TaxonomyFields({
+    required this.future,
+    required this.categoryId,
+    required this.subcategoryId,
+    required this.onCategoryChanged,
+    required this.onSubcategoryChanged,
+    required this.onRetry,
+  });
+
+  final Future<List<Category>> future;
+  final String? categoryId;
+  final String? subcategoryId;
+  final ValueChanged<String?> onCategoryChanged;
+  final ValueChanged<String?> onSubcategoryChanged;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+
+    return FutureBuilder<List<Category>>(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Padding(
+            padding: EdgeInsets.only(bottom: AppSpacing.md),
+            child: ListShimmer(count: 2, itemHeight: 56),
+          );
+        }
+        if (snapshot.hasError) {
+          final scheme = Theme.of(context).colorScheme;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: AppRadius.mdAll,
+                border: Border.all(color: scheme.outline),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.wifi_off_rounded, color: scheme.secondary),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      l10n.taxonomyErrorBody,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                  TextButton(onPressed: onRetry, child: Text(l10n.actionRetry)),
+                ],
+              ),
+            ),
+          );
+        }
+
+        final categories = snapshot.data!;
+        Category? selected;
+        for (final c in categories) {
+          if (c.id == categoryId) {
+            selected = c;
+            break;
+          }
+        }
+
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+              child: DropdownButtonFormField<String>(
+                initialValue: selected?.id,
+                decoration: InputDecoration(
+                  labelText: l10n.fieldProductCategory,
+                  prefixIcon: const Icon(Icons.category_outlined),
+                ),
+                items: [
+                  for (final c in categories)
+                    DropdownMenuItem(
+                      value: c.id,
+                      child: Text(isArabic ? c.nameAr : c.nameEn),
+                    ),
+                ],
+                onChanged: onCategoryChanged,
+                validator: (v) => v == null ? l10n.categoryRequired : null,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+              child: DropdownButtonFormField<String>(
+                key: ValueKey(selected?.id),
+                initialValue: subcategoryId,
+                decoration: InputDecoration(
+                  labelText: l10n.fieldProductSubcategory,
+                  prefixIcon: const Icon(Icons.category_outlined),
+                ),
+                items: [
+                  for (final s in selected?.subcategories ?? const [])
+                    DropdownMenuItem(
+                      value: s.id,
+                      child: Text(isArabic ? s.nameAr : s.nameEn),
+                    ),
+                ],
+                onChanged: selected == null ? null : onSubcategoryChanged,
+                validator: (v) =>
+                    v == null ? l10n.subcategoryRequired : null,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

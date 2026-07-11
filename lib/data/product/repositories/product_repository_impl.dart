@@ -60,6 +60,7 @@ class ProductRepositoryImpl implements ProductRepository {
     required StockStatus stockStatus,
     required bool isPromo,
     String? imageUrl,
+    String? subcategoryId,
   }) async {
     if (!await _networkInfo.isConnected) {
       throw const NetworkFailure('No connection');
@@ -74,6 +75,7 @@ class ProductRepositoryImpl implements ProductRepository {
       stockStatus: stockStatus,
       isPromo: isPromo,
       imageUrl: imageUrl,
+      subcategoryId: subcategoryId,
     ));
   }
 
@@ -92,6 +94,7 @@ class ProductRepositoryImpl implements ProductRepository {
       stockStatus: product.stockStatus,
       isPromo: product.isPromo,
       imageUrl: product.imageUrl,
+      subcategoryId: product.subcategoryId,
     ));
   }
 

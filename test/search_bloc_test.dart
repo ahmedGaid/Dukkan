@@ -34,6 +34,7 @@ class _FakeProductRepository implements ProductRepository {
     required StockStatus stockStatus,
     required bool isPromo,
     String? imageUrl,
+    String? subcategoryId,
   }) =>
       throw UnimplementedError();
 

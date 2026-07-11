@@ -131,6 +131,15 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Fixed, seed-managed taxonomy (M3) — no owner/admin console, so no client
+    // write path at all. Populate via Firebase console (paste the JSON) or by
+    // temporarily relaxing this to `allow write: if isSignedIn();` for a
+    // `flutter run -t lib/dev/seed_demo_data.dart` pass, then restoring it.
+    match /categories/{categoryId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
     // Deny anything without an explicit rule above.
     match /{document=**} {
       allow read, write: if false;

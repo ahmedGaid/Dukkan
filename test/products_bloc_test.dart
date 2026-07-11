@@ -61,6 +61,7 @@ class _FakeProductRepository implements ProductRepository {
     required StockStatus stockStatus,
     required bool isPromo,
     String? imageUrl,
+    String? subcategoryId,
   }) =>
       throw UnimplementedError();
 
@@ -192,5 +193,78 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(bloc.state.status, ProductsStatus.error);
+  });
+
+  group('initialCategory (M5, carried from Home)', () {
+    test('pre-selects it once the catalog confirms it exists', () async {
+      final withInitial = ProductsBloc(
+        shopId: 's',
+        watchShop: WatchShop(shopRepo),
+        watchProductsByShop: WatchProductsByShop(productRepo),
+        initialCategory: 'خضروات',
+      );
+      addTearDown(withInitial.close);
+
+      withInitial.add(const ProductsStarted());
+      await Future<void>.delayed(Duration.zero);
+      shopRepo.controller.add(_shop('s'));
+      productRepo.controller.add([
+        _product('a', 'خضروات'),
+        _product('b', 'ألبان'),
+      ]);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(withInitial.state.selectedCategory, 'خضروات');
+      expect(withInitial.state.visibleProducts.map((p) => p.id), ['a']);
+    });
+
+    test('is ignored if the shop has no such category', () async {
+      final withInitial = ProductsBloc(
+        shopId: 's',
+        watchShop: WatchShop(shopRepo),
+        watchProductsByShop: WatchProductsByShop(productRepo),
+        initialCategory: 'مشروبات',
+      );
+      addTearDown(withInitial.close);
+
+      withInitial.add(const ProductsStarted());
+      await Future<void>.delayed(Duration.zero);
+      shopRepo.controller.add(_shop('s'));
+      productRepo.controller.add([_product('a', 'خضروات')]);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(withInitial.state.selectedCategory, isNull);
+      expect(withInitial.state.visibleProducts.length, 1);
+    });
+
+    test('only applies on the first arrival, not later catalog updates',
+        () async {
+      final withInitial = ProductsBloc(
+        shopId: 's',
+        watchShop: WatchShop(shopRepo),
+        watchProductsByShop: WatchProductsByShop(productRepo),
+        initialCategory: 'خضروات',
+      );
+      addTearDown(withInitial.close);
+
+      withInitial.add(const ProductsStarted());
+      await Future<void>.delayed(Duration.zero);
+      shopRepo.controller.add(_shop('s'));
+      productRepo.controller.add([_product('a', 'خضروات')]);
+      await Future<void>.delayed(Duration.zero);
+      expect(withInitial.state.selectedCategory, 'خضروات');
+
+      // User clears the filter; a later catalog update must not re-apply it.
+      withInitial.add(const ProductsCategorySelected('خضروات'));
+      await Future<void>.delayed(Duration.zero);
+      expect(withInitial.state.selectedCategory, isNull);
+
+      productRepo.controller.add([
+        _product('a', 'خضروات'),
+        _product('b', 'ألبان'),
+      ]);
+      await Future<void>.delayed(Duration.zero);
+      expect(withInitial.state.selectedCategory, isNull);
+    });
   });
 }

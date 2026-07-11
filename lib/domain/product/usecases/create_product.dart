@@ -19,6 +19,7 @@ class CreateProduct {
     required StockStatus stockStatus,
     required bool isPromo,
     String? imageUrl,
+    String? subcategoryId,
   }) {
     return _repository.createProduct(
       shopId: shopId,
@@ -29,6 +30,7 @@ class CreateProduct {
       stockStatus: stockStatus,
       isPromo: isPromo,
       imageUrl: imageUrl,
+      subcategoryId: subcategoryId,
     );
   }
 }

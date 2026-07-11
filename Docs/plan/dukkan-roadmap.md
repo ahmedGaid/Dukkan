@@ -160,8 +160,27 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       `firestore.rules` update (statusHistory in the update diff whitelist) is also still
       undeployed** — deploy via Firebase console before any real order write is tested on device,
       or status/statusHistory writes will be rejected by the currently-live (pre-M1) rules.
-- [ ] **M3–M5 — Taxonomy + browse.** `/categories` seed, `subcategoryId` on products, dependent
-      form dropdowns, home chips polish + category carried into shop page filter.
+- [x] **M3–M5 — Taxonomy + browse.** Done in one combined session (FILE_03+04+05), code-only.
+      **M3**: `/categories` seed-managed tree (`lib/domain/taxonomy/`, `lib/data/taxonomy/`) — 7
+      top-level categories using the SAME Arabic strings already live as `Shop.categories`/
+      `Product.category` (not the plan doc's generic example names) so old filtering keeps
+      matching with no translation table; `Product.subcategoryId` (nullable) added + assigned to
+      all 53 seeded products; `firestore.rules` `/categories` read-signed-in/write-false (note:
+      the dev seed script's `_seedTaxonomy()` needs that `false` temporarily relaxed to
+      `isSignedIn()` for one re-seed pass, then restored — rules writes are console-deployed by
+      the user anyway, same as the still-undeployed M1 rule). Lexicon: Category → القسم,
+      Subcategory → القسم الفرعي. **M4**: product form's free-text category field replaced with
+      dependent category→subcategory `DropdownButtonFormField`s (taxonomy loaded via
+      `FutureBuilder`, no bloc — matches the page's existing style), validation, submit writes
+      `subcategoryId` + derived `category`. **M5**: kept the home page's existing 3-col
+      `CategoryGrid` (deliberate C2a design choice, more distinctive than a generic chip row —
+      diverged from FILE_05's literal "chip row" wording) and added a settled 200ms select
+      animation; selected category now carried as router `extra` into `ShopPage` →
+      `ProductsBloc(initialCategory: ...)`, applied once on the catalog's first arrival. Existing
+      `productsCategoryEmptyTitle/Body` empty state reused instead of FILE_05's near-duplicate
+      MSA-register strings (voice consistency). Gates green (analyze 0, test 68/68, parity 206).
+      Device smoke test (re-seed + dropdown + carried-filter checks) still pending — no device
+      this session.
 - [ ] **M6–M7 — Collections.** Owner-scoped collections CRUD + product assignment + customer view.
 - [ ] **M8–M11 — Drivers.** Areas + driver profiles (suspended-by-default), assignment
       transaction + owner sheet, courier shell, assignment push + regression matrix.

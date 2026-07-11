@@ -22,9 +22,11 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
     required String shopId,
     required WatchShop watchShop,
     required WatchProductsByShop watchProductsByShop,
+    String? initialCategory,
   })  : _shopId = shopId,
         _watchShop = watchShop,
         _watchProductsByShop = watchProductsByShop,
+        _pendingInitialCategory = initialCategory,
         super(const ProductsState()) {
     on<ProductsStarted>(_onStarted);
     on<ProductsRetryRequested>(_onStarted);
@@ -37,6 +39,11 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
   final String _shopId;
   final WatchShop _watchShop;
   final WatchProductsByShop _watchProductsByShop;
+
+  /// Home category carried through navigation (M5) — applied once, on the
+  /// catalog's first arrival, then cleared so a later re-selection (or a
+  /// catalog update dropping a stale filter) behaves like any other pick.
+  String? _pendingInitialCategory;
 
   StreamSubscription<Shop>? _shopSub;
   StreamSubscription<List<Product>>? _productsSub;
@@ -69,16 +76,24 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
 
   void _onProductsArrived(_ProductsArrived event, Emitter<ProductsState> emit) {
     _productsReady = true;
-    // A category the user had picked may vanish if its last product left the
-    // catalog — drop the filter rather than show an empty grid for a stale pick.
     final categories = _categoriesOf(event.products);
-    final stillValid = state.selectedCategory != null &&
-        categories.contains(state.selectedCategory);
+
+    // A carried-over home category (M5) wins on the very first arrival, if it
+    // actually matches a category in this shop; consumed once either way.
+    final carried = _pendingInitialCategory;
+    _pendingInitialCategory = null;
+    final wanted = carried != null && categories.contains(carried)
+        ? carried
+        : state.selectedCategory;
+
+    // A category the user had picked (or just carried in) may not be present
+    // — drop the filter rather than show an empty grid for a stale pick.
+    final stillValid = wanted != null && categories.contains(wanted);
     emit(state.copyWith(
       status: _readyStatus(),
       products: event.products,
       categories: categories,
-      selectedCategory: stillValid ? state.selectedCategory : null,
+      selectedCategory: stillValid ? wanted : null,
       clearCategory: !stillValid,
     ));
   }

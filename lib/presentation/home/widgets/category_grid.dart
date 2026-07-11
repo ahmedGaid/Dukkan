@@ -85,7 +85,9 @@ class _CategoryTile extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
           decoration: BoxDecoration(
             borderRadius: AppRadius.lgAll,
             border: Border.all(

@@ -609,6 +609,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldProductCategory => 'Category';
 
   @override
+  String get fieldProductSubcategory => 'Subcategory';
+
+  @override
+  String get categoryRequired => 'Choose a category';
+
+  @override
+  String get subcategoryRequired => 'Choose a subcategory';
+
+  @override
+  String get taxonomyErrorBody =>
+      'We can\'t load categories right now — try again.';
+
+  @override
   String get fieldProductPrice => 'Price (EGP)';
 
   @override

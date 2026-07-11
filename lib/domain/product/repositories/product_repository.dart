@@ -25,6 +25,7 @@ abstract class ProductRepository {
     required StockStatus stockStatus,
     required bool isPromo,
     String? imageUrl,
+    String? subcategoryId,
   });
 
   /// Overwrites an existing product's fields (S2 edit). Requires connectivity.

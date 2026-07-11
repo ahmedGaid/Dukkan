@@ -80,6 +80,8 @@ Rules:
 | Owner catalog tab | الكتالوج | المنتجات |
 | Order history/timeline | سجل الطلب | تايم لاين |
 | Driver (delivery) | المندوب | السائق |
+| Category | القسم | الفئة، التصنيف |
+| Subcategory | القسم الفرعي | الفئة الفرعية |
 
 - Human statuses ("جارٍ تجهيز طلبك"), blame-free errors ("حصلت مشكلة — جرّب تاني").
 - RTL is the default layout. LTR (English) must read identically well.

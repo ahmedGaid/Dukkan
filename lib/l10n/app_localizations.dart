@@ -1238,6 +1238,30 @@ abstract class AppLocalizations {
   /// **'القسم'**
   String get fieldProductCategory;
 
+  /// No description provided for @fieldProductSubcategory.
+  ///
+  /// In ar, this message translates to:
+  /// **'القسم الفرعي'**
+  String get fieldProductSubcategory;
+
+  /// No description provided for @categoryRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر القسم'**
+  String get categoryRequired;
+
+  /// No description provided for @subcategoryRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر القسم الفرعي'**
+  String get subcategoryRequired;
+
+  /// No description provided for @taxonomyErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نجيب الأقسام دلوقتي — جرّب تاني.'**
+  String get taxonomyErrorBody;
+
   /// No description provided for @fieldProductPrice.
   ///
   /// In ar, this message translates to:

@@ -178,7 +178,10 @@ class _HomeContent extends StatelessWidget {
             for (final shop in shops) ...[
               ShopCard(
                 shop: shop,
-                onTap: () => context.push('/shop/${shop.id}'),
+                onTap: () => context.push(
+                  '/shop/${shop.id}',
+                  extra: state.selectedCategory,
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
             ],

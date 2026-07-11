@@ -20,6 +20,9 @@ import '../../data/shop/datasources/shop_remote_datasource.dart';
 import '../../data/shop/repositories/shop_repository_impl.dart';
 import '../../data/storage/datasources/image_upload_remote_datasource.dart';
 import '../../data/storage/repositories/storage_repository_impl.dart';
+import '../../data/taxonomy/datasources/taxonomy_local_datasource.dart';
+import '../../data/taxonomy/datasources/taxonomy_remote_datasource.dart';
+import '../../data/taxonomy/repositories/taxonomy_repository_impl.dart';
 import '../../domain/auth/repositories/auth_repository.dart';
 import '../../domain/auth/usecases/get_user_by_id.dart';
 import '../../domain/auth/usecases/log_in.dart';
@@ -55,6 +58,8 @@ import '../../domain/shop/usecases/watch_shop.dart';
 import '../../domain/shop/usecases/watch_shops.dart';
 import '../../domain/storage/repositories/storage_repository.dart';
 import '../../domain/storage/usecases/upload_image.dart';
+import '../../domain/taxonomy/repositories/taxonomy_repository.dart';
+import '../../domain/taxonomy/usecases/get_taxonomy.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/cart/bloc/cart_bloc.dart';
 import '../../presentation/favorites/bloc/favorites_bloc.dart';
@@ -150,14 +155,27 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => DeleteProduct(sl()));
 
   // Product — bloc (page-scoped: one shop's catalog per shop-page open; the
-  // shop id is the factory param).
-  sl.registerFactoryParam<ProductsBloc, String, void>(
-    (shopId, _) => ProductsBloc(
+  // shop id is param1, an optional carried-over home category is param2 —
+  // M5, mirrors OrderDetailBloc's two-param factory).
+  sl.registerFactoryParam<ProductsBloc, String, String?>(
+    (shopId, initialCategory) => ProductsBloc(
       shopId: shopId,
       watchShop: sl(),
       watchProductsByShop: sl(),
+      initialCategory: initialCategory,
     ),
   );
+
+  // Taxonomy — data (seed-managed, read-only to clients; small fixed tree,
+  // so a one-shot get + shared_preferences cache, not a stream).
+  sl.registerLazySingleton(() => TaxonomyRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton(() => TaxonomyLocalDataSource());
+  sl.registerLazySingleton<TaxonomyRepository>(
+    () => TaxonomyRepositoryImpl(sl(), sl(), sl()),
+  );
+
+  // Taxonomy — use case
+  sl.registerLazySingleton(() => GetTaxonomy(sl()));
 
   // Search — bloc (page-scoped: fresh product + shop subscriptions per open).
   sl.registerFactory(

@@ -593,6 +593,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get fieldProductCategory => 'القسم';
 
   @override
+  String get fieldProductSubcategory => 'القسم الفرعي';
+
+  @override
+  String get categoryRequired => 'اختر القسم';
+
+  @override
+  String get subcategoryRequired => 'اختر القسم الفرعي';
+
+  @override
+  String get taxonomyErrorBody => 'مش قادرين نجيب الأقسام دلوقتي — جرّب تاني.';
+
+  @override
   String get fieldProductPrice => 'السعر (جنيه)';
 
   @override

@@ -20,15 +20,19 @@ import '../widgets/product_card.dart';
 /// (loading / empty / error) is designed. Replaces the C2a `/shop/:id`
 /// placeholder.
 class ShopPage extends StatelessWidget {
-  const ShopPage({super.key, required this.shopId});
+  const ShopPage({super.key, required this.shopId, this.initialCategory});
 
   final String shopId;
+
+  /// Category selected on Home (M5) — carried in as the initial filter so the
+  /// shop opens pre-filtered instead of showing everything then re-filtering.
+  final String? initialCategory;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          sl<ProductsBloc>(param1: shopId)..add(const ProductsStarted()),
+      create: (_) => sl<ProductsBloc>(param1: shopId, param2: initialCategory)
+        ..add(const ProductsStarted()),
       child: ShopView(shopId: shopId),
     );
   }
