@@ -163,6 +163,7 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': '12 شارع الجمهورية، وسط البلد، القاهرة',
         'isOpen': true,
         'categories': ['خضروات وفواكه', 'ألبان', 'مشروبات', 'معلبات'],
+        'logoUrl': _seedImage('shop_demo_1', 200),
         'ratingSum': 44, // 10 votes, ~4.4 avg
         'ratingCount': 10,
       },
@@ -174,6 +175,7 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': '45 شارع النصر، مدينة نصر، القاهرة',
         'isOpen': true,
         'categories': ['مخبوزات', 'لحوم ودواجن', 'منظفات', 'مشروبات'],
+        'logoUrl': _seedImage('shop_demo_2', 200),
         'ratingSum': 33, // 7 votes, ~4.7 avg
         'ratingCount': 7,
       },
@@ -185,6 +187,7 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': '8 شارع مصدق، الدقي، الجيزة',
         'isOpen': true,
         'categories': ['خضروات وفواكه', 'ألبان', 'معلبات'],
+        'logoUrl': _seedImage('shop_demo_3', 200),
         'ratingSum': 19, // 4 votes, ~4.8 avg
         'ratingCount': 4,
       },
@@ -196,6 +199,7 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': '120 شارع الهرم، الجيزة',
         'isOpen': false, // closed — shows the "مغلق" state
         'categories': ['مشروبات', 'منظفات', 'معلبات', 'مخبوزات'],
+        'logoUrl': _seedImage('shop_demo_4', 200),
         'ratingSum': 21, // 6 votes, ~3.5 avg
         'ratingCount': 6,
       },
@@ -208,6 +212,7 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': 'الشارع التجاري، أبوعطوة، الإسماعيلية',
         'isOpen': true,
         'categories': ['خضروات وفواكه', 'ألبان', 'مشروبات', 'معلبات', 'منظفات'],
+        'logoUrl': _seedImage('shop_demo_5', 200),
         'ratingSum': 47, // 10 votes, ~4.7 avg
         'ratingCount': 10,
       },
@@ -219,6 +224,7 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': 'الشارع التجاري، أبوعطوة، الإسماعيلية',
         'isOpen': true,
         'categories': ['مشروبات', 'معلبات', 'مخبوزات', 'منظفات'],
+        'logoUrl': _seedImage('shop_demo_6', 200),
         'ratingSum': 40, // 9 votes, ~4.4 avg
         'ratingCount': 9,
       },
@@ -230,10 +236,16 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
         'address': 'الزغابة، أمام فرن عبد الحي، أبوعطوة، الإسماعيلية',
         'isOpen': true,
         'categories': ['خضروات وفواكه', 'لحوم ودواجن', 'ألبان', 'مخبوزات'],
+        'logoUrl': _seedImage('shop_demo_7', 200),
         'ratingSum': 23, // 5 votes, ~4.6 avg
         'ratingCount': 5,
       },
     ];
+
+/// Deterministic, free, hotlinkable placeholder — same id always returns the
+/// same image, so re-seeding never shuffles product/shop photos.
+String _seedImage(String seedId, int size) =>
+    'https://picsum.photos/seed/$seedId/$size/$size';
 
 List<Map<String, dynamic>> _demoProducts() {
   const shop1 = 'shop_demo_1';
@@ -443,6 +455,7 @@ Map<String, dynamic> _product(
     'shopId': shopId,
     'name': name,
     'nameAr': nameAr,
+    'imageUrl': _seedImage(id, 600),
     'priceMinor': priceMinor,
     'category': category,
     'stockStatus': status,
