@@ -456,18 +456,24 @@ String _seedImage(String keyword, String seedId, int size) {
   return 'https://loremflickr.com/$size/$size/$keyword?lock=$lock';
 }
 
-/// A clean flat food illustration from Servier Medical Art (SMART), hosted on
-/// Wikimedia Commons' CDN — CC-licensed, hotlinkable, and a permanent, stable
-/// URL (no MD5 hash needed; `Special:FilePath` 302-redirects to the file, which
-/// Image.network follows). [subject] is the SMART food name, e.g. 'Tomato' →
-/// `File:Food - Tomato -- Smart-Servier.png`. Returns null for products SMART
-/// has no illustration for (cucumber, apple, onion, croissant, and the non-food
-/// household items) — those tiles fall back to ShimmerImage's branded glyph.
+/// A clean flat food illustration from Servier Medical Art (SMART), a
+/// CC-licensed set hosted on Wikimedia Commons. [subject] is the SMART food
+/// name, e.g. 'Tomato' → `File:Food - Tomato -- Smart-Servier.png`. Returns null
+/// for products SMART has no illustration for (cucumber, apple, onion,
+/// croissant, and the non-food household items) — those tiles fall back to
+/// ShimmerImage's branded glyph.
+///
+/// The Wikimedia file is routed through the weserv image CDN rather than
+/// hotlinked directly: weserv fetches the PNG once, caches it on Cloudflare, and
+/// serves every later request from cache. Hotlinking Wikimedia directly fails in
+/// practice — a catalog loading ~40 tiles at once trips Wikimedia's bulk-request
+/// rate limit (HTTP 429 → blank tiles); weserv's cache absorbs that burst. It
+/// also resizes to 600px. Free, no API key, no pub dependency (just a URL).
 String? _servierImage(String? subject) {
   if (subject == null) return null;
   final file = 'Food - $subject -- Smart-Servier.png';
-  return 'https://commons.wikimedia.org/wiki/Special:FilePath/'
-      '${Uri.encodeComponent(file)}?width=600';
+  final source = 'commons.wikimedia.org/wiki/Special:FilePath/$file';
+  return 'https://images.weserv.nl/?url=${Uri.encodeComponent(source)}&w=600';
 }
 
 List<Map<String, dynamic>> _demoProducts() {
