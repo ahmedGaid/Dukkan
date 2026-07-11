@@ -181,7 +181,36 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       MSA-register strings (voice consistency). Gates green (analyze 0, test 68/68, parity 206).
       Device smoke test (re-seed + dropdown + carried-filter checks) still pending — no device
       this session.
-- [ ] **M6–M7 — Collections.** Owner-scoped collections CRUD + product assignment + customer view.
+- [x] **M6–M7 — Collections.** Done in one combined session (FILE_06+07), code-only.
+      **M6**: `/shops/{shopId}/collections/{id}` (`lib/domain/collections/`,
+      `lib/data/collections/`) — `ShopCollection` entity (id, nameAr, nameEn, sort);
+      `CollectionsRepository` with both `watchCollections` (realtime, owner manager +
+      customer shop page) and `getCollections` (one-shot, product form picker — spec's
+      literal "watch/get(shopId)"); `firestore.rules` nested `/collections` match under
+      `/shops/{shopId}` (read any signed-in user, write shop-owner-only, mirrors the
+      parent shop's owner check). Owner manager page (`collections_manager_page.dart`,
+      reached via a new AppBar icon on `catalog_manager_page.dart`) — list, create/rename
+      bottom sheet (two required name fields + a static "e.g. عروض/Offers" placeholder),
+      delete confirm (exact spec copy "Deleting the collection keeps the products").
+      `CollectionsBloc` follows `OrderDetailBloc`'s cancel/rate shape: the sheet/dialog
+      closes optimistically, a submitting→failure transition snackbars once
+      (blame-free "حصلت مشكلة — جرّب تاني"), success needs no local flag since the
+      realtime stream reflects it. **M7**: `Product.collectionIds` (nullable-safe empty
+      list, old docs parse fine) threaded through model/datasource/repository/
+      `CreateProduct`; product form's `_CollectionsPicker` (multi-select `FilterChip`s,
+      one-shot `GetCollections` load, hides entirely for a shop with no collections OR
+      on a load error — optional secondary field, never worth blocking the form);
+      `ProductsBloc` gained a third stream (`WatchCollections`, non-critical — a failure
+      is swallowed, never surfaces as page-level error) plus `selectedCollectionId`,
+      combined with the existing category filter via AND in `visibleProducts`; a second
+      chip row on `shop_page.dart` (no "All" chip — tap-again-clears, unlike the
+      category row) with the same stale-selection safety as categories (a deleted
+      collection drops the filter, no crash). Lexicon: Collection → مجموعة
+      (`BRAND.md`). Gates green (analyze 0, test 85/85, parity 221 — up from 206;
+      +collections_bloc_test.dart, +collections_model_test.dart, product/products-bloc
+      tests extended). Device smoke test (both sessions' full lists in FILE_06/07) still
+      pending — no device this session; the new `/collections` rules block is also
+      still undeployed alongside the earlier M1/M3 rules.
 - [ ] **M8–M11 — Drivers.** Areas + driver profiles (suspended-by-default), assignment
       transaction + owner sheet, courier shell, assignment push + regression matrix.
 - [ ] **M12–M13 — Commission.** `/config/platform`, order snapshot (bps/piasters, round-half-up),

@@ -20,6 +20,7 @@ class CreateProduct {
     required bool isPromo,
     String? imageUrl,
     String? subcategoryId,
+    List<String> collectionIds = const [],
   }) {
     return _repository.createProduct(
       shopId: shopId,
@@ -31,6 +32,7 @@ class CreateProduct {
       isPromo: isPromo,
       imageUrl: imageUrl,
       subcategoryId: subcategoryId,
+      collectionIds: collectionIds,
     );
   }
 }

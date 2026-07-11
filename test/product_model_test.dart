@@ -47,4 +47,30 @@ void main() {
 
     expect(roundTripped.subcategoryId, isNull);
   });
+
+  test('fromFirestore parses collectionIds', () {
+    final product = ProductModel.fromFirestore('p1', {
+      ...baseFirestoreData,
+      'collectionIds': ['offers', 'new'],
+    });
+
+    expect(product.collectionIds, ['offers', 'new']);
+  });
+
+  test('fromFirestore defaults collectionIds for a pre-M7 product', () {
+    final product = ProductModel.fromFirestore('p1', baseFirestoreData);
+
+    expect(product.collectionIds, isEmpty);
+  });
+
+  test('toJson/fromJson round-trips collectionIds', () {
+    final product = ProductModel.fromFirestore('p1', {
+      ...baseFirestoreData,
+      'collectionIds': ['offers'],
+    });
+
+    final roundTripped = ProductModel.fromJson(product.toJson());
+
+    expect(roundTripped.collectionIds, ['offers']);
+  });
 }

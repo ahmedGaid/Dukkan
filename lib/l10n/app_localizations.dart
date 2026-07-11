@@ -1333,6 +1333,96 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'مش قادرين نحذف المنتج — جرّب تاني.'**
   String get productDeleteErrorBody;
+
+  /// No description provided for @actionCreate.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنشاء'**
+  String get actionCreate;
+
+  /// No description provided for @catalogCollectionsEntry.
+  ///
+  /// In ar, this message translates to:
+  /// **'المجموعات'**
+  String get catalogCollectionsEntry;
+
+  /// No description provided for @collectionsEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد مجموعات بعد'**
+  String get collectionsEmptyTitle;
+
+  /// No description provided for @collectionsEmptyAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'أنشئ مجموعة'**
+  String get collectionsEmptyAction;
+
+  /// No description provided for @collectionsErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نجيب مجموعاتك دلوقتي — جرّب تاني.'**
+  String get collectionsErrorBody;
+
+  /// No description provided for @collectionsCreateTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مجموعة جديدة'**
+  String get collectionsCreateTitle;
+
+  /// No description provided for @collectionsRenameTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل المجموعة'**
+  String get collectionsRenameTitle;
+
+  /// No description provided for @fieldCollectionNameAr.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم بالعربي'**
+  String get fieldCollectionNameAr;
+
+  /// No description provided for @fieldCollectionNameEn.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم بالإنجليزي'**
+  String get fieldCollectionNameEn;
+
+  /// No description provided for @collectionNameArHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'مثلاً: عروض'**
+  String get collectionNameArHint;
+
+  /// No description provided for @collectionNameEnHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'مثلاً: Offers'**
+  String get collectionNameEnHint;
+
+  /// No description provided for @collectionsDeleteConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف المجموعة؟'**
+  String get collectionsDeleteConfirmTitle;
+
+  /// No description provided for @collectionsDeleteConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف المجموعة لا يحذف المنتجات'**
+  String get collectionsDeleteConfirmBody;
+
+  /// No description provided for @collectionsActionErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'حصلت مشكلة — جرّب تاني.'**
+  String get collectionsActionErrorBody;
+
+  /// No description provided for @productCollections.
+  ///
+  /// In ar, this message translates to:
+  /// **'المجموعات (اختياري)'**
+  String get productCollections;
 }
 
 class _AppLocalizationsDelegate

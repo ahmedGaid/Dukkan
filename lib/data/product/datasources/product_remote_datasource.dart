@@ -50,6 +50,7 @@ class ProductRemoteDataSource {
       stockStatus: product.stockStatus,
       isPromo: product.isPromo,
       subcategoryId: product.subcategoryId,
+      collectionIds: product.collectionIds,
     );
   }
 

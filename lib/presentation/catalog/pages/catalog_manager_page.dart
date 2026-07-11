@@ -65,6 +65,16 @@ class _CatalogManagerPageState extends State<CatalogManagerPage> {
         title: Text(
           shop == null ? l10n.appName : (isArabic ? shop.nameAr : shop.name),
         ),
+        actions: shop == null
+            ? null
+            : [
+                IconButton(
+                  icon: const Icon(Icons.collections_bookmark_outlined),
+                  tooltip: l10n.catalogCollectionsEntry,
+                  onPressed: () =>
+                      context.push('/catalog/collections', extra: shop.id),
+                ),
+              ],
       ),
       floatingActionButton: shop == null
           ? null

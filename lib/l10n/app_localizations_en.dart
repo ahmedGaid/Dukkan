@@ -660,4 +660,51 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get productDeleteErrorBody =>
       'We couldn\'t delete this product — try again.';
+
+  @override
+  String get actionCreate => 'Create';
+
+  @override
+  String get catalogCollectionsEntry => 'Collections';
+
+  @override
+  String get collectionsEmptyTitle => 'No collections yet';
+
+  @override
+  String get collectionsEmptyAction => 'Create a collection';
+
+  @override
+  String get collectionsErrorBody =>
+      'We can\'t load your collections right now — try again.';
+
+  @override
+  String get collectionsCreateTitle => 'New collection';
+
+  @override
+  String get collectionsRenameTitle => 'Edit collection';
+
+  @override
+  String get fieldCollectionNameAr => 'Name (Arabic)';
+
+  @override
+  String get fieldCollectionNameEn => 'Name (English)';
+
+  @override
+  String get collectionNameArHint => 'e.g. عروض';
+
+  @override
+  String get collectionNameEnHint => 'e.g. Offers';
+
+  @override
+  String get collectionsDeleteConfirmTitle => 'Delete this collection?';
+
+  @override
+  String get collectionsDeleteConfirmBody =>
+      'Deleting the collection keeps the products';
+
+  @override
+  String get collectionsActionErrorBody => 'Something went wrong — try again.';
+
+  @override
+  String get productCollections => 'Collections (optional)';
 }

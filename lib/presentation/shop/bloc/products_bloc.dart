@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../domain/collections/entities/shop_collection.dart';
+import '../../../domain/collections/usecases/watch_collections.dart';
 import '../../../domain/product/entities/product.dart';
 import '../../../domain/product/usecases/watch_products_by_shop.dart';
 import '../../../domain/shop/entities/shop.dart';
@@ -22,23 +24,28 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
     required String shopId,
     required WatchShop watchShop,
     required WatchProductsByShop watchProductsByShop,
+    required WatchCollections watchCollections,
     String? initialCategory,
   })  : _shopId = shopId,
         _watchShop = watchShop,
         _watchProductsByShop = watchProductsByShop,
+        _watchCollections = watchCollections,
         _pendingInitialCategory = initialCategory,
         super(const ProductsState()) {
     on<ProductsStarted>(_onStarted);
     on<ProductsRetryRequested>(_onStarted);
     on<ProductsCategorySelected>(_onCategorySelected);
+    on<ProductsCollectionSelected>(_onCollectionSelected);
     on<_ShopArrived>(_onShopArrived);
     on<_ProductsArrived>(_onProductsArrived);
     on<_ProductsFailed>(_onFailed);
+    on<_CollectionsArrived>(_onCollectionsArrived);
   }
 
   final String _shopId;
   final WatchShop _watchShop;
   final WatchProductsByShop _watchProductsByShop;
+  final WatchCollections _watchCollections;
 
   /// Home category carried through navigation (M5) — applied once, on the
   /// catalog's first arrival, then cleared so a later re-selection (or a
@@ -47,6 +54,7 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
 
   StreamSubscription<Shop>? _shopSub;
   StreamSubscription<List<Product>>? _productsSub;
+  StreamSubscription<List<ShopCollection>>? _collectionsSub;
   bool _shopReady = false;
   bool _productsReady = false;
 
@@ -59,6 +67,7 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
     _productsReady = false;
     await _shopSub?.cancel();
     await _productsSub?.cancel();
+    await _collectionsSub?.cancel();
     _shopSub = _watchShop(_shopId).listen(
       (shop) => add(_ShopArrived(shop)),
       onError: (Object error) => add(_ProductsFailed(error)),
@@ -66,6 +75,13 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
     _productsSub = _watchProductsByShop(_shopId).listen(
       (products) => add(_ProductsArrived(products)),
       onError: (Object error) => add(_ProductsFailed(error)),
+    );
+    // Non-critical to this page's load status — a failure here is swallowed
+    // rather than surfaced, so the shop page never breaks over an optional
+    // filter row.
+    _collectionsSub = _watchCollections(_shopId).listen(
+      (collections) => add(_CollectionsArrived(collections)),
+      onError: (_) {},
     );
   }
 
@@ -115,6 +131,36 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
     ));
   }
 
+  void _onCollectionsArrived(
+    _CollectionsArrived event,
+    Emitter<ProductsState> emit,
+  ) {
+    // A selected collection that just got deleted by the owner: drop the
+    // filter rather than keep a chip selected that no longer exists.
+    final ids = event.collections.map((c) => c.id);
+    final selected = state.selectedCollectionId;
+    final stillValid = selected != null && ids.contains(selected);
+    emit(state.copyWith(
+      collections: event.collections,
+      selectedCollectionId: stillValid ? selected : null,
+      clearCollection: !stillValid,
+    ));
+  }
+
+  void _onCollectionSelected(
+    ProductsCollectionSelected event,
+    Emitter<ProductsState> emit,
+  ) {
+    // Tapping the active collection again clears the filter (toggle).
+    final next = event.collectionId == state.selectedCollectionId
+        ? null
+        : event.collectionId;
+    emit(state.copyWith(
+      selectedCollectionId: next,
+      clearCollection: next == null,
+    ));
+  }
+
   ProductsStatus _readyStatus() => _shopReady && _productsReady
       ? ProductsStatus.loaded
       : ProductsStatus.loading;
@@ -133,6 +179,7 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
   Future<void> close() {
     _shopSub?.cancel();
     _productsSub?.cancel();
+    _collectionsSub?.cancel();
     return super.close();
   }
 }

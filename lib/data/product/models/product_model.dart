@@ -13,6 +13,7 @@ class ProductModel extends Product {
     required super.isPromo,
     super.imageUrl,
     super.subcategoryId,
+    super.collectionIds,
   });
 
   factory ProductModel.fromFirestore(String id, Map<String, dynamic> data) {
@@ -27,6 +28,8 @@ class ProductModel extends Product {
       stockStatus: StockStatus.fromWire(data['stockStatus'] as String? ?? ''),
       isPromo: data['isPromo'] as bool? ?? false,
       subcategoryId: data['subcategoryId'] as String?,
+      collectionIds:
+          List<String>.from(data['collectionIds'] as List? ?? const []),
     );
   }
 
@@ -40,6 +43,7 @@ class ProductModel extends Product {
         'stockStatus': stockStatus.wire,
         'isPromo': isPromo,
         if (subcategoryId != null) 'subcategoryId': subcategoryId,
+        'collectionIds': collectionIds,
       };
 
   factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
@@ -53,6 +57,8 @@ class ProductModel extends Product {
         stockStatus: StockStatus.fromWire(json['stockStatus'] as String),
         isPromo: json['isPromo'] as bool,
         subcategoryId: json['subcategoryId'] as String?,
+        collectionIds:
+            List<String>.from(json['collectionIds'] as List? ?? const []),
       );
 
   Map<String, dynamic> toJson() => {'id': id, ...toFirestore()};

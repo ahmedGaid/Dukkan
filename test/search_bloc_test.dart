@@ -35,6 +35,7 @@ class _FakeProductRepository implements ProductRepository {
     required bool isPromo,
     String? imageUrl,
     String? subcategoryId,
+    List<String> collectionIds = const [],
   }) =>
       throw UnimplementedError();
 

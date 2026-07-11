@@ -61,6 +61,7 @@ class ProductRepositoryImpl implements ProductRepository {
     required bool isPromo,
     String? imageUrl,
     String? subcategoryId,
+    List<String> collectionIds = const [],
   }) async {
     if (!await _networkInfo.isConnected) {
       throw const NetworkFailure('No connection');
@@ -76,6 +77,7 @@ class ProductRepositoryImpl implements ProductRepository {
       isPromo: isPromo,
       imageUrl: imageUrl,
       subcategoryId: subcategoryId,
+      collectionIds: collectionIds,
     ));
   }
 
@@ -95,6 +97,7 @@ class ProductRepositoryImpl implements ProductRepository {
       isPromo: product.isPromo,
       imageUrl: product.imageUrl,
       subcategoryId: product.subcategoryId,
+      collectionIds: product.collectionIds,
     ));
   }
 

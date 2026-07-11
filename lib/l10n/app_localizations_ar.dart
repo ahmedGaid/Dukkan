@@ -639,4 +639,50 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get productDeleteErrorBody => 'مش قادرين نحذف المنتج — جرّب تاني.';
+
+  @override
+  String get actionCreate => 'إنشاء';
+
+  @override
+  String get catalogCollectionsEntry => 'المجموعات';
+
+  @override
+  String get collectionsEmptyTitle => 'لا توجد مجموعات بعد';
+
+  @override
+  String get collectionsEmptyAction => 'أنشئ مجموعة';
+
+  @override
+  String get collectionsErrorBody =>
+      'مش قادرين نجيب مجموعاتك دلوقتي — جرّب تاني.';
+
+  @override
+  String get collectionsCreateTitle => 'مجموعة جديدة';
+
+  @override
+  String get collectionsRenameTitle => 'تعديل المجموعة';
+
+  @override
+  String get fieldCollectionNameAr => 'الاسم بالعربي';
+
+  @override
+  String get fieldCollectionNameEn => 'الاسم بالإنجليزي';
+
+  @override
+  String get collectionNameArHint => 'مثلاً: عروض';
+
+  @override
+  String get collectionNameEnHint => 'مثلاً: Offers';
+
+  @override
+  String get collectionsDeleteConfirmTitle => 'حذف المجموعة؟';
+
+  @override
+  String get collectionsDeleteConfirmBody => 'حذف المجموعة لا يحذف المنتجات';
+
+  @override
+  String get collectionsActionErrorBody => 'حصلت مشكلة — جرّب تاني.';
+
+  @override
+  String get productCollections => 'المجموعات (اختياري)';
 }

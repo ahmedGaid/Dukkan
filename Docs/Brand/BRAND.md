@@ -82,6 +82,7 @@ Rules:
 | Driver (delivery) | المندوب | السائق |
 | Category | القسم | الفئة، التصنيف |
 | Subcategory | القسم الفرعي | الفئة الفرعية |
+| Collection (owner-curated grouping) | مجموعة | فئة، تصنيف |
 
 - Human statuses ("جارٍ تجهيز طلبك"), blame-free errors ("حصلت مشكلة — جرّب تاني").
 - RTL is the default layout. LTR (English) must read identically well.

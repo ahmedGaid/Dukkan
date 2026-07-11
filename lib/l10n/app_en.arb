@@ -231,5 +231,21 @@
   "productDeleteConfirmTitle": "Delete this product?",
   "productDeleteConfirmBody": "It'll be removed from your shop right away.",
   "actionDelete": "Delete",
-  "productDeleteErrorBody": "We couldn't delete this product — try again."
+  "productDeleteErrorBody": "We couldn't delete this product — try again.",
+
+  "actionCreate": "Create",
+  "catalogCollectionsEntry": "Collections",
+  "collectionsEmptyTitle": "No collections yet",
+  "collectionsEmptyAction": "Create a collection",
+  "collectionsErrorBody": "We can't load your collections right now — try again.",
+  "collectionsCreateTitle": "New collection",
+  "collectionsRenameTitle": "Edit collection",
+  "fieldCollectionNameAr": "Name (Arabic)",
+  "fieldCollectionNameEn": "Name (English)",
+  "collectionNameArHint": "e.g. عروض",
+  "collectionNameEnHint": "e.g. Offers",
+  "collectionsDeleteConfirmTitle": "Delete this collection?",
+  "collectionsDeleteConfirmBody": "Deleting the collection keeps the products",
+  "collectionsActionErrorBody": "Something went wrong — try again.",
+  "productCollections": "Collections (optional)"
 }

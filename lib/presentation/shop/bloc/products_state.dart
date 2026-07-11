@@ -9,6 +9,8 @@ class ProductsState extends Equatable {
     this.products = const [],
     this.categories = const [],
     this.selectedCategory,
+    this.collections = const [],
+    this.selectedCollectionId,
   });
 
   final ProductsStatus status;
@@ -26,11 +28,26 @@ class ProductsState extends Equatable {
   /// Active category filter, or null for "all".
   final String? selectedCategory;
 
-  /// Products shown in the grid: all, or only those in the selected category.
+  /// This shop's collections (M7) — drives the second, optional filter row.
+  /// Empty means either no collections yet or the load failed; either way
+  /// the row simply doesn't render.
+  final List<ShopCollection> collections;
+
+  /// Active collection filter, or null for "all".
+  final String? selectedCollectionId;
+
+  /// Products shown in the grid: category and collection filters both apply
+  /// (AND) when set.
   List<Product> get visibleProducts {
-    final selected = selectedCategory;
-    if (selected == null) return products;
-    return products.where((p) => p.category == selected).toList();
+    final category = selectedCategory;
+    final collectionId = selectedCollectionId;
+    return products.where((p) {
+      if (category != null && p.category != category) return false;
+      if (collectionId != null && !p.collectionIds.contains(collectionId)) {
+        return false;
+      }
+      return true;
+    }).toList();
   }
 
   ProductsState copyWith({
@@ -40,6 +57,9 @@ class ProductsState extends Equatable {
     List<String>? categories,
     String? selectedCategory,
     bool clearCategory = false,
+    List<ShopCollection>? collections,
+    String? selectedCollectionId,
+    bool clearCollection = false,
   }) {
     return ProductsState(
       status: status ?? this.status,
@@ -48,10 +68,21 @@ class ProductsState extends Equatable {
       categories: categories ?? this.categories,
       selectedCategory:
           clearCategory ? null : (selectedCategory ?? this.selectedCategory),
+      collections: collections ?? this.collections,
+      selectedCollectionId: clearCollection
+          ? null
+          : (selectedCollectionId ?? this.selectedCollectionId),
     );
   }
 
   @override
-  List<Object?> get props =>
-      [status, shop, products, categories, selectedCategory];
+  List<Object?> get props => [
+        status,
+        shop,
+        products,
+        categories,
+        selectedCategory,
+        collections,
+        selectedCollectionId,
+      ];
 }

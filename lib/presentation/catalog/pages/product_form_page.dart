@@ -7,6 +7,8 @@ import '../../../core/di/injector.dart';
 import '../../../core/money.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../domain/collections/entities/shop_collection.dart';
+import '../../../domain/collections/usecases/get_collections.dart';
 import '../../../domain/product/entities/product.dart';
 import '../../../domain/product/entities/stock_status.dart';
 import '../../../domain/product/usecases/create_product.dart';
@@ -81,6 +83,12 @@ class _ProductFormPageState extends State<ProductFormPage> {
   String? _categoryId;
   String? _subcategoryId;
 
+  // Collections (M7) — one-shot load per form open, same style as taxonomy.
+  late final Future<List<ShopCollection>> _collectionsFuture =
+      sl<GetCollections>()(widget.shopId);
+  late Set<String> _selectedCollectionIds =
+      Set.of(widget.product?.collectionIds ?? const []);
+
   bool get _isEdit => widget.product != null;
 
   @override
@@ -153,6 +161,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
       // Both selections are validator-enforced above, so `!` is safe here.
       final categoryId = _categoryId!;
       final subcategoryId = _subcategoryId!;
+      final collectionIds = _selectedCollectionIds.toList();
       if (existing == null) {
         await sl<CreateProduct>()(
           shopId: widget.shopId,
@@ -164,6 +173,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
           stockStatus: _stockStatus,
           isPromo: _isPromo,
           imageUrl: imageUrl,
+          collectionIds: collectionIds,
         );
       } else {
         await sl<UpdateProduct>()(Product(
@@ -177,6 +187,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
           stockStatus: _stockStatus,
           isPromo: _isPromo,
           imageUrl: imageUrl,
+          collectionIds: collectionIds,
         ));
       }
       if (!mounted) return;
@@ -243,6 +254,12 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       setState(() => _subcategoryId = id),
                   onRetry: () =>
                       setState(() => _taxonomyFuture = sl<GetTaxonomy>()()),
+                ),
+                _CollectionsPicker(
+                  future: _collectionsFuture,
+                  selected: _selectedCollectionIds,
+                  onChanged: (ids) =>
+                      setState(() => _selectedCollectionIds = ids),
                 ),
                 AppTextField(
                   label: l10n.fieldProductPrice,
@@ -424,6 +441,88 @@ class _TaxonomyFields extends StatelessWidget {
               ),
             ),
           ],
+        );
+      },
+    );
+  }
+}
+
+/// Multi-select collection chips (M7) — below the taxonomy dropdowns,
+/// optional (zero selected is valid). A shop with no collections yet hides
+/// the whole block rather than showing an empty shell; a load error does the
+/// same (this is a secondary, optional field — never worth blocking the rest
+/// of the form over).
+class _CollectionsPicker extends StatelessWidget {
+  const _CollectionsPicker({
+    required this.future,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  final Future<List<ShopCollection>> future;
+  final Set<String> selected;
+  final ValueChanged<Set<String>> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+
+    return FutureBuilder<List<ShopCollection>>(
+      future: future,
+      builder: (context, snapshot) {
+        final collections = snapshot.data ?? const <ShopCollection>[];
+        if (snapshot.connectionState != ConnectionState.done ||
+            collections.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final scheme = Theme.of(context).colorScheme;
+        final text = Theme.of(context).textTheme;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.productCollections, style: text.labelLarge),
+              const SizedBox(height: AppSpacing.xs),
+              Wrap(
+                spacing: AppSpacing.sm,
+                children: [
+                  for (final collection in collections)
+                    FilterChip(
+                      label: Text(
+                        isArabic ? collection.nameAr : collection.nameEn,
+                      ),
+                      selected: selected.contains(collection.id),
+                      onSelected: (isSelected) {
+                        final next = Set.of(selected);
+                        if (isSelected) {
+                          next.add(collection.id);
+                        } else {
+                          next.remove(collection.id);
+                        }
+                        onChanged(next);
+                      },
+                      selectedColor: scheme.primary,
+                      backgroundColor: scheme.surfaceContainerHighest,
+                      showCheckmark: false,
+                      labelStyle: text.bodySmall?.copyWith(
+                        color: selected.contains(collection.id)
+                            ? scheme.onPrimary
+                            : scheme.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      side: BorderSide(
+                        color: selected.contains(collection.id)
+                            ? scheme.primary
+                            : scheme.outline,
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
         );
       },
     );

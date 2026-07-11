@@ -16,6 +16,7 @@ class Product extends Equatable {
     required this.isPromo,
     this.imageUrl,
     this.subcategoryId,
+    this.collectionIds = const [],
   });
 
   final String id;
@@ -33,6 +34,12 @@ class Product extends Equatable {
   /// stays the source of truth for filtering until every product is edited.
   final String? subcategoryId;
 
+  /// Owner-assigned collection ids (M7), e.g. shows under "Offers" on the
+  /// shop page. Empty is valid — collections are optional tags, not
+  /// required categorization. Stale ids (a deleted collection) are simply
+  /// ignored at render time.
+  final List<String> collectionIds;
+
   @override
   List<Object?> get props => [
         id,
@@ -45,5 +52,6 @@ class Product extends Equatable {
         stockStatus,
         isPromo,
         subcategoryId,
+        collectionIds,
       ];
 }

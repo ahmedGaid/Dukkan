@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/auth/datasources/auth_remote_datasource.dart';
 import '../../data/auth/repositories/auth_repository_impl.dart';
+import '../../data/collections/datasources/collections_remote_datasource.dart';
+import '../../data/collections/repositories/collections_repository_impl.dart';
 import '../../data/favorites/datasources/favorites_remote_datasource.dart';
 import '../../data/favorites/repositories/favorites_repository_impl.dart';
 import '../../data/notifications/datasources/notification_remote_datasource.dart';
@@ -30,6 +32,12 @@ import '../../domain/auth/usecases/log_out.dart';
 import '../../domain/auth/usecases/send_password_reset.dart';
 import '../../domain/auth/usecases/sign_up.dart';
 import '../../domain/auth/usecases/watch_auth_state.dart';
+import '../../domain/collections/repositories/collections_repository.dart';
+import '../../domain/collections/usecases/create_collection.dart';
+import '../../domain/collections/usecases/delete_collection.dart';
+import '../../domain/collections/usecases/get_collections.dart';
+import '../../domain/collections/usecases/rename_collection.dart';
+import '../../domain/collections/usecases/watch_collections.dart';
 import '../../domain/favorites/repositories/favorites_repository.dart';
 import '../../domain/favorites/usecases/toggle_favorite_product.dart';
 import '../../domain/favorites/usecases/toggle_favorite_shop.dart';
@@ -62,6 +70,7 @@ import '../../domain/taxonomy/repositories/taxonomy_repository.dart';
 import '../../domain/taxonomy/usecases/get_taxonomy.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/cart/bloc/cart_bloc.dart';
+import '../../presentation/catalog/bloc/collections_bloc.dart';
 import '../../presentation/favorites/bloc/favorites_bloc.dart';
 import '../../presentation/favorites/bloc/favorites_page_bloc.dart';
 import '../../presentation/home/bloc/shops_bloc.dart';
@@ -162,6 +171,7 @@ Future<void> initDependencies() async {
       shopId: shopId,
       watchShop: sl(),
       watchProductsByShop: sl(),
+      watchCollections: sl(),
       initialCategory: initialCategory,
     ),
   );
@@ -176,6 +186,32 @@ Future<void> initDependencies() async {
 
   // Taxonomy — use case
   sl.registerLazySingleton(() => GetTaxonomy(sl()));
+
+  // Collections — data (owner-scoped subcollection, no local cache — see
+  // `CollectionsRepository` doc).
+  sl.registerLazySingleton(() => CollectionsRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<CollectionsRepository>(
+    () => CollectionsRepositoryImpl(sl(), sl()),
+  );
+
+  // Collections — use cases
+  sl.registerLazySingleton(() => WatchCollections(sl()));
+  sl.registerLazySingleton(() => GetCollections(sl()));
+  sl.registerLazySingleton(() => CreateCollection(sl()));
+  sl.registerLazySingleton(() => RenameCollection(sl()));
+  sl.registerLazySingleton(() => DeleteCollection(sl()));
+
+  // Collections — bloc (page-scoped: the owner manager, one shop's
+  // collections per open; shop id is the factory param, mirrors ProductsBloc).
+  sl.registerFactoryParam<CollectionsBloc, String, void>(
+    (shopId, _) => CollectionsBloc(
+      shopId: shopId,
+      watchCollections: sl(),
+      createCollection: sl(),
+      renameCollection: sl(),
+      deleteCollection: sl(),
+    ),
+  );
 
   // Search — bloc (page-scoped: fresh product + shop subscriptions per open).
   sl.registerFactory(

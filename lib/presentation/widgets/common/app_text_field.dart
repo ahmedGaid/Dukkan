@@ -17,6 +17,7 @@ class AppTextField extends StatelessWidget {
     this.prefixIcon,
     this.onFieldSubmitted,
     this.autofillHints,
+    this.hintText,
   });
 
   final String label;
@@ -28,6 +29,10 @@ class AppTextField extends StatelessWidget {
   final IconData? prefixIcon;
   final void Function(String)? onFieldSubmitted;
   final Iterable<String>? autofillHints;
+
+  /// Suggested-example placeholder (e.g. "e.g. Offers") — shown only while
+  /// the field is empty, never a substitute for [label].
+  final String? hintText;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +48,7 @@ class AppTextField extends StatelessWidget {
         autofillHints: autofillHints,
         decoration: InputDecoration(
           labelText: label,
+          hintText: hintText,
           prefixIcon: prefixIcon == null ? null : Icon(prefixIcon),
         ),
       ),

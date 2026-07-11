@@ -26,6 +26,7 @@ abstract class ProductRepository {
     required bool isPromo,
     String? imageUrl,
     String? subcategoryId,
+    List<String> collectionIds = const [],
   });
 
   /// Overwrites an existing product's fields (S2 edit). Requires connectivity.

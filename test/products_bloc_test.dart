@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:dukkan/domain/collections/entities/shop_collection.dart';
+import 'package:dukkan/domain/collections/repositories/collections_repository.dart';
+import 'package:dukkan/domain/collections/usecases/watch_collections.dart';
 import 'package:dukkan/domain/product/entities/product.dart';
 import 'package:dukkan/domain/product/entities/stock_status.dart';
 import 'package:dukkan/domain/product/repositories/product_repository.dart';
@@ -62,6 +65,7 @@ class _FakeProductRepository implements ProductRepository {
     required bool isPromo,
     String? imageUrl,
     String? subcategoryId,
+    List<String> collectionIds = const [],
   }) =>
       throw UnimplementedError();
 
@@ -70,6 +74,40 @@ class _FakeProductRepository implements ProductRepository {
 
   @override
   Future<void> deleteProduct(String productId) => throw UnimplementedError();
+}
+
+class _FakeCollectionsRepository implements CollectionsRepository {
+  final controller = StreamController<List<ShopCollection>>.broadcast();
+
+  @override
+  Stream<List<ShopCollection>> watchCollections(String shopId) =>
+      controller.stream;
+
+  @override
+  Future<List<ShopCollection>> getCollections(String shopId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<ShopCollection> createCollection(
+    String shopId, {
+    required String nameAr,
+    required String nameEn,
+    required int sort,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> renameCollection(
+    String shopId,
+    String collectionId, {
+    required String nameAr,
+    required String nameEn,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> deleteCollection(String shopId, String collectionId) =>
+      throw UnimplementedError();
 }
 
 Shop _shop(String id) => Shop(
@@ -82,7 +120,7 @@ Shop _shop(String id) => Shop(
       categories: const [],
     );
 
-Product _product(String id, String category) => Product(
+Product _product(String id, String category, {List<String> collectionIds = const []}) => Product(
       id: id,
       shopId: 's',
       name: 'Product $id',
@@ -91,20 +129,27 @@ Product _product(String id, String category) => Product(
       category: category,
       stockStatus: StockStatus.inStock,
       isPromo: false,
+      collectionIds: collectionIds,
     );
+
+ShopCollection _collection(String id) =>
+    ShopCollection(id: id, nameAr: 'مجموعة $id', nameEn: 'Collection $id', sort: 0);
 
 void main() {
   late _FakeShopRepository shopRepo;
   late _FakeProductRepository productRepo;
+  late _FakeCollectionsRepository collectionsRepo;
   late ProductsBloc bloc;
 
   setUp(() {
     shopRepo = _FakeShopRepository();
     productRepo = _FakeProductRepository();
+    collectionsRepo = _FakeCollectionsRepository();
     bloc = ProductsBloc(
       shopId: 's',
       watchShop: WatchShop(shopRepo),
       watchProductsByShop: WatchProductsByShop(productRepo),
+      watchCollections: WatchCollections(collectionsRepo),
     );
   });
 
@@ -112,6 +157,7 @@ void main() {
     await bloc.close();
     await shopRepo.controller.close();
     await productRepo.controller.close();
+    await collectionsRepo.controller.close();
   });
 
   test('stays loading until BOTH the shop and its products have arrived',
@@ -201,6 +247,7 @@ void main() {
         shopId: 's',
         watchShop: WatchShop(shopRepo),
         watchProductsByShop: WatchProductsByShop(productRepo),
+        watchCollections: WatchCollections(collectionsRepo),
         initialCategory: 'خضروات',
       );
       addTearDown(withInitial.close);
@@ -223,6 +270,7 @@ void main() {
         shopId: 's',
         watchShop: WatchShop(shopRepo),
         watchProductsByShop: WatchProductsByShop(productRepo),
+        watchCollections: WatchCollections(collectionsRepo),
         initialCategory: 'مشروبات',
       );
       addTearDown(withInitial.close);
@@ -243,6 +291,7 @@ void main() {
         shopId: 's',
         watchShop: WatchShop(shopRepo),
         watchProductsByShop: WatchProductsByShop(productRepo),
+        watchCollections: WatchCollections(collectionsRepo),
         initialCategory: 'خضروات',
       );
       addTearDown(withInitial.close);
@@ -265,6 +314,71 @@ void main() {
       ]);
       await Future<void>.delayed(Duration.zero);
       expect(withInitial.state.selectedCategory, isNull);
+    });
+  });
+
+  group('collection filter (M7)', () {
+    test('narrows visibleProducts, combined with category (AND)', () async {
+      bloc.add(const ProductsStarted());
+      await Future<void>.delayed(Duration.zero);
+      shopRepo.controller.add(_shop('s'));
+      productRepo.controller.add([
+        _product('a', 'خضروات', collectionIds: ['offers']),
+        _product('b', 'خضروات'),
+        _product('c', 'ألبان', collectionIds: ['offers']),
+      ]);
+      collectionsRepo.controller.add([_collection('offers')]);
+      await Future<void>.delayed(Duration.zero);
+
+      bloc.add(const ProductsCollectionSelected('offers'));
+      await Future<void>.delayed(Duration.zero);
+      expect(bloc.state.visibleProducts.map((p) => p.id), ['a', 'c']);
+
+      bloc.add(const ProductsCategorySelected('خضروات'));
+      await Future<void>.delayed(Duration.zero);
+      expect(bloc.state.visibleProducts.map((p) => p.id), ['a']);
+
+      // Re-tapping the active collection clears just that filter.
+      bloc.add(const ProductsCollectionSelected('offers'));
+      await Future<void>.delayed(Duration.zero);
+      expect(bloc.state.selectedCollectionId, isNull);
+      expect(bloc.state.visibleProducts.map((p) => p.id), ['a', 'b']);
+    });
+
+    test('a deleted collection drops the filter without crashing', () async {
+      bloc.add(const ProductsStarted());
+      await Future<void>.delayed(Duration.zero);
+      shopRepo.controller.add(_shop('s'));
+      productRepo.controller.add([_product('a', 'خضروات', collectionIds: ['offers'])]);
+      collectionsRepo.controller.add([_collection('offers')]);
+      await Future<void>.delayed(Duration.zero);
+
+      bloc.add(const ProductsCollectionSelected('offers'));
+      await Future<void>.delayed(Duration.zero);
+      expect(bloc.state.selectedCollectionId, 'offers');
+
+      // Owner deletes the collection: the chip disappears, filter drops,
+      // the product itself is untouched.
+      collectionsRepo.controller.add(const []);
+      await Future<void>.delayed(Duration.zero);
+      expect(bloc.state.collections, isEmpty);
+      expect(bloc.state.selectedCollectionId, isNull);
+      expect(bloc.state.visibleProducts.map((p) => p.id), ['a']);
+    });
+
+    test('a stream error on the collections feed is swallowed, not surfaced',
+        () async {
+      bloc.add(const ProductsStarted());
+      await Future<void>.delayed(Duration.zero);
+      shopRepo.controller.add(_shop('s'));
+      productRepo.controller.add([_product('a', 'خضروات')]);
+      await Future<void>.delayed(Duration.zero);
+      expect(bloc.state.status, ProductsStatus.loaded);
+
+      collectionsRepo.controller.addError(Exception('boom'));
+      await Future<void>.delayed(Duration.zero);
+      expect(bloc.state.status, ProductsStatus.loaded);
+      expect(bloc.state.collections, isEmpty);
     });
   });
 }

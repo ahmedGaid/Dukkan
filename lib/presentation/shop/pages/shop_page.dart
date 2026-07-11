@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/di/injector.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../domain/collections/entities/shop_collection.dart';
 import '../../../domain/product/entities/product.dart';
 import '../../../domain/shop/entities/shop.dart';
 import '../../../l10n/app_localizations.dart';
@@ -112,6 +113,14 @@ class _ShopContent extends StatelessWidget {
               },
             ),
           ],
+          if (state.collections.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            _CollectionFilterRow(
+              collections: state.collections,
+              selected: state.selectedCollectionId,
+              onSelect: (id) => bloc.add(ProductsCollectionSelected(id)),
+            ),
+          ],
           const SizedBox(height: AppSpacing.lg),
           if (products.isEmpty)
             _ProductsEmpty(hasFilter: state.selectedCategory != null)
@@ -161,6 +170,44 @@ class _CategoryFilterRow extends StatelessWidget {
             label: category,
             selected: category == selected,
             onTap: () => onSelect(category),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Second, optional chip row (M7) — this shop's collections. No "All" chip:
+/// tapping the active one again clears it (unlike the category row, this is
+/// a pure tag filter, not a partition). Combines with the category filter
+/// (AND) via `ProductsState.visibleProducts`.
+class _CollectionFilterRow extends StatelessWidget {
+  const _CollectionFilterRow({
+    required this.collections,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  final List<ShopCollection> collections;
+  final String? selected;
+  final ValueChanged<String> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+
+    return SizedBox(
+      height: 36,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: collections.length,
+        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
+        itemBuilder: (context, i) {
+          final collection = collections[i];
+          return _FilterChip(
+            label: isArabic ? collection.nameAr : collection.nameEn,
+            selected: collection.id == selected,
+            onTap: () => onSelect(collection.id),
           );
         },
       ),
