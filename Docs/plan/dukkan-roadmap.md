@@ -111,10 +111,10 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
 - [x] **P3 — Ratings.** Shop rating after delivered order, average on shop card.
 
 ### Phase 4 — Release
-- [ ] **R0 — First full E2E regression.** Run `Docs/testing/E2E_MASTER_PROMPT.md` end to end on
-      the real device (customer + owner journeys, four-layer verification, fix loop). Must be
-      GREEN (or GREEN-WITH-SKIPS with only human-blocked items) before R2. Prereq: Firestore
-      `(default)` DB exists + seed run (see `dukkan-status` blockers).
+> **R0 moved (2026-07-11, user decision):** the full E2E regression now runs ONCE at the END of
+> the whole plan (after M14) as the final gate — see Phase 6 below. A partial R0 already ran
+> (report: `Docs/testing/e2e-reports/2026-07-11/report.md` — Phase 0 + S1 pass, J1 auth-race fix
+> `ef32ae4` still unverified on device); its findings carry into the final run.
 - [~] **R1 — Store prep.** Adaptive icon + splash from logo **DONE** (white minimal tile,
       D+awning mark auto-extracted; `flutter_launcher_icons` + `flutter_native_splash` wired).
       Arabic + English store listing copy **DONE** (`Docs/RELEASE_LISTING.md`).
@@ -131,7 +131,10 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       `assets/brand/` marks with the official transparent marks; keep iOS/ + Web/ staged for
       later iOS build + any web/social surface. Rebuild on device, eyeball launcher + splash
       light/dark. Gates green.
-- [ ] **R2 — Ship.** Crashlytics, release build signing, Play internal testing track.
+- [~] **R2 — Ship.** Crashlytics **wired** (`2f00847` — dep + Gradle plugins + error routing;
+      release AAB builds clean; live-event verify needs device). Release signing config wired
+      (`4d3d22b`). Remaining: user generates keystore (`Docs/RELEASE.md` §1), on-device
+      Crashlytics event check, Play internal-track upload.
 
 ### Phase 5 — Marketplace V2 — added 2026-07-11, runs after R2
 > **Replaces the 2026-07-10 courier-role phase** — decision: shared platform driver pool instead
@@ -151,11 +154,19 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       payable-at-delivered, founder-gated finance summary (aggregate queries).
 - [ ] **M14 — Acceptance.** Full acceptance + regression sign-off.
 
+### Phase 6 — Final gate (moved here from Phase 4 on 2026-07-11)
+- [ ] **R0 — Full E2E regression.** Run `Docs/testing/E2E_MASTER_PROMPT.md` end to end on the
+      real device (customer + owner + courier journeys, four-layer verification, fix loop) —
+      the last block of the whole plan. Must be GREEN (or GREEN-WITH-SKIPS with only
+      human-blocked items). Carry-over from the 2026-07-11 partial run: re-verify the `ef32ae4`
+      auth-race fix (fresh signup → Settings shows the entered name, not the email) and Phase 4
+      of the master prompt must add journeys for everything M1–M14 shipped.
+
 ## Standing regression (added 2026-07-10)
 
 `Docs/testing/E2E_MASTER_PROMPT.md` is the master daily E2E test prompt (same pattern as
-Conductor's). Self-maintaining: every run adds journeys for newly shipped features. After R0 it
-runs daily (scheduled agent) and before every release build. Reports land in
+Conductor's). Self-maintaining: every run adds journeys for newly shipped features. After the
+final R0 it runs daily (scheduled agent) and before every release build. Reports land in
 `Docs/testing/e2e-reports/YYYY-MM-DD/`.
 
 ## Session protocol (same as Conductor)
