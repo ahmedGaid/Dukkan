@@ -163,7 +163,9 @@ Future<void> initDependencies() async {
   );
 
   // Order — data
-  sl.registerLazySingleton(() => OrderRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton(
+    () => OrderRemoteDataSource(firestore: sl(), auth: sl()),
+  );
   sl.registerLazySingleton<OrderRepository>(() => OrderRepositoryImpl(sl()));
 
   // Order — use cases

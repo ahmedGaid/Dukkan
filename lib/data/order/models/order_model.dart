@@ -6,6 +6,7 @@ import '../../../domain/order/entities/address.dart';
 import '../../../domain/order/entities/order.dart';
 import '../../../domain/order/entities/order_item.dart';
 import '../../../domain/order/entities/order_status.dart';
+import '../../../domain/order/entities/status_change.dart';
 
 class OrderModel extends Order {
   const OrderModel({
@@ -19,6 +20,7 @@ class OrderModel extends Order {
     required super.deliveryAddress,
     super.notes,
     super.rating,
+    super.statusHistory,
   });
 
   factory OrderModel.fromFirestore(String id, Map<String, dynamic> data) {
@@ -44,8 +46,24 @@ class OrderModel extends Order {
       ),
       notes: data['notes'] as String?,
       rating: (data['rating'] as num?)?.toInt(),
+      statusHistory: (data['statusHistory'] as List? ?? const [])
+          .map((e) => _statusChangeFromMap(Map<String, dynamic>.from(e as Map)))
+          .toList(),
     );
   }
+
+  static StatusChange _statusChangeFromMap(Map<String, dynamic> map) =>
+      StatusChange(
+        status: OrderStatus.fromWire(map['status'] as String? ?? ''),
+        at: DateTime.parse(map['at'] as String),
+        byUid: map['byUid'] as String? ?? '',
+      );
+
+  static Map<String, dynamic> _statusChangeToMap(StatusChange change) => {
+        'status': change.status.wire,
+        'at': change.at.toIso8601String(),
+        'byUid': change.byUid,
+      };
 
   static OrderItem _itemFromMap(Map<String, dynamic> map) => OrderItem(
         productId: map['productId'] as String? ?? '',
@@ -76,5 +94,6 @@ class OrderModel extends Order {
           if (deliveryAddress.notes != null) 'notes': deliveryAddress.notes,
         },
         if (notes != null) 'notes': notes,
+        'statusHistory': statusHistory.map(_statusChangeToMap).toList(),
       };
 }

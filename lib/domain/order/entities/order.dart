@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'address.dart';
 import 'order_item.dart';
 import 'order_status.dart';
+import 'status_change.dart';
 
 class Order extends Equatable {
   const Order({
@@ -16,6 +17,7 @@ class Order extends Equatable {
     required this.deliveryAddress,
     this.notes,
     this.rating,
+    this.statusHistory = const [],
   });
 
   final String id;
@@ -32,6 +34,10 @@ class Order extends Equatable {
   /// not rated yet. Set once — the repository rejects a second rate call.
   final int? rating;
 
+  /// Timeline of every status the order has held, oldest first. Empty list
+  /// for orders created before this field existed (seeded v1 orders).
+  final List<StatusChange> statusHistory;
+
   @override
   List<Object?> get props => [
         id,
@@ -44,5 +50,6 @@ class Order extends Equatable {
         deliveryAddress,
         notes,
         rating,
+        statusHistory,
       ];
 }

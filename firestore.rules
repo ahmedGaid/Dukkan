@@ -122,10 +122,10 @@ service cloud.firestore {
       allow update: if (isOrderOwner()
           && resource.data.status in ['pending', 'accepted']
           && request.resource.data.status == 'cancelled'
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusHistory']))
         || (isShopOwner()
           && isValidOwnerTransition()
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusHistory']))
         || isValidRating();
 
       allow delete: if false;

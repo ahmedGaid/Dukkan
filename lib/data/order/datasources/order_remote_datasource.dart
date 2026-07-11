@@ -1,16 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../core/errors/failures.dart';
 import '../../../domain/order/entities/address.dart';
 import '../../../domain/order/entities/order_item.dart';
 import '../../../domain/order/entities/order_status.dart';
+import '../../../domain/order/entities/status_change.dart';
 import '../models/order_model.dart';
 
 class OrderRemoteDataSource {
-  OrderRemoteDataSource({required FirebaseFirestore firestore})
-      : _firestore = firestore;
+  OrderRemoteDataSource({
+    required FirebaseFirestore firestore,
+    required FirebaseAuth auth,
+  })  : _firestore = firestore,
+        _auth = auth;
 
   final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
 
   CollectionReference<Map<String, dynamic>> get _orders =>
       _firestore.collection('orders');
@@ -27,6 +33,7 @@ class OrderRemoteDataSource {
     String? notes,
   }) async {
     try {
+      final now = DateTime.now();
       final draft = OrderModel(
         id: '',
         shopId: shopId,
@@ -34,9 +41,12 @@ class OrderRemoteDataSource {
         items: items,
         totalMinor: totalMinor,
         status: OrderStatus.pending,
-        createdAt: DateTime.now(),
+        createdAt: now,
         deliveryAddress: deliveryAddress,
         notes: notes,
+        statusHistory: [
+          StatusChange(status: OrderStatus.pending, at: now, byUid: customerUid),
+        ],
       );
       final ref = await _orders.add(draft.toFirestore());
       final saved = await ref.get();
@@ -80,17 +90,30 @@ class OrderRemoteDataSource {
     });
   }
 
-  Future<void> cancelOrder(String orderId) async {
-    try {
-      await _orders.doc(orderId).update({'status': OrderStatus.cancelled.wire});
-    } on FirebaseException catch (e) {
-      throw ServerFailure(e.message ?? e.code);
-    }
-  }
+  Future<void> cancelOrder(String orderId) => _advanceStatus(
+        orderId,
+        OrderStatus.cancelled,
+      );
 
-  Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
+  Future<void> updateOrderStatus(String orderId, OrderStatus status) =>
+      _advanceStatus(orderId, status);
+
+  Future<void> _advanceStatus(String orderId, OrderStatus status) async {
     try {
-      await _orders.doc(orderId).update({'status': status.wire});
+      final uid = _auth.currentUser?.uid;
+      if (uid == null) {
+        throw const ServerFailure('Not signed in');
+      }
+      await _orders.doc(orderId).update({
+        'status': status.wire,
+        'statusHistory': FieldValue.arrayUnion([
+          {
+            'status': status.wire,
+            'at': DateTime.now().toIso8601String(),
+            'byUid': uid,
+          },
+        ]),
+      });
     } on FirebaseException catch (e) {
       throw ServerFailure(e.message ?? e.code);
     }

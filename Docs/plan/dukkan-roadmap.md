@@ -144,7 +144,12 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
 > shell مندوب التوصيل) · commission ledger + founder finance page. 7-status enum UNCHANGED.
 > **Session authority: `Docs/plan/marketplace-v2-plan/` — load `FILE_00_INDEX.md` first, then
 > one FILE_NN per session (M1–M14 = FILE_01–FILE_14).**
-- [ ] **M1–M2 — Order details.** `statusHistory` log + owner order-details page with timeline.
+- [~] **M1–M2 — Order details.** M1 **DONE** — `statusHistory` log: `StatusChange` entity,
+      `Order.statusHistory` field, model parse/serialize, datasource appends on create + every
+      transition (`FieldValue.arrayUnion`, `currentUid` from injected `FirebaseAuth`), rules allow
+      `statusHistory` alongside `status`. Gates green (analyze 0, test 56/56, parity 196). Device
+      smoke test (Firestore console check, old-doc no-crash) still pending — no device connected
+      this session. M2 (owner order-details page with timeline UI) not started.
 - [ ] **M3–M5 — Taxonomy + browse.** `/categories` seed, `subcategoryId` on products, dependent
       form dropdowns, home chips polish + category carried into shop page filter.
 - [ ] **M6–M7 — Collections.** Owner-scoped collections CRUD + product assignment + customer view.
