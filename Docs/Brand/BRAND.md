@@ -86,6 +86,7 @@ Rules:
 | Courier picked up the order | استلمت الطلب | استلام الشحنة |
 | Courier delivered the order | تم التوصيل | تم الشحن |
 | Courier online/offline switch | أونلاين / أوفلاين | متاح / غير متاح |
+| Finance (founder-only summary) | المالية | الحسابات، التقارير المالية |
 
 - Human statuses ("جارٍ تجهيز طلبك"), blame-free errors ("حصلت مشكلة — جرّب تاني").
 - RTL is the default layout. LTR (English) must read identically well.

@@ -811,4 +811,33 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get courierActionDeliveredConfirmBody =>
       'You won\'t be able to undo this.';
+
+  @override
+  String get financeTitle => 'Finance';
+
+  @override
+  String get financeLedgerNote =>
+      'Ledger figures — settlement with shops is manual';
+
+  @override
+  String get financeTotalOrders => 'Total orders';
+
+  @override
+  String get financeDeliveredOrders => 'Delivered orders';
+
+  @override
+  String get financeCancelledOrders => 'Cancelled orders';
+
+  @override
+  String get financeTotalCommission => 'Total commission';
+
+  @override
+  String get financeDeliveryRevenue => 'Delivery revenue';
+
+  @override
+  String get financeTotalPlatformRevenue => 'Total platform revenue';
+
+  @override
+  String get financeErrorBody =>
+      'We can\'t load the finance numbers right now — try again.';
 }

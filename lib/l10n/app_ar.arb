@@ -289,5 +289,14 @@
   "courierActionPickedUp": "استلمت الطلب",
   "courierActionDelivered": "تم التوصيل",
   "courierActionDeliveredConfirmTitle": "تأكيد إن الطلب اتوصّل؟",
-  "courierActionDeliveredConfirmBody": "مش هتقدر ترجّعها بعد كده."
+  "courierActionDeliveredConfirmBody": "مش هتقدر ترجّعها بعد كده.",
+  "financeTitle": "المالية",
+  "financeLedgerNote": "أرقام دفترية — التحصيل يتم يدويًا مع المتاجر",
+  "financeTotalOrders": "إجمالي الطلبات",
+  "financeDeliveredOrders": "الطلبات المُسلّمة",
+  "financeCancelledOrders": "الطلبات الملغاة",
+  "financeTotalCommission": "إجمالي العمولات",
+  "financeDeliveryRevenue": "إيراد التوصيل",
+  "financeTotalPlatformRevenue": "إجمالي إيراد المنصة",
+  "financeErrorBody": "مقدرناش نجيب أرقام المالية دلوقتي — جرّب تاني"
 }

@@ -786,4 +786,33 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get courierActionDeliveredConfirmBody => 'مش هتقدر ترجّعها بعد كده.';
+
+  @override
+  String get financeTitle => 'المالية';
+
+  @override
+  String get financeLedgerNote =>
+      'أرقام دفترية — التحصيل يتم يدويًا مع المتاجر';
+
+  @override
+  String get financeTotalOrders => 'إجمالي الطلبات';
+
+  @override
+  String get financeDeliveredOrders => 'الطلبات المُسلّمة';
+
+  @override
+  String get financeCancelledOrders => 'الطلبات الملغاة';
+
+  @override
+  String get financeTotalCommission => 'إجمالي العمولات';
+
+  @override
+  String get financeDeliveryRevenue => 'إيراد التوصيل';
+
+  @override
+  String get financeTotalPlatformRevenue => 'إجمالي إيراد المنصة';
+
+  @override
+  String get financeErrorBody =>
+      'مقدرناش نجيب أرقام المالية دلوقتي — جرّب تاني';
 }

@@ -280,5 +280,14 @@
   "courierActionPickedUp": "Picked up",
   "courierActionDelivered": "Delivered",
   "courierActionDeliveredConfirmTitle": "Confirm delivery?",
-  "courierActionDeliveredConfirmBody": "You won't be able to undo this."
+  "courierActionDeliveredConfirmBody": "You won't be able to undo this.",
+  "financeTitle": "Finance",
+  "financeLedgerNote": "Ledger figures — settlement with shops is manual",
+  "financeTotalOrders": "Total orders",
+  "financeDeliveredOrders": "Delivered orders",
+  "financeCancelledOrders": "Cancelled orders",
+  "financeTotalCommission": "Total commission",
+  "financeDeliveryRevenue": "Delivery revenue",
+  "financeTotalPlatformRevenue": "Total platform revenue",
+  "financeErrorBody": "We can't load the finance numbers right now — try again."
 }

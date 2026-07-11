@@ -17,6 +17,8 @@ import '../../data/driver/datasources/driver_remote_datasource.dart';
 import '../../data/driver/repositories/driver_repository_impl.dart';
 import '../../data/favorites/datasources/favorites_remote_datasource.dart';
 import '../../data/favorites/repositories/favorites_repository_impl.dart';
+import '../../data/finance/datasources/finance_remote_datasource.dart';
+import '../../data/finance/repositories/finance_repository_impl.dart';
 import '../../data/notifications/datasources/notification_remote_datasource.dart';
 import '../../data/notifications/repositories/notification_repository_impl.dart';
 import '../../data/order/datasources/order_remote_datasource.dart';
@@ -60,6 +62,8 @@ import '../../domain/favorites/repositories/favorites_repository.dart';
 import '../../domain/favorites/usecases/toggle_favorite_product.dart';
 import '../../domain/favorites/usecases/toggle_favorite_shop.dart';
 import '../../domain/favorites/usecases/watch_favorites.dart';
+import '../../domain/finance/repositories/finance_repository.dart';
+import '../../domain/finance/usecases/get_finance_summary.dart';
 import '../../domain/notifications/repositories/notification_repository.dart';
 import '../../domain/notifications/usecases/notify_order_event.dart';
 import '../../domain/order/repositories/order_repository.dart';
@@ -94,6 +98,7 @@ import '../../presentation/catalog/bloc/collections_bloc.dart';
 import '../../presentation/driver/bloc/deliveries_bloc.dart';
 import '../../presentation/favorites/bloc/favorites_bloc.dart';
 import '../../presentation/favorites/bloc/favorites_page_bloc.dart';
+import '../../presentation/finance/bloc/finance_bloc.dart';
 import '../../presentation/home/bloc/shops_bloc.dart';
 import '../../presentation/orders/bloc/order_detail_bloc.dart';
 import '../../presentation/orders/bloc/orders_bloc.dart';
@@ -279,6 +284,19 @@ Future<void> initDependencies() async {
 
   // Platform config — use case
   sl.registerLazySingleton(() => GetPlatformConfig(sl()));
+
+  // Finance — data (founder-only cross-shop aggregate reads, M13; always a
+  // fresh remote read, no cache — mirrors Order's no-offline-branch contract).
+  sl.registerLazySingleton(() => FinanceRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<FinanceRepository>(
+    () => FinanceRepositoryImpl(sl()),
+  );
+
+  // Finance — use case
+  sl.registerLazySingleton(() => GetFinanceSummary(sl()));
+
+  // Finance — bloc (page-scoped: one load per settings-gated page open).
+  sl.registerFactory(() => FinanceBloc(getFinanceSummary: sl()));
 
   // Order — data
   sl.registerLazySingleton(

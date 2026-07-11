@@ -1609,6 +1609,60 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'مش هتقدر ترجّعها بعد كده.'**
   String get courierActionDeliveredConfirmBody;
+
+  /// No description provided for @financeTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالية'**
+  String get financeTitle;
+
+  /// No description provided for @financeLedgerNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'أرقام دفترية — التحصيل يتم يدويًا مع المتاجر'**
+  String get financeLedgerNote;
+
+  /// No description provided for @financeTotalOrders.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجمالي الطلبات'**
+  String get financeTotalOrders;
+
+  /// No description provided for @financeDeliveredOrders.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات المُسلّمة'**
+  String get financeDeliveredOrders;
+
+  /// No description provided for @financeCancelledOrders.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات الملغاة'**
+  String get financeCancelledOrders;
+
+  /// No description provided for @financeTotalCommission.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجمالي العمولات'**
+  String get financeTotalCommission;
+
+  /// No description provided for @financeDeliveryRevenue.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيراد التوصيل'**
+  String get financeDeliveryRevenue;
+
+  /// No description provided for @financeTotalPlatformRevenue.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجمالي إيراد المنصة'**
+  String get financeTotalPlatformRevenue;
+
+  /// No description provided for @financeErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقدرناش نجيب أرقام المالية دلوقتي — جرّب تاني'**
+  String get financeErrorBody;
 }
 
 class _AppLocalizationsDelegate

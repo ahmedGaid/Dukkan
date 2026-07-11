@@ -8,6 +8,7 @@ import '../../presentation/auth/pages/signup_page.dart';
 import '../../presentation/cart/pages/cart_page.dart';
 import '../../presentation/cart/pages/checkout_page.dart';
 import '../../presentation/cart/pages/order_placed_page.dart';
+import '../../presentation/finance/pages/finance_page.dart';
 import '../../domain/auth/entities/user_role.dart';
 import '../../domain/order/entities/order.dart';
 import '../../domain/product/entities/product.dart';
@@ -23,6 +24,7 @@ import '../../presentation/shop/pages/product_detail_page.dart';
 import '../../presentation/shop/pages/shop_onboarding_page.dart';
 import '../../presentation/shop/pages/shop_page.dart';
 import '../../presentation/splash/splash_page.dart';
+import '../config/app_config.dart';
 import '../di/injector.dart';
 import 'go_router_refresh_stream.dart';
 
@@ -111,6 +113,10 @@ class AppRouter {
             OrderPlacedPage(order: state.extra as Order),
       ),
       GoRoute(
+        path: '/finance',
+        builder: (context, state) => const FinancePage(),
+      ),
+      GoRoute(
         path: '/order/:id',
         builder: (context, state) => OrderDetailPage(
           orderId: state.pathParameters['id']!,
@@ -134,6 +140,12 @@ class AppRouter {
       case SessionStatus.unauthenticated:
         return _authPages.contains(location) ? null : '/login';
       case SessionStatus.authenticated:
+        // Founder-only finance summary (M13) — bounces anyone else who lands
+        // on this path directly, since it's otherwise a normal in-app route.
+        if (location == '/finance' &&
+            _authBloc.state.user?.uid != AppConfig.founderUid) {
+          return '/home';
+        }
         if (location != '/' && !_authPages.contains(location)) return null;
         final user = _authBloc.state.user;
         if (user?.role == UserRole.courier) return '/courier';

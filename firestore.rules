@@ -143,7 +143,20 @@ service cloud.firestore {
                .hasOnly(['status', 'statusHistory', 'commissionPayable']);
       }
 
-      allow read: if isOrderOwner() || isShopOwner() || isAssignedDriver();
+      // Founder finance summary (M13) — cross-shop count()/aggregate() reads
+      // over the whole collection. The uid is kept literal here (rules can't
+      // cheaply read `/config` docs) and mirrors the app-side
+      // `AppConfig.founderUid` const; both are the one place this uid
+      // appears until a real admin-role system exists. Deliberately
+      // resource.data-independent: Firestore only allows an aggregation
+      // query when the rule can be satisfied WITHOUT reading per-document
+      // data, so this branch must never reference `resource.data` or the
+      // founder's aggregate queries will be rejected outright.
+      function isFounder() {
+        return isSignedIn() && request.auth.uid == 'LPPjx32MJpWlMR3SEksJ7sY2NAF2';
+      }
+
+      allow read: if isFounder() || isOrderOwner() || isShopOwner() || isAssignedDriver();
 
       allow create: if isSelf(request.resource.data.customerUid);
 

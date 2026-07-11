@@ -303,7 +303,7 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       code is in place and unit-provable by inspection only. **Phase 5
       Drivers (M8–M11) code-complete. Next: M12–M13 — Commission
       (`FILE_12_COMMISSION_LEDGER.md`).**
-- [ ] **M12–M13 — Commission.** `/config/platform`, order snapshot (bps/piasters, round-half-up),
+- [x] **M12–M13 — Commission.** `/config/platform`, order snapshot (bps/piasters, round-half-up),
       payable-at-delivered, founder-gated finance summary (aggregate queries).
       **M12 DONE 2026-07-12** (`FILE_12_COMMISSION_LEDGER.md`), code-only —
       `PlatformConfig` entity/repo (new `lib/domain/config`, `lib/data/config`,
@@ -335,9 +335,39 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       unchanged). Four pre-existing test fakes (`_FakeOrderRepository` in
       deliveries/order_detail/orders/owner_orders_bloc_test.dart) updated to
       the new `placeOrder` signature — no behavior change, override-shape
-      only. **Next: M13 — Finance Summary** (`FILE_13_FINANCE_SUMMARY.md`,
-      founder-gated aggregate page — new session per the plan file's own
-      `/compact` checkpoint).
+      only.
+      **M13 DONE 2026-07-12** (`FILE_13_FINANCE_SUMMARY.md`), code-only —
+      new `lib/domain/finance` + `lib/data/finance` vertical (`FinanceSummary`
+      entity with a derived `platformRevenueMinor` getter, `FinanceRepository`/
+      `FinanceRepositoryImpl` — no cache, always a fresh read) backed by
+      `FinanceRemoteDataSource.getSummary()`: three Firestore round trips
+      (`orders.count()`, a combined `delivered.aggregate(count(), sum(
+      commissionMinor), sum(platformDeliveryShareMinor))`, and `cancelled/
+      rejected.count()`) run via `Future.wait`, no document downloads.
+      `AppConfig.founderUid` const (verified against the Firebase console
+      value for `ahmedgaid14@gmail.com`) gates a hidden settings row
+      (`_FinanceRow`, only built when `user.uid == founderUid`) and the new
+      `/finance` route, which the router's `_redirect` also bounces to
+      `/home` for anyone else who lands on it directly. `firestore.rules`'
+      `/orders` read rule gained an `isFounder()` branch — deliberately
+      `resource.data`-independent (OR'd first) since Firestore only permits
+      an aggregation query when the rule can be satisfied without reading
+      per-document data. `FinancePage` (calm monochrome per the north star —
+      no accent colour, unlike `_DailySummaryStrip`'s green totals): a ledger
+      disclaimer line, a 2-column grid of six stat tiles (three counts, three
+      money via `PriceTag` recoloured to `onSurface`), `GridShimmer` loading,
+      designed error+retry, `RefreshIndicator` pull-to-refresh via
+      `FinanceBloc`'s single load event reused for both start and refresh.
+      RTL note: the settings row's chevron picks `chevron_left`/`chevron_right`
+      by `Directionality` (the `Icon.matchTextDirection` param doesn't exist —
+      that flag lives on `IconData`, not the widget). New lexicon row
+      (`BRAND.md`): Finance → المالية. Gates green (analyze 0, test 118/118 —
+      up from 110, added finance_bloc_test.dart + finance_summary_test.dart;
+      parity 261 — up from 252). Smoke test (founder sees the row and real
+      numbers, non-founder direct-route bounce, rules-deny for non-founder
+      aggregate reads) still pending — no device this session, same as
+      M8–M12; the new `/orders` rules branch is also still undeployed
+      alongside M1/M3/M6/M8–M12. **Next: M14 — Acceptance.**
 - [ ] **M14 — Acceptance.** Full acceptance + regression sign-off.
 
 ### Phase 6 — Final gate (moved here from Phase 4 on 2026-07-11)

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/di/injector.dart';
@@ -70,6 +71,10 @@ class SettingsPage extends StatelessWidget {
                 ],
               ),
             ),
+            if (user?.uid == AppConfig.founderUid) ...[
+              const SizedBox(height: AppSpacing.lg),
+              const _FinanceRow(),
+            ],
             const SizedBox(height: AppSpacing.xl),
             const _LogoutButton(),
           ],
@@ -285,6 +290,42 @@ class _ThemeSetting extends StatelessWidget {
           selected: {mode},
           onSelectionChanged: (s) => controller.setMode(s.first),
         ),
+      ),
+    );
+  }
+}
+
+/// Hidden entry to the finance summary (M13) — only ever built when
+/// [SettingsPage] has already checked `user.uid == AppConfig.founderUid`, so
+/// no gate check is repeated here. `/finance` also bounces non-founders at
+/// the router level, so this row is a convenience, not the security boundary.
+class _FinanceRow extends StatelessWidget {
+  const _FinanceRow();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+
+    return AppCard(
+      onTap: () => context.push('/finance'),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.account_balance_outlined, color: scheme.onSurface),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(l10n.financeTitle, style: Theme.of(context).textTheme.bodyMedium),
+          ),
+          Icon(
+            isRtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+            color: scheme.onSurface.withValues(alpha: 0.4),
+          ),
+        ],
       ),
     );
   }

@@ -26,4 +26,10 @@ class AppConfig {
       String.fromEnvironment('UPLOAD_WORKER_URL', defaultValue: _stub);
 
   static bool get workerConfigured => workerBaseUrl != _stub;
+
+  /// The one account allowed onto the finance summary (M13) — a v1 stopgap
+  /// gate until a real admin-role system exists. Mirrors the literal uid in
+  /// `firestore.rules`' `isFounder()`; both must be updated together if the
+  /// founder account ever changes.
+  static const String founderUid = 'LPPjx32MJpWlMR3SEksJ7sY2NAF2';
 }
