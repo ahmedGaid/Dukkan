@@ -562,9 +562,11 @@ class _CustomerContactCard extends StatelessWidget {
   }
 }
 
-/// Owner-only: payment method + subtotal/delivery-fee/total (M2). Delivery
-/// fee is always 0 and subtotal equals the order total until a later session
-/// adds real fee fields — see `FILE_02_OWNER_ORDER_DETAILS.md` Task A.
+/// Owner-only: payment method + subtotal/delivery-fee/total (M2; real fee
+/// fields landed in M12). Orders placed before M12 have no stored
+/// subtotal/fee — `Order.subtotalMinor` falls back to `totalMinor` and
+/// `deliveryFeeMinor` defaults to 0, which reproduces the old placeholder
+/// display for them.
 class _OwnerPaymentCard extends StatelessWidget {
   const _OwnerPaymentCard({required this.order});
 
@@ -594,8 +596,8 @@ class _OwnerPaymentCard extends StatelessWidget {
         children: [
           row(l10n.orderPaymentMethod, Text(l10n.codLabel, style: text.bodyMedium)),
           const Divider(height: AppSpacing.lg),
-          row(l10n.orderSubtotalLabel, PriceTag(order.totalMinor)),
-          row(l10n.orderDeliveryFeeLabel, const PriceTag(0)),
+          row(l10n.orderSubtotalLabel, PriceTag(order.subtotalMinor)),
+          row(l10n.orderDeliveryFeeLabel, PriceTag(order.deliveryFeeMinor)),
           row(
             l10n.cartTotal,
             PriceTag(

@@ -131,6 +131,18 @@ service cloud.firestore {
           || (from == 'outForDelivery' && to == 'delivered');
       }
 
+      // A status write that also flips `commissionPayable` to true is only
+      // valid alongside a transition into `delivered` (M12 Task D) — the
+      // owner or the assigned driver can both reach `delivered`, so both
+      // transition branches below reuse this instead of the plain
+      // status/statusHistory-only key set.
+      function isDeliveredCommissionFlip() {
+        return request.resource.data.status == 'delivered'
+          && request.resource.data.commissionPayable == true
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['status', 'statusHistory', 'commissionPayable']);
+      }
+
       allow read: if isOrderOwner() || isShopOwner() || isAssignedDriver();
 
       allow create: if isSelf(request.resource.data.customerUid);
@@ -165,12 +177,14 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusHistory']))
         || (isShopOwner()
           && isValidOwnerTransition()
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusHistory']))
+          && (isDeliveredCommissionFlip()
+            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusHistory'])))
         || isValidRating()
         || isValidDriverAssignment()
         || (isAssignedDriver()
           && isValidDriverTransition()
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusHistory']));
+          && (isDeliveredCommissionFlip()
+            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusHistory'])));
 
       allow delete: if false;
     }
@@ -222,6 +236,14 @@ service cloud.firestore {
         || isValidActiveCountBump();
 
       allow delete: if false;
+    }
+
+    // Founder-managed commission/delivery-fee rates (M12) — single
+    // `/config/platform` doc, read-only to clients; the founder edits via
+    // console. Same shape/rule as `/categories`/`/areas`.
+    match /config/{docId} {
+      allow read: if isSignedIn();
+      allow write: if false;
     }
 
     // Deny anything without an explicit rule above.

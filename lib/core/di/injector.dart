@@ -11,6 +11,8 @@ import '../../data/auth/datasources/auth_remote_datasource.dart';
 import '../../data/auth/repositories/auth_repository_impl.dart';
 import '../../data/collections/datasources/collections_remote_datasource.dart';
 import '../../data/collections/repositories/collections_repository_impl.dart';
+import '../../data/config/datasources/platform_config_remote_datasource.dart';
+import '../../data/config/repositories/platform_config_repository_impl.dart';
 import '../../data/driver/datasources/driver_remote_datasource.dart';
 import '../../data/driver/repositories/driver_repository_impl.dart';
 import '../../data/favorites/datasources/favorites_remote_datasource.dart';
@@ -45,6 +47,8 @@ import '../../domain/collections/usecases/delete_collection.dart';
 import '../../domain/collections/usecases/get_collections.dart';
 import '../../domain/collections/usecases/rename_collection.dart';
 import '../../domain/collections/usecases/watch_collections.dart';
+import '../../domain/config/repositories/platform_config_repository.dart';
+import '../../domain/config/usecases/get_platform_config.dart';
 import '../../domain/driver/repositories/driver_repository.dart';
 import '../../domain/driver/usecases/assign_driver.dart';
 import '../../domain/driver/usecases/available_drivers.dart';
@@ -263,6 +267,19 @@ Future<void> initDependencies() async {
     () => SearchBloc(watchAllProducts: sl(), watchShops: sl()),
   );
 
+  // Platform config — data (founder-managed rate doc, M12; one-shot read,
+  // memoized in the repository for the app session — mirrors Areas/Taxonomy
+  // but no local cache datasource, checkout is the only reader today).
+  sl.registerLazySingleton(
+    () => PlatformConfigRemoteDataSource(firestore: sl()),
+  );
+  sl.registerLazySingleton<PlatformConfigRepository>(
+    () => PlatformConfigRepositoryImpl(sl()),
+  );
+
+  // Platform config — use case
+  sl.registerLazySingleton(() => GetPlatformConfig(sl()));
+
   // Order — data
   sl.registerLazySingleton(
     () => OrderRemoteDataSource(firestore: sl(), auth: sl()),
@@ -270,7 +287,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<OrderRepository>(() => OrderRepositoryImpl(sl()));
 
   // Order — use cases
-  sl.registerLazySingleton(() => PlaceOrder(sl()));
+  sl.registerLazySingleton(() => PlaceOrder(sl(), sl()));
   sl.registerLazySingleton(() => WatchCustomerOrders(sl()));
   sl.registerLazySingleton(() => WatchShopOrders(sl()));
   sl.registerLazySingleton(() => WatchOrder(sl()));

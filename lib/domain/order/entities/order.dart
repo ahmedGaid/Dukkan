@@ -22,7 +22,14 @@ class Order extends Equatable {
     this.driverName,
     this.driverPhone,
     this.assignedAt,
-  });
+    int? subtotalMinor,
+    this.deliveryFeeMinor = 0,
+    this.commissionBps = 0,
+    this.commissionMinor = 0,
+    this.driverDeliveryShareMinor = 0,
+    this.platformDeliveryShareMinor = 0,
+    this.commissionPayable = false,
+  }) : subtotalMinor = subtotalMinor ?? totalMinor;
 
   final String id;
   final String shopId;
@@ -33,6 +40,31 @@ class Order extends Equatable {
   final DateTime createdAt;
   final Address deliveryAddress;
   final String? notes;
+
+  /// Items-only total, rate/fee-free (M12). Orders created before this field
+  /// existed have no stored value — falls back to [totalMinor] (which was
+  /// items-only too, before delivery fees existed).
+  final int subtotalMinor;
+
+  /// Customer-facing delivery fee snapshot at creation time. 0 for orders
+  /// created before M12.
+  final int deliveryFeeMinor;
+
+  /// Commission rate (basis points) snapshot at creation time — kept even
+  /// though the platform default can change later, so past orders read the
+  /// rate that actually applied to them.
+  final int commissionBps;
+
+  /// Commission owed on this order, computed once at creation
+  /// (round-half-up — see `PlatformConfig.commissionForSubtotal`).
+  final int commissionMinor;
+  final int driverDeliveryShareMinor;
+  final int platformDeliveryShareMinor;
+
+  /// Flips to true when the order reaches `delivered` — the point the
+  /// commission is actually owed to the platform (M12 Task D). Stays false
+  /// for cancelled/rejected orders even though the numbers remain on the doc.
+  final bool commissionPayable;
 
   /// 1-5 stars the customer gave this shop after delivery (P3), or null if
   /// not rated yet. Set once — the repository rejects a second rate call.
@@ -69,5 +101,12 @@ class Order extends Equatable {
         driverName,
         driverPhone,
         assignedAt,
+        subtotalMinor,
+        deliveryFeeMinor,
+        commissionBps,
+        commissionMinor,
+        driverDeliveryShareMinor,
+        platformDeliveryShareMinor,
+        commissionPayable,
       ];
 }

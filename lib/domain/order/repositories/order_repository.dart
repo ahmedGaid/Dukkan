@@ -10,8 +10,14 @@ abstract class OrderRepository {
     required String shopId,
     required String customerUid,
     required List<OrderItem> items,
-    required int totalMinor,
     required Address deliveryAddress,
+    required int subtotalMinor,
+    required int deliveryFeeMinor,
+    required int commissionBps,
+    required int commissionMinor,
+    required int driverDeliveryShareMinor,
+    required int platformDeliveryShareMinor,
+    required int totalMinor,
     String? notes,
   });
 

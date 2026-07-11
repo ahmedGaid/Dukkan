@@ -25,6 +25,13 @@ class OrderModel extends Order {
     super.driverName,
     super.driverPhone,
     super.assignedAt,
+    super.subtotalMinor,
+    super.deliveryFeeMinor,
+    super.commissionBps,
+    super.commissionMinor,
+    super.driverDeliveryShareMinor,
+    super.platformDeliveryShareMinor,
+    super.commissionPayable,
   });
 
   factory OrderModel.fromFirestore(String id, Map<String, dynamic> data) {
@@ -60,6 +67,15 @@ class OrderModel extends Order {
       assignedAt: data['assignedAt'] != null
           ? DateTime.parse(data['assignedAt'] as String)
           : null,
+      subtotalMinor: (data['subtotalMinor'] as num?)?.toInt(),
+      deliveryFeeMinor: (data['deliveryFeeMinor'] as num?)?.toInt() ?? 0,
+      commissionBps: (data['commissionBps'] as num?)?.toInt() ?? 0,
+      commissionMinor: (data['commissionMinor'] as num?)?.toInt() ?? 0,
+      driverDeliveryShareMinor:
+          (data['driverDeliveryShareMinor'] as num?)?.toInt() ?? 0,
+      platformDeliveryShareMinor:
+          (data['platformDeliveryShareMinor'] as num?)?.toInt() ?? 0,
+      commissionPayable: data['commissionPayable'] as bool? ?? false,
     );
   }
 
@@ -97,6 +113,13 @@ class OrderModel extends Order {
         'customerUid': customerUid,
         'items': items.map(_itemToMap).toList(),
         'totalMinor': totalMinor,
+        'subtotalMinor': subtotalMinor,
+        'deliveryFeeMinor': deliveryFeeMinor,
+        'commissionBps': commissionBps,
+        'commissionMinor': commissionMinor,
+        'driverDeliveryShareMinor': driverDeliveryShareMinor,
+        'platformDeliveryShareMinor': platformDeliveryShareMinor,
+        'commissionPayable': commissionPayable,
         'status': status.wire,
         'createdAt': FieldValue.serverTimestamp(),
         'deliveryAddress': {

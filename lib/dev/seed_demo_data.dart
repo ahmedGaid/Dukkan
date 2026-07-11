@@ -129,11 +129,24 @@ Future<void> _seed(String ownerUid, StringBuffer log) async {
   await _seedTaxonomy(firestore);
   await _seedAreas(firestore);
   await _seedDrivers(firestore);
+  await _seedPlatformConfig(firestore);
 
   log.writeln('Wrote ${_demoShops(ownerUid).length} shops, '
       '${_demoProducts().length} products, ${_taxonomy.length} '
-      'categories, ${_areas.length} areas, and ${_drivers.length} demo '
-      'drivers.');
+      'categories, ${_areas.length} areas, ${_drivers.length} demo '
+      'drivers, and the platform config.');
+}
+
+/// `/config/platform` (M12) — founder-managed commission/fee rates;
+/// `firestore.rules` denies all client writes (`allow write: if false`),
+/// same relax-then-restore trick as `_seedTaxonomy`. 5% commission, 30 EGP
+/// delivery fee with 25 EGP going to the driver (5 EGP platform share).
+Future<void> _seedPlatformConfig(FirebaseFirestore firestore) async {
+  await firestore.collection('config').doc('platform').set({
+    'commissionBps': 500,
+    'deliveryFeeMinor': 3000,
+    'driverDeliveryShareMinor': 2500,
+  });
 }
 
 /// `/categories` (M3) — fixed, seed-managed tree; `firestore.rules` denies

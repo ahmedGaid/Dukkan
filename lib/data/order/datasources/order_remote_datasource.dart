@@ -31,8 +31,14 @@ class OrderRemoteDataSource {
     required String shopId,
     required String customerUid,
     required List<OrderItem> items,
-    required int totalMinor,
     required Address deliveryAddress,
+    required int subtotalMinor,
+    required int deliveryFeeMinor,
+    required int commissionBps,
+    required int commissionMinor,
+    required int driverDeliveryShareMinor,
+    required int platformDeliveryShareMinor,
+    required int totalMinor,
     String? notes,
   }) async {
     try {
@@ -43,6 +49,12 @@ class OrderRemoteDataSource {
         customerUid: customerUid,
         items: items,
         totalMinor: totalMinor,
+        subtotalMinor: subtotalMinor,
+        deliveryFeeMinor: deliveryFeeMinor,
+        commissionBps: commissionBps,
+        commissionMinor: commissionMinor,
+        driverDeliveryShareMinor: driverDeliveryShareMinor,
+        platformDeliveryShareMinor: platformDeliveryShareMinor,
         status: OrderStatus.pending,
         createdAt: now,
         deliveryAddress: deliveryAddress,
@@ -182,6 +194,10 @@ class OrderRemoteDataSource {
         txn.update(orderRef, {
           'status': status.wire,
           'statusHistory': FieldValue.arrayUnion([change]),
+          // Commission is only owed once the order actually delivers —
+          // cancelled/rejected keep their snapshot numbers but stay
+          // non-payable (M12 Task D).
+          if (status == OrderStatus.delivered) 'commissionPayable': true,
         });
         if (driverRef != null) {
           txn.update(driverRef, {

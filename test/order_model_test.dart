@@ -39,4 +39,51 @@ void main() {
       expect(order.assignedAt, isNull);
     });
   });
+
+  group('OrderModel.fromFirestore commission fields (M12)', () {
+    test('parses a full commission snapshot', () {
+      final order = OrderModel.fromFirestore('o1', {
+        'shopId': 's1',
+        'customerUid': 'u1',
+        'items': [],
+        'totalMinor': 8000,
+        'subtotalMinor': 5000,
+        'deliveryFeeMinor': 3000,
+        'commissionBps': 500,
+        'commissionMinor': 250,
+        'driverDeliveryShareMinor': 2500,
+        'platformDeliveryShareMinor': 500,
+        'commissionPayable': true,
+        'status': 'delivered',
+        'deliveryAddress': {'line1': 'Street 1', 'city': 'Cairo'},
+      });
+
+      expect(order.subtotalMinor, 5000);
+      expect(order.deliveryFeeMinor, 3000);
+      expect(order.commissionBps, 500);
+      expect(order.commissionMinor, 250);
+      expect(order.driverDeliveryShareMinor, 2500);
+      expect(order.platformDeliveryShareMinor, 500);
+      expect(order.commissionPayable, isTrue);
+    });
+
+    test('pre-M12 doc with no commission fields falls back to defaults', () {
+      final order = OrderModel.fromFirestore('o1', {
+        'shopId': 's1',
+        'customerUid': 'u1',
+        'items': [],
+        'totalMinor': 6500,
+        'status': 'delivered',
+        'deliveryAddress': {'line1': 'Street 1', 'city': 'Cairo'},
+      });
+
+      expect(order.subtotalMinor, 6500); // falls back to totalMinor
+      expect(order.deliveryFeeMinor, 0);
+      expect(order.commissionBps, 0);
+      expect(order.commissionMinor, 0);
+      expect(order.driverDeliveryShareMinor, 0);
+      expect(order.platformDeliveryShareMinor, 0);
+      expect(order.commissionPayable, isFalse);
+    });
+  });
 }

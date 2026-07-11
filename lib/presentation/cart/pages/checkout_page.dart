@@ -9,6 +9,8 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../domain/areas/entities/area.dart';
 import '../../../domain/areas/usecases/get_areas.dart';
+import '../../../domain/config/entities/platform_config.dart';
+import '../../../domain/config/usecases/get_platform_config.dart';
 import '../../../domain/notifications/repositories/notification_repository.dart';
 import '../../../domain/notifications/usecases/notify_order_event.dart';
 import '../../../domain/order/entities/address.dart';
@@ -39,6 +41,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   final _cityController = TextEditingController();
   final _notesController = TextEditingController();
   late Future<List<Area>> _areasFuture = sl<GetAreas>()();
+  final Future<PlatformConfig> _configFuture = sl<GetPlatformConfig>()();
   String? _areaId;
   bool _submitting = false;
 
@@ -72,7 +75,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
         shopId: cart.shopId!,
         customerUid: user.uid,
         items: items,
-        totalMinor: cart.totalMinor,
         deliveryAddress: Address(
           line1: _addressController.text.trim(),
           city: _cityController.text.trim(),
@@ -156,7 +158,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             const SizedBox(height: AppSpacing.md),
             Text(l10n.checkoutSummary, style: text.titleSmall),
             const SizedBox(height: AppSpacing.sm),
-            _SummaryCard(cart: cart),
+            _SummaryCard(cart: cart, configFuture: _configFuture),
             const SizedBox(height: AppSpacing.lg),
             AppButton(
               label: l10n.actionPlaceOrder,
@@ -171,9 +173,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
 }
 
 class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({required this.cart});
+  const _SummaryCard({required this.cart, required this.configFuture});
 
   final CartState cart;
+  final Future<PlatformConfig> configFuture;
 
   @override
   Widget build(BuildContext context) {
@@ -181,6 +184,19 @@ class _SummaryCard extends StatelessWidget {
     final isArabic = Localizations.localeOf(context).languageCode == 'ar';
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+
+    Widget totalsRow(String label, Widget value, {bool emphasized = false}) =>
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: emphasized ? text.titleSmall : text.bodyMedium,
+              ),
+            ),
+            value,
+          ],
+        );
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -205,19 +221,39 @@ class _SummaryCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.xs),
           ],
           const Divider(),
-          Row(
-            children: [
-              Expanded(
-                child: Text(l10n.cartTotal, style: text.titleSmall),
-              ),
-              PriceTag(
-                cart.totalMinor,
-                style: text.titleMedium?.copyWith(
-                  color: scheme.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+          FutureBuilder<PlatformConfig>(
+            future: configFuture,
+            builder: (context, snapshot) {
+              // Fee unknown yet (loading) or unreachable (error) — show the
+              // items subtotal as the running total rather than block the
+              // form; PlaceOrder still snapshots the real fee server-side.
+              final feeMinor = snapshot.data?.deliveryFeeMinor ?? 0;
+              return Column(
+                children: [
+                  totalsRow(
+                    l10n.orderSubtotalLabel,
+                    PriceTag(cart.totalMinor),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  totalsRow(
+                    l10n.orderDeliveryFeeLabel,
+                    PriceTag(feeMinor),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  totalsRow(
+                    l10n.cartTotal,
+                    PriceTag(
+                      cart.totalMinor + feeMinor,
+                      style: text.titleMedium?.copyWith(
+                        color: scheme.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    emphasized: true,
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: AppSpacing.sm),
           Row(

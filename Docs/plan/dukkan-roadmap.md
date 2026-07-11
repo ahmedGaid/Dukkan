@@ -305,6 +305,39 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       (`FILE_12_COMMISSION_LEDGER.md`).**
 - [ ] **M12–M13 — Commission.** `/config/platform`, order snapshot (bps/piasters, round-half-up),
       payable-at-delivered, founder-gated finance summary (aggregate queries).
+      **M12 DONE 2026-07-12** (`FILE_12_COMMISSION_LEDGER.md`), code-only —
+      `PlatformConfig` entity/repo (new `lib/domain/config`, `lib/data/config`,
+      memoized per app session, no offline branch — same one-shot contract as
+      `AreasRepository`) + `/config/platform` seeded (5% commission, 30 EGP
+      delivery fee, 25 EGP driver share). `Order` gained 7 snapshot fields
+      (subtotalMinor/deliveryFeeMinor/commissionBps/commissionMinor/
+      driverDeliveryShareMinor/platformDeliveryShareMinor/commissionPayable),
+      all optional-with-default; `subtotalMinor` falls back to `totalMinor`
+      in the entity constructor itself (`subtotalMinor ?? totalMinor`) so
+      every old seeded/pre-M12 doc parses without a special case in
+      `OrderModel`. `PlaceOrder` no longer takes a caller-supplied
+      `totalMinor` — it derives subtotal from `items` itself and snapshots
+      the config at creation time (round-half-up: `(subtotal * bps + 5000)
+      ~/ 10000`), so a stale/tampered client total can never land on the
+      doc; `OrderRepository.placeOrder`/datasource/checkout_page updated to
+      match. Payable flip lives in `OrderRemoteDataSource._advanceStatus`'s
+      existing terminal-status transaction (delivered only) — covers both
+      the owner and the assigned-driver delivery paths since both call the
+      same method. `firestore.rules`: new `/config/{docId}` (read-only,
+      same shape as `/areas`) + a `isDeliveredCommissionFlip()` helper so
+      the owner-transition and driver-transition update branches both allow
+      `commissionPayable` in the diffed keys ONLY when flipping to
+      `delivered` and only to `true` — can't be set early or arbitrarily.
+      Checkout summary and the owner order-detail payment card now show the
+      real subtotal/fee/total (both reused existing l10n keys, no new
+      strings). Gates green (analyze 0, test 110/110 — up from 104, added
+      commission-rounding + fromFirestore-fallback tests; parity 252,
+      unchanged). Four pre-existing test fakes (`_FakeOrderRepository` in
+      deliveries/order_detail/orders/owner_orders_bloc_test.dart) updated to
+      the new `placeOrder` signature — no behavior change, override-shape
+      only. **Next: M13 — Finance Summary** (`FILE_13_FINANCE_SUMMARY.md`,
+      founder-gated aggregate page — new session per the plan file's own
+      `/compact` checkpoint).
 - [ ] **M14 — Acceptance.** Full acceptance + regression sign-off.
 
 ### Phase 6 — Final gate (moved here from Phase 4 on 2026-07-11)
