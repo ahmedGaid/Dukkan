@@ -19,7 +19,7 @@ service cloud.firestore {
       allow read: if isSelf(userId);
 
       allow create: if isSelf(userId)
-        && request.resource.data.role in ['customer', 'owner']
+        && request.resource.data.role in ['customer', 'owner', 'courier']
         && request.resource.data.name is string
         && request.resource.data.email is string;
 
@@ -154,6 +154,34 @@ service cloud.firestore {
     match /categories/{categoryId} {
       allow read: if isSignedIn();
       allow write: if false;
+    }
+
+    // Fixed, seed-managed delivery districts (M8) — same shape/rule as
+    // `/categories`. Populate via Firebase console, or temporarily relax
+    // `write` to `isSignedIn()` for one seed pass, then restore it.
+    match /areas/{areaId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // Shared platform driver pool (M8). A driver reads/updates only their own
+    // doc, and only `isOnline`/`name`/`phone` — `isSuspended`, `areaIds`,
+    // `maxActiveOrders`, `activeOrdersCount` are founder/console-managed
+    // (the same temporarily-relax-then-restore trick as `/areas` covers demo
+    // seeding). Shop owners need read access for the assignment list (M9), so
+    // read is any signed-in user rather than isSelf-only.
+    match /drivers/{uid} {
+      allow read: if isSignedIn();
+
+      allow create: if isSelf(uid)
+        && request.resource.data.isSuspended == true
+        && request.resource.data.activeOrdersCount == 0;
+
+      allow update: if isSelf(uid)
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['isOnline', 'name', 'phone']);
+
+      allow delete: if false;
     }
 
     // Deny anything without an explicit rule above.

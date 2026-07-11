@@ -127,10 +127,13 @@ Future<void> _seed(String ownerUid, StringBuffer log) async {
   await productBatch.commit();
 
   await _seedTaxonomy(firestore);
+  await _seedAreas(firestore);
+  await _seedDrivers(firestore);
 
   log.writeln('Wrote ${_demoShops(ownerUid).length} shops, '
-      '${_demoProducts().length} products, and ${_taxonomy.length} '
-      'categories.');
+      '${_demoProducts().length} products, ${_taxonomy.length} '
+      'categories, ${_areas.length} areas, and ${_drivers.length} demo '
+      'drivers.');
 }
 
 /// `/categories` (M3) — fixed, seed-managed tree; `firestore.rules` denies
@@ -155,6 +158,93 @@ Future<void> _seedTaxonomy(FirebaseFirestore firestore) async {
   }
   await batch.commit();
 }
+
+/// `/areas` (M8) — fixed, seed-managed delivery districts; `firestore.rules`
+/// denies all client writes (`allow write: if false`), same relax-then-
+/// restore trick as `_seedTaxonomy`. Ismailia / Abu Atwa districts — matches
+/// where the 3 real seeded shops (`shop_demo_5/6/7`) actually sit.
+Future<void> _seedAreas(FirebaseFirestore firestore) async {
+  final batch = firestore.batch();
+  for (final area in _areas) {
+    batch.set(
+      firestore.collection('areas').doc(area['id'] as String),
+      {
+        'nameAr': area['nameAr'],
+        'nameEn': area['nameEn'],
+        'sort': area['sort'],
+      },
+    );
+  }
+  await batch.commit();
+}
+
+final _areas = <Map<String, dynamic>>[
+  {'id': 'abu-atwa', 'nameAr': 'أبو عطوة', 'nameEn': 'Abu Atwa', 'sort': 1},
+  {
+    'id': 'el-sheikh-zayed',
+    'nameAr': 'الشيخ زايد',
+    'nameEn': 'El Sheikh Zayed',
+    'sort': 2,
+  },
+  {
+    'id': 'downtown-ismailia',
+    'nameAr': 'وسط البلد',
+    'nameEn': 'Downtown Ismailia',
+    'sort': 3,
+  },
+  {'id': 'el-salam', 'nameAr': 'السلام', 'nameEn': 'El Salam', 'sort': 4},
+  {'id': 'el-quds', 'nameAr': 'القدس', 'nameEn': 'El Quds', 'sort': 5},
+];
+
+/// `/drivers` (M8) demo profiles — id is a fixed doc id, not a real Firebase
+/// Auth uid (these never log in; real couriers get their own doc via the app
+/// signup flow). `firestore.rules` restricts `create` to `isSelf(uid)`, which
+/// an owner-authenticated seed write can never satisfy, and even a driver's
+/// own signup can't create the ACTIVE case (the rule pins `isSuspended ==
+/// true` at create) — so, same as `_seedTaxonomy`, this only succeeds with
+/// `/drivers`'s `write: false` temporarily relaxed to `isSignedIn()`.
+Future<void> _seedDrivers(FirebaseFirestore firestore) async {
+  final batch = firestore.batch();
+  for (final driver in _drivers) {
+    batch.set(
+      firestore.collection('drivers').doc(driver['id'] as String),
+      {
+        'name': driver['name'],
+        'phone': driver['phone'],
+        'areaIds': driver['areaIds'],
+        'maxActiveOrders': driver['maxActiveOrders'],
+        'activeOrdersCount': driver['activeOrdersCount'],
+        'isOnline': driver['isOnline'],
+        'isSuspended': driver['isSuspended'],
+        'createdAt': FieldValue.serverTimestamp(),
+      },
+    );
+  }
+  await batch.commit();
+}
+
+final _drivers = <Map<String, dynamic>>[
+  {
+    'id': 'driver_demo_1',
+    'name': 'كريم عبد العزيز',
+    'phone': '01011111111',
+    'areaIds': ['abu-atwa', 'el-sheikh-zayed'],
+    'maxActiveOrders': 5,
+    'activeOrdersCount': 0,
+    'isOnline': true,
+    'isSuspended': false,
+  },
+  {
+    'id': 'driver_demo_2',
+    'name': 'محمود سعيد',
+    'phone': '01022222222',
+    'areaIds': ['downtown-ismailia'],
+    'maxActiveOrders': 5,
+    'activeOrdersCount': 0,
+    'isOnline': false,
+    'isSuspended': true,
+  },
+];
 
 Map<String, dynamic> _subcat(String id, String nameAr, String nameEn) =>
     {'id': id, 'nameAr': nameAr, 'nameEn': nameEn};

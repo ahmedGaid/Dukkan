@@ -92,9 +92,11 @@ class _ProfileHeader extends StatelessWidget {
     final name = user.name.trim();
     final initial =
         name.isEmpty ? '؟' : String.fromCharCode(name.runes.first).toUpperCase();
-    final roleLabel = user.role == UserRole.owner
-        ? l10n.roleBadgeOwner
-        : l10n.roleBadgeCustomer;
+    final roleLabel = switch (user.role) {
+      UserRole.owner => l10n.roleBadgeOwner,
+      UserRole.courier => l10n.roleBadgeCourier,
+      UserRole.customer => l10n.roleBadgeCustomer,
+    };
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),

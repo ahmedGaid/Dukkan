@@ -42,10 +42,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get roleOwner => 'أدير دكاني';
 
   @override
+  String get roleCourier => 'مندوب التوصيل';
+
+  @override
   String get roleBadgeCustomer => 'زبون';
 
   @override
   String get roleBadgeOwner => 'صاحب دكان';
+
+  @override
+  String get roleBadgeCourier => 'مندوب التوصيل';
 
   @override
   String get actionLogin => 'تسجيل الدخول';
@@ -685,4 +691,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get productCollections => 'المجموعات (اختياري)';
+
+  @override
+  String get fieldArea => 'المنطقة';
+
+  @override
+  String get areaRequired => 'اختر منطقتك';
+
+  @override
+  String get areasErrorBody => 'مش قادرين نجيب المناطق دلوقتي — جرّب تاني.';
+
+  @override
+  String get navDeliveries => 'التوصيلات';
+
+  @override
+  String get courierComingSoonTitle => 'قريبًا';
+
+  @override
+  String get courierComingSoonBody => 'شاشة توصيلاتك هتظهر هنا قريب.';
 }

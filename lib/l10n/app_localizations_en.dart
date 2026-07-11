@@ -42,10 +42,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get roleOwner => 'Run my shop';
 
   @override
+  String get roleCourier => 'Courier';
+
+  @override
   String get roleBadgeCustomer => 'Customer';
 
   @override
   String get roleBadgeOwner => 'Shop owner';
+
+  @override
+  String get roleBadgeCourier => 'Courier';
 
   @override
   String get actionLogin => 'Log in';
@@ -707,4 +713,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productCollections => 'Collections (optional)';
+
+  @override
+  String get fieldArea => 'Area';
+
+  @override
+  String get areaRequired => 'Choose your area';
+
+  @override
+  String get areasErrorBody => 'We can\'t load areas right now — try again.';
+
+  @override
+  String get navDeliveries => 'Deliveries';
+
+  @override
+  String get courierComingSoonTitle => 'Coming soon';
+
+  @override
+  String get courierComingSoonBody =>
+      'Your deliveries screen will be here soon.';
 }

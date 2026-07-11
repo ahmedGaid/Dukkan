@@ -1,5 +1,8 @@
 # Courier Role Plan — Master Index
 
+> **SUPERSEDED 2026-07-11** by `Docs/plan/marketplace-v2-plan/` (Sessions 08–11).
+> Decision: shared platform driver pool replaces shop-owned couriers. Do not execute.
+
 > **Load this file first in every session.** Then open the one session file you are executing.
 > Feature: add a third user role — **courier / مندوب التوصيل** — to Dukkan, alongside
 > customer (عميل) and shop owner (صاحب دكان).

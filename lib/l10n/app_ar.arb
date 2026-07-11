@@ -17,8 +17,10 @@
   "roleQuestion": "إنت هنا عشان؟",
   "roleCustomer": "أطلب من الدكاكين",
   "roleOwner": "أدير دكاني",
+  "roleCourier": "مندوب التوصيل",
   "roleBadgeCustomer": "زبون",
   "roleBadgeOwner": "صاحب دكان",
+  "roleBadgeCourier": "مندوب التوصيل",
 
   "actionLogin": "تسجيل الدخول",
   "actionSignup": "إنشاء الحساب",
@@ -256,5 +258,12 @@
   "collectionsDeleteConfirmTitle": "حذف المجموعة؟",
   "collectionsDeleteConfirmBody": "حذف المجموعة لا يحذف المنتجات",
   "collectionsActionErrorBody": "حصلت مشكلة — جرّب تاني.",
-  "productCollections": "المجموعات (اختياري)"
+  "productCollections": "المجموعات (اختياري)",
+
+  "fieldArea": "المنطقة",
+  "areaRequired": "اختر منطقتك",
+  "areasErrorBody": "مش قادرين نجيب المناطق دلوقتي — جرّب تاني.",
+  "navDeliveries": "التوصيلات",
+  "courierComingSoonTitle": "قريبًا",
+  "courierComingSoonBody": "شاشة توصيلاتك هتظهر هنا قريب."
 }

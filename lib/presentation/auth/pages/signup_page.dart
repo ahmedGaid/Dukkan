@@ -102,6 +102,16 @@ class _SignupPageState extends State<SignupPage> {
                           onTap: () => setState(() => _role = UserRole.owner),
                         ),
                       ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: _RoleCard(
+                          icon: Icons.two_wheeler_outlined,
+                          label: l10n.roleCourier,
+                          selected: _role == UserRole.courier,
+                          onTap: () =>
+                              setState(() => _role = UserRole.courier),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.lg),

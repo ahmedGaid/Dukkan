@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/di/injector.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../domain/areas/entities/area.dart';
+import '../../../domain/areas/usecases/get_areas.dart';
 import '../../../domain/notifications/repositories/notification_repository.dart';
 import '../../../domain/notifications/usecases/notify_order_event.dart';
 import '../../../domain/order/entities/address.dart';
@@ -18,6 +20,7 @@ import '../../widgets/common/app_button.dart';
 import '../../widgets/common/app_snackbar.dart';
 import '../../widgets/common/app_text_field.dart';
 import '../../widgets/common/price_tag.dart';
+import '../../widgets/common/skeletons.dart';
 import '../bloc/cart_bloc.dart';
 
 /// Manual-entry checkout (maps deferred past v1) → COD confirm → places the
@@ -35,6 +38,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
   final _addressController = TextEditingController();
   final _cityController = TextEditingController();
   final _notesController = TextEditingController();
+  late Future<List<Area>> _areasFuture = sl<GetAreas>()();
+  String? _areaId;
   bool _submitting = false;
 
   @override
@@ -72,6 +77,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           line1: _addressController.text.trim(),
           city: _cityController.text.trim(),
           notes: notes.isEmpty ? null : notes,
+          areaId: _areaId,
         ),
       );
       _notifyShopOwner(order.id);
@@ -134,6 +140,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
               textInputAction: TextInputAction.next,
               validator: (v) =>
                   (v == null || v.trim().isEmpty) ? l10n.validateRequired : null,
+            ),
+            _AreaField(
+              future: _areasFuture,
+              areaId: _areaId,
+              onChanged: (v) => setState(() => _areaId = v),
+              onRetry: () => setState(() => _areasFuture = sl<GetAreas>()()),
             ),
             AppTextField(
               label: l10n.fieldNotesOptional,
@@ -225,6 +237,91 @@ class _SummaryCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Delivery-area dropdown (M8) — loads the fixed area list once per form open
+/// (matches `_TaxonomyFields`'s no-bloc `FutureBuilder` style). Required for
+/// every new order so it carries through to a driver's assignment (M9).
+class _AreaField extends StatelessWidget {
+  const _AreaField({
+    required this.future,
+    required this.areaId,
+    required this.onChanged,
+    required this.onRetry,
+  });
+
+  final Future<List<Area>> future;
+  final String? areaId;
+  final ValueChanged<String?> onChanged;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+
+    return FutureBuilder<List<Area>>(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Padding(
+            padding: EdgeInsets.only(bottom: AppSpacing.md),
+            child: ListShimmer(count: 1, itemHeight: 56),
+          );
+        }
+        if (snapshot.hasError) {
+          final scheme = Theme.of(context).colorScheme;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: AppRadius.mdAll,
+                border: Border.all(color: scheme.outline),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.wifi_off_rounded, color: scheme.secondary),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      l10n.areasErrorBody,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                  TextButton(onPressed: onRetry, child: Text(l10n.actionRetry)),
+                ],
+              ),
+            ),
+          );
+        }
+
+        final areas = snapshot.data!;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+          child: DropdownButtonFormField<String>(
+            initialValue: areaId,
+            decoration: InputDecoration(
+              labelText: l10n.fieldArea,
+              prefixIcon: const Icon(Icons.map_outlined),
+            ),
+            items: [
+              for (final a in areas)
+                DropdownMenuItem(
+                  value: a.id,
+                  child: Text(isArabic ? a.nameAr : a.nameEn),
+                ),
+            ],
+            onChanged: onChanged,
+            validator: (v) => v == null ? l10n.areaRequired : null,
+          ),
+        );
+      },
     );
   }
 }

@@ -164,6 +164,12 @@ abstract class AppLocalizations {
   /// **'أدير دكاني'**
   String get roleOwner;
 
+  /// No description provided for @roleCourier.
+  ///
+  /// In ar, this message translates to:
+  /// **'مندوب التوصيل'**
+  String get roleCourier;
+
   /// No description provided for @roleBadgeCustomer.
   ///
   /// In ar, this message translates to:
@@ -175,6 +181,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'صاحب دكان'**
   String get roleBadgeOwner;
+
+  /// No description provided for @roleBadgeCourier.
+  ///
+  /// In ar, this message translates to:
+  /// **'مندوب التوصيل'**
+  String get roleBadgeCourier;
 
   /// No description provided for @actionLogin.
   ///
@@ -1423,6 +1435,42 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'المجموعات (اختياري)'**
   String get productCollections;
+
+  /// No description provided for @fieldArea.
+  ///
+  /// In ar, this message translates to:
+  /// **'المنطقة'**
+  String get fieldArea;
+
+  /// No description provided for @areaRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر منطقتك'**
+  String get areaRequired;
+
+  /// No description provided for @areasErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نجيب المناطق دلوقتي — جرّب تاني.'**
+  String get areasErrorBody;
+
+  /// No description provided for @navDeliveries.
+  ///
+  /// In ar, this message translates to:
+  /// **'التوصيلات'**
+  String get navDeliveries;
+
+  /// No description provided for @courierComingSoonTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'قريبًا'**
+  String get courierComingSoonTitle;
+
+  /// No description provided for @courierComingSoonBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'شاشة توصيلاتك هتظهر هنا قريب.'**
+  String get courierComingSoonBody;
 }
 
 class _AppLocalizationsDelegate

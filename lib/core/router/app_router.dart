@@ -13,6 +13,7 @@ import '../../domain/order/entities/order.dart';
 import '../../domain/product/entities/product.dart';
 import '../../domain/shop/usecases/get_shop_by_owner.dart';
 import '../../presentation/home/pages/home_page.dart';
+import '../../presentation/shell/courier_home_shell.dart';
 import '../../presentation/catalog/pages/collections_manager_page.dart';
 import '../../presentation/catalog/pages/product_form_page.dart';
 import '../../presentation/orders/pages/order_detail_page.dart';
@@ -56,6 +57,10 @@ class AppRouter {
         builder: (context, state) => const ForgotPasswordPage(),
       ),
       GoRoute(path: '/home', builder: (context, state) => const HomePage()),
+      GoRoute(
+        path: '/courier',
+        builder: (context, state) => const CourierHomeShell(),
+      ),
       GoRoute(
         path: '/shop-onboarding',
         builder: (context, state) => const ShopOnboardingPage(),
@@ -126,6 +131,7 @@ class AppRouter {
       case SessionStatus.authenticated:
         if (location != '/' && !_authPages.contains(location)) return null;
         final user = _authBloc.state.user;
+        if (user?.role == UserRole.courier) return '/courier';
         if (user?.role != UserRole.owner) return '/home';
         final shop = await sl<GetShopByOwner>()(user!.uid);
         return shop == null ? '/shop-onboarding' : '/home';

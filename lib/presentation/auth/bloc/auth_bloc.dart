@@ -11,6 +11,7 @@ import '../../../domain/auth/usecases/log_out.dart';
 import '../../../domain/auth/usecases/send_password_reset.dart';
 import '../../../domain/auth/usecases/sign_up.dart';
 import '../../../domain/auth/usecases/watch_auth_state.dart';
+import '../../../domain/driver/usecases/create_driver_profile.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -25,10 +26,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required SignUp signUp,
     required SendPasswordReset sendPasswordReset,
     required LogOut logOut,
+    required CreateDriverProfile createDriverProfile,
   })  : _logIn = logIn,
         _signUp = signUp,
         _sendPasswordReset = sendPasswordReset,
         _logOut = logOut,
+        _createDriverProfile = createDriverProfile,
         super(const AuthState()) {
     on<AuthUserChanged>(_onUserChanged);
     on<AuthLoginRequested>(_onLoginRequested);
@@ -46,6 +49,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SignUp _signUp;
   final SendPasswordReset _sendPasswordReset;
   final LogOut _logOut;
+  final CreateDriverProfile _createDriverProfile;
   StreamSubscription<AppUser?>? _userSub;
 
   void _onUserChanged(AuthUserChanged event, Emitter<AuthState> emit) {
@@ -81,13 +85,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(state.copyWith(form: FormStatus.submitting, clearError: true));
     try {
-      await _signUp(
+      final user = await _signUp(
         name: event.name,
         email: event.email,
         password: event.password,
         role: event.role,
         phone: event.phone,
       );
+      if (event.role == UserRole.courier) {
+        await _createDriverProfile(
+          uid: user.uid,
+          name: event.name,
+          phone: event.phone,
+        );
+      }
       emit(state.copyWith(form: FormStatus.success));
     } on Failure catch (f) {
       emit(state.copyWith(form: FormStatus.failure, errorCode: _codeOf(f)));

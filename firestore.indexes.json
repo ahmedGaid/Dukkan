@@ -15,6 +15,15 @@
         { "fieldPath": "shopId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "drivers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "areaIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "isOnline", "order": "ASCENDING" },
+        { "fieldPath": "isSuspended", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

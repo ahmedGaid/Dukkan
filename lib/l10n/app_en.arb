@@ -14,8 +14,10 @@
   "roleQuestion": "You're here to…",
   "roleCustomer": "Order from shops",
   "roleOwner": "Run my shop",
+  "roleCourier": "Courier",
   "roleBadgeCustomer": "Customer",
   "roleBadgeOwner": "Shop owner",
+  "roleBadgeCourier": "Courier",
 
   "actionLogin": "Log in",
   "actionSignup": "Create account",
@@ -247,5 +249,12 @@
   "collectionsDeleteConfirmTitle": "Delete this collection?",
   "collectionsDeleteConfirmBody": "Deleting the collection keeps the products",
   "collectionsActionErrorBody": "Something went wrong — try again.",
-  "productCollections": "Collections (optional)"
+  "productCollections": "Collections (optional)",
+
+  "fieldArea": "Area",
+  "areaRequired": "Choose your area",
+  "areasErrorBody": "We can't load areas right now — try again.",
+  "navDeliveries": "Deliveries",
+  "courierComingSoonTitle": "Coming soon",
+  "courierComingSoonBody": "Your deliveries screen will be here soon."
 }

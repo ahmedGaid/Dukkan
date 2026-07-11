@@ -2,6 +2,8 @@ import 'package:dukkan/core/di/injector.dart';
 import 'package:dukkan/domain/auth/entities/app_user.dart';
 import 'package:dukkan/domain/auth/entities/user_role.dart';
 import 'package:dukkan/domain/auth/repositories/auth_repository.dart';
+import 'package:dukkan/domain/driver/entities/driver.dart';
+import 'package:dukkan/domain/driver/repositories/driver_repository.dart';
 import 'package:dukkan/main.dart';
 import 'package:dukkan/presentation/auth/pages/login_page.dart';
 import 'package:flutter/material.dart';
@@ -45,15 +47,45 @@ class _SignedOutAuthRepository implements AuthRepository {
   Future<AppUser?> getUserById(String uid) async => null;
 }
 
+/// `AuthBloc` now takes `CreateDriverProfile` as a constructor dependency
+/// (M8), so building it — even signed-out — resolves a `DriverRepository`.
+/// Swapped out for the same reason as `_SignedOutAuthRepository`: never let
+/// a widget test touch real Firebase.
+class _NoopDriverRepository implements DriverRepository {
+  @override
+  Future<void> createDriverProfile({
+    required String uid,
+    required String name,
+    String? phone,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Driver?> getDriver(String uid) => throw UnimplementedError();
+
+  @override
+  Stream<Driver?> watchDriver(String uid) => throw UnimplementedError();
+
+  @override
+  Future<void> setOnline(String uid, bool isOnline) =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<Driver>> availableDrivers(String areaId) =>
+      throw UnimplementedError();
+}
+
 void main() {
   setUp(() async {
     // initDependencies now loads SharedPreferences (locale/theme controllers);
     // give it an empty in-memory store so the tree builds signed-out.
     SharedPreferences.setMockInitialValues({});
     await initDependencies();
-    // Override the Firebase-backed repository with a signed-out fake.
+    // Override the Firebase-backed repositories with signed-out fakes.
     await sl.unregister<AuthRepository>();
     sl.registerLazySingleton<AuthRepository>(_SignedOutAuthRepository.new);
+    await sl.unregister<DriverRepository>();
+    sl.registerLazySingleton<DriverRepository>(_NoopDriverRepository.new);
   });
 
   tearDown(() async {

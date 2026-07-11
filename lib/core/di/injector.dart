@@ -4,10 +4,15 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../data/areas/datasources/areas_local_datasource.dart';
+import '../../data/areas/datasources/areas_remote_datasource.dart';
+import '../../data/areas/repositories/areas_repository_impl.dart';
 import '../../data/auth/datasources/auth_remote_datasource.dart';
 import '../../data/auth/repositories/auth_repository_impl.dart';
 import '../../data/collections/datasources/collections_remote_datasource.dart';
 import '../../data/collections/repositories/collections_repository_impl.dart';
+import '../../data/driver/datasources/driver_remote_datasource.dart';
+import '../../data/driver/repositories/driver_repository_impl.dart';
 import '../../data/favorites/datasources/favorites_remote_datasource.dart';
 import '../../data/favorites/repositories/favorites_repository_impl.dart';
 import '../../data/notifications/datasources/notification_remote_datasource.dart';
@@ -25,6 +30,8 @@ import '../../data/storage/repositories/storage_repository_impl.dart';
 import '../../data/taxonomy/datasources/taxonomy_local_datasource.dart';
 import '../../data/taxonomy/datasources/taxonomy_remote_datasource.dart';
 import '../../data/taxonomy/repositories/taxonomy_repository_impl.dart';
+import '../../domain/areas/repositories/areas_repository.dart';
+import '../../domain/areas/usecases/get_areas.dart';
 import '../../domain/auth/repositories/auth_repository.dart';
 import '../../domain/auth/usecases/get_user_by_id.dart';
 import '../../domain/auth/usecases/log_in.dart';
@@ -38,6 +45,12 @@ import '../../domain/collections/usecases/delete_collection.dart';
 import '../../domain/collections/usecases/get_collections.dart';
 import '../../domain/collections/usecases/rename_collection.dart';
 import '../../domain/collections/usecases/watch_collections.dart';
+import '../../domain/driver/repositories/driver_repository.dart';
+import '../../domain/driver/usecases/available_drivers.dart';
+import '../../domain/driver/usecases/create_driver_profile.dart';
+import '../../domain/driver/usecases/get_driver.dart';
+import '../../domain/driver/usecases/set_driver_online.dart';
+import '../../domain/driver/usecases/watch_driver.dart';
 import '../../domain/favorites/repositories/favorites_repository.dart';
 import '../../domain/favorites/usecases/toggle_favorite_product.dart';
 import '../../domain/favorites/usecases/toggle_favorite_shop.dart';
@@ -120,7 +133,8 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => LogOut(sl()));
   sl.registerLazySingleton(() => GetUserById(sl()));
 
-  // Auth — bloc (app lifetime)
+  // Auth — bloc (app lifetime; createDriverProfile only fires for a courier
+  // signup, see AuthBloc._onSignUpRequested)
   sl.registerLazySingleton(
     () => AuthBloc(
       watchAuthState: sl(),
@@ -128,8 +142,33 @@ Future<void> initDependencies() async {
       signUp: sl(),
       sendPasswordReset: sl(),
       logOut: sl(),
+      createDriverProfile: sl(),
     ),
   );
+
+  // Areas — data (seed-managed, read-only to clients; mirrors Taxonomy).
+  sl.registerLazySingleton(() => AreasRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton(() => AreasLocalDataSource());
+  sl.registerLazySingleton<AreasRepository>(
+    () => AreasRepositoryImpl(sl(), sl(), sl()),
+  );
+
+  // Areas — use case
+  sl.registerLazySingleton(() => GetAreas(sl()));
+
+  // Driver — data (always-online realtime profile doc, no local cache —
+  // mirrors Collections).
+  sl.registerLazySingleton(() => DriverRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<DriverRepository>(
+    () => DriverRepositoryImpl(sl()),
+  );
+
+  // Driver — use cases
+  sl.registerLazySingleton(() => CreateDriverProfile(sl()));
+  sl.registerLazySingleton(() => GetDriver(sl()));
+  sl.registerLazySingleton(() => WatchDriver(sl()));
+  sl.registerLazySingleton(() => SetDriverOnline(sl()));
+  sl.registerLazySingleton(() => AvailableDrivers(sl()));
 
   // Shop — data
   sl.registerLazySingleton(() => ShopRemoteDataSource(firestore: sl()));

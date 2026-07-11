@@ -213,6 +213,26 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       still undeployed alongside the earlier M1/M3 rules.
 - [ ] **M8–M11 — Drivers.** Areas + driver profiles (suspended-by-default), assignment
       transaction + owner sheet, courier shell, assignment push + regression matrix.
+      **M8 DONE 2026-07-11** (`FILE_08_AREAS_DRIVERS.md`), code-only — `courier-role-plan/`
+      stamped SUPERSEDED; `UserRole.courier` end-to-end (signup card, `/users` role, router
+      redirect to a placeholder `CourierHomeShell` with a designed "coming soon" deliveries tab +
+      shared Settings tab, so a courier can still switch language/log out); `/areas` seed-managed
+      district list (`lib/domain/areas/`, `lib/data/areas/`, mirrors taxonomy's one-shot +
+      local-cache pattern) — 5 Ismailia/Abu Atwa districts matching where the real seeded shops
+      sit; `Address.areaId` (nullable) threaded through `Order`/`OrderModel`, checkout's new
+      required area dropdown (mirrors product-form's taxonomy dropdown); `/drivers/{uid}` profile
+      (`lib/domain/driver/`, `lib/data/driver/`) — `createDriverProfile` fires from `AuthBloc`
+      right after a courier signup, suspended by default; `firestore.rules` `/areas` +
+      `/drivers` blocks (driver self-writes only `isOnline`/name/phone; owners get read for the
+      Session 9 assignment list); composite index for the `areaIds array-contains + isOnline +
+      isSuspended` availability query; seed script writes 5 areas + 2 demo drivers (one
+      active, one suspended) — same temporarily-relax-rules-then-restore trick as taxonomy.
+      Gates green (analyze 0, test 92/92, parity 229 — up from 221). Device smoke test (courier
+      signup → suspended `/drivers` doc → placeholder shell; checkout area dropdown; own-`isOnline`
+      write allowed, `isSuspended` write denied; `availableDrivers('abu-atwa')` returns the active
+      seed driver only) still pending — no device this session; the new `/areas` + `/drivers`
+      rules blocks are also still undeployed alongside the earlier M1/M3/M6 rules. **Next: M9
+      (`FILE_09_ASSIGNMENT_TXN.md`) — assignment transaction + owner "assign driver" sheet.**
 - [ ] **M12–M13 — Commission.** `/config/platform`, order snapshot (bps/piasters, round-half-up),
       payable-at-delivered, founder-gated finance summary (aggregate queries).
 - [ ] **M14 — Acceptance.** Full acceptance + regression sign-off.
