@@ -539,6 +539,14 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get notifyDriverAssignedTitle => 'طلب جديد لتوصيله';
+
+  @override
+  String notifyDriverAssignedBody(Object area, Object shop) {
+    return '$shop عندهم طلب لك في $area.';
+  }
+
+  @override
   String get shopProductsEmptyTitle => 'الدكان لسه بيرتّب رفوفه';
 
   @override

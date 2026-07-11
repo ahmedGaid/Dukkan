@@ -549,6 +549,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get notifyDriverAssignedTitle => 'New delivery';
+
+  @override
+  String notifyDriverAssignedBody(Object area, Object shop) {
+    return '$shop has a delivery for you in $area.';
+  }
+
+  @override
   String get shopProductsEmptyTitle => 'This shop is still stocking up';
 
   @override

@@ -211,7 +211,7 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       tests extended). Device smoke test (both sessions' full lists in FILE_06/07) still
       pending — no device this session; the new `/collections` rules block is also
       still undeployed alongside the earlier M1/M3 rules.
-- [ ] **M8–M11 — Drivers.** Areas + driver profiles (suspended-by-default), assignment
+- [x] **M8–M11 — Drivers.** Areas + driver profiles (suspended-by-default), assignment
       transaction + owner sheet, courier shell, assignment push + regression matrix.
       **M8 DONE 2026-07-11** (`FILE_08_AREAS_DRIVERS.md`), code-only — `courier-role-plan/`
       stamped SUPERSEDED; `UserRole.courier` end-to-end (signup card, `/users` role, router
@@ -276,8 +276,33 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       96, parity 250 — up from 241). Device smoke test (full list in
       FILE_10) still pending — no device this session; the new order-driver
       read/transition rules are also still undeployed alongside
-      M1/M3/M6/M8/M9. **Next: M11 (`FILE_11_DRIVER_NOTIFY.md`) — assignment
-      push + regression matrix.**
+      M1/M3/M6/M8/M9.
+      **M11 DONE 2026-07-11** (`FILE_11_DRIVER_NOTIFY.md`), code-only —
+      `NotificationEventType` gained `driverAssigned`; Worker's `/notify`
+      handler accepts it (`NOTIFY_TYPES`), split the caller-check into
+      three explicit branches (was `if newOrder / else statusUpdate`,
+      which would have silently applied the owner→customer statusUpdate
+      rule to the new type) — `driverAssigned` requires caller ==
+      `shop.ownerUid`, target = `order.driverUid`; the courier uid can't
+      trigger `newOrder`/`statusUpdate` since neither's caller check can
+      match it. App: `assign_driver_sheet.dart`'s `_confirmAndAssign` fires
+      the push right after a successful `AssignDriver` call (fire-and-forget,
+      same pattern as `_notifyCustomer`/`_notifyShopOwner`) — one-shot
+      `WatchShop` lookup for the shop name, the already-loaded area list for
+      the area name (both bilingual, both null-safe if either lookup comes
+      back empty). Lexicon: notifyDriverAssignedTitle/Body (`ar.json`/
+      `en.json`). Skipped the plan's optional `orderDelivered` (owner
+      notified on courier completion) — same trivial pattern, but out of
+      this session's scope, no restructuring blocker. Gates green (analyze
+      0, test 104/104 — unchanged, no new unit-testable logic; parity 252 —
+      up from 250). Task C (device regression matrix: no-driver order,
+      driver order full flow, owner-cancels-after-assignment, customer-
+      cancels-pending) deferred — no device this session, same as
+      M8/M9/M10; Worker deploy + rules deploy (dukkan-status blockers 1–2)
+      still pending so live push delivery is also unverified — request-side
+      code is in place and unit-provable by inspection only. **Phase 5
+      Drivers (M8–M11) code-complete. Next: M12–M13 — Commission
+      (`FILE_12_COMMISSION_LEDGER.md`).**
 - [ ] **M12–M13 — Commission.** `/config/platform`, order snapshot (bps/piasters, round-half-up),
       payable-at-delivered, founder-gated finance summary (aggregate queries).
 - [ ] **M14 — Acceptance.** Full acceptance + regression sign-off.

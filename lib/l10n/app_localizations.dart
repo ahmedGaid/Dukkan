@@ -1124,6 +1124,18 @@ abstract class AppLocalizations {
   /// **'طلبك بقى {status}.'**
   String notifyOrderStatusBody(Object status);
 
+  /// No description provided for @notifyDriverAssignedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب جديد لتوصيله'**
+  String get notifyDriverAssignedTitle;
+
+  /// No description provided for @notifyDriverAssignedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'{shop} عندهم طلب لك في {area}.'**
+  String notifyDriverAssignedBody(Object area, Object shop);
+
   /// No description provided for @shopProductsEmptyTitle.
   ///
   /// In ar, this message translates to:

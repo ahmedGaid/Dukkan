@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -9,7 +11,10 @@ import '../../../domain/areas/usecases/get_areas.dart';
 import '../../../domain/driver/entities/driver.dart';
 import '../../../domain/driver/usecases/assign_driver.dart';
 import '../../../domain/driver/usecases/available_drivers.dart';
+import '../../../domain/notifications/repositories/notification_repository.dart';
+import '../../../domain/notifications/usecases/notify_order_event.dart';
 import '../../../domain/order/entities/order.dart';
+import '../../../domain/shop/usecases/watch_shop.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_snackbar.dart';
@@ -77,12 +82,32 @@ class _AssignDriverSheetState extends State<_AssignDriverSheet> {
     setState(() => _assigning = true);
     try {
       await sl<AssignDriver>()(orderId: widget.order.id, driverUid: driver.uid);
+      unawaited(_notifyDriver());
       if (mounted) Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) return;
       AppSnackBar.error(context, _errorMessage(l10n, error));
       setState(() => _assigning = false);
     }
+  }
+
+  /// Fire-and-forget push to the newly assigned courier (M11, Task A). Push
+  /// text is decided at send time and bilingual, same reasoning as
+  /// `_notifyCustomer`/`_notifyShopOwner` (order_desk_page/checkout_page).
+  Future<void> _notifyDriver() async {
+    final lAr = lookupAppLocalizations(const Locale('ar'));
+    final lEn = lookupAppLocalizations(const Locale('en'));
+    final areaId = widget.order.deliveryAddress.areaId;
+    final areas = (await _future).areas.cast<Area?>();
+    final area = areas.firstWhere((a) => a?.id == areaId, orElse: () => null);
+    final shop = await sl<WatchShop>()(widget.order.shopId).first;
+    await sl<NotifyOrderEvent>()(
+      orderId: widget.order.id,
+      type: NotificationEventType.driverAssigned,
+      title: '${lAr.notifyDriverAssignedTitle} / ${lEn.notifyDriverAssignedTitle}',
+      body: '${lAr.notifyDriverAssignedBody(area?.nameAr ?? '', shop.nameAr)} / '
+          '${lEn.notifyDriverAssignedBody(area?.nameEn ?? '', shop.name)}',
+    );
   }
 
   String _errorMessage(AppLocalizations l10n, Object error) {

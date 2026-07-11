@@ -41,7 +41,7 @@ const GOOGLE_CERTS_URL =
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB — a logo / product photo, not a video
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const ALLOWED_FOLDERS = new Set(['shop-logos', 'product-images']);
-const NOTIFY_TYPES = new Set(['newOrder', 'statusUpdate']);
+const NOTIFY_TYPES = new Set(['newOrder', 'statusUpdate', 'driverAssigned']);
 const SA_SCOPES =
   'https://www.googleapis.com/auth/datastore https://www.googleapis.com/auth/firebase.messaging';
 
@@ -102,10 +102,16 @@ async function handleUpload(request, env, cors) {
 }
 
 /**
- * Authorization model: the caller must be one of the two real parties to the
- * order, and can only notify the *other* one — never an arbitrary uid.
- *   newOrder     — caller must be the order's customer; target = shop owner.
- *   statusUpdate — caller must be the shop's owner;    target = customer.
+ * Authorization model: the caller must be one of the real parties to the
+ * order, and can only notify the party the type concerns — never an
+ * arbitrary uid, and never a party the type isn't for (M11, Task B: a
+ * courier sits on the order too now, but has no notify type of its own —
+ * it must not be able to trigger `newOrder`/`statusUpdate`, which is
+ * naturally true below since neither branch's caller check can match a
+ * `driverUid` that differs from `customerUid`/`shop.ownerUid`).
+ *   newOrder       — caller must be the order's customer; target = shop owner.
+ *   statusUpdate   — caller must be the shop's owner;    target = customer.
+ *   driverAssigned — caller must be the shop's owner;    target = order's driver.
  * Title/body come from the app (already bilingual, built from its own i18n
  * strings) — the Worker only decides *whether* to send and *to whom*.
  */
@@ -154,9 +160,13 @@ async function handleNotify(request, env, cors) {
   if (type === 'newOrder') {
     if (callerUid !== order.customerUid) return json({ error: 'forbidden' }, 403, cors);
     targetUid = shop.ownerUid;
-  } else {
+  } else if (type === 'statusUpdate') {
     if (callerUid !== shop.ownerUid) return json({ error: 'forbidden' }, 403, cors);
     targetUid = order.customerUid;
+  } else {
+    // driverAssigned
+    if (callerUid !== shop.ownerUid) return json({ error: 'forbidden' }, 403, cors);
+    targetUid = order.driverUid;
   }
   if (!targetUid) return json({ error: 'no_recipient' }, 404, cors);
 

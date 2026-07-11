@@ -1,12 +1,14 @@
-/// The two order events that trigger a push (P2b). Wire form matches what
+/// The order events that trigger a push (P2b, M11). Wire form matches what
 /// the Worker's `/notify` endpoint expects — see `worker/src/index.js`.
 enum NotificationEventType {
   newOrder,
-  statusUpdate;
+  statusUpdate,
+  driverAssigned;
 
   String get wire => switch (this) {
         NotificationEventType.newOrder => 'newOrder',
         NotificationEventType.statusUpdate => 'statusUpdate',
+        NotificationEventType.driverAssigned => 'driverAssigned',
       };
 }
 
