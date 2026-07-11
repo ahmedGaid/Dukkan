@@ -133,24 +133,23 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       light/dark. Gates green.
 - [ ] **R2 — Ship.** Crashlytics, release build signing, Play internal testing track.
 
-### Phase 5 — Courier role (مندوب التوصيل) — added 2026-07-10, runs after R2
-> Third user role beside customer/owner: courier signs up, joins shops by invite code, owner
-> assigns orders, courier drives `preparing → outForDelivery → delivered`. Owner self-delivery
-> stays the no-courier fallback. **Session authority: `Docs/plan/courier-role-plan/` —
-> load `FILE_00_INDEX.md` first, then one FILE_NN per session.**
-> Data: `role: 'courier'` on `/users`; `/shops/{id}/couriers/{uid}` membership subcollection;
-> nullable `courierUid` on `/orders`. Canonical Arabic term: **مندوب التوصيل** (never ديليفري/طيار).
-- [ ] **D1 — Role foundation.** `UserRole.courier` end-to-end: enum/model/signup third card/
-      router/placeholder shell/settings label/users rules/i18n. (`FILE_01`)
-- [ ] **D2 — Shop link.** Membership subcollection + rules, courier join-by-code page, owner
-      couriers page with invite code + remove. (`FILE_02`)
-- [ ] **D3 — Order assignment.** `courierUid` on orders, owner assign action in order desk,
-      courier read + delivery-leg transition rules. (`FILE_03`)
-- [ ] **D4 — Courier shell.** Realtime deliveries list (active/history), delivery detail,
-      استلمت الطلب / تم التسليم actions, designed states. (`FILE_04`)
-- [ ] **D5 — Notifications + polish.** Assignment push via Worker `/notify`, brand/dark/RTL audit,
-      lexicon entry, courier journey added to the E2E master prompt. (`FILE_05`)
-- [ ] **D6 — Acceptance.** Full acceptance + regression sign-off. (`FILE_06`)
+### Phase 5 — Marketplace V2 — added 2026-07-11, runs after R2
+> **Replaces the 2026-07-10 courier-role phase** — decision: shared platform driver pool instead
+> of shop-owned couriers (`courier-role-plan/` stamped SUPERSEDED by session M8). Five features:
+> owner order details + status timeline · seed-managed global taxonomy · shop collections + home
+> chips carry-over · shared drivers (Ismailia areas, capacity, transaction assignment, courier
+> shell مندوب التوصيل) · commission ledger + founder finance page. 7-status enum UNCHANGED.
+> **Session authority: `Docs/plan/marketplace-v2-plan/` — load `FILE_00_INDEX.md` first, then
+> one FILE_NN per session (M1–M14 = FILE_01–FILE_14).**
+- [ ] **M1–M2 — Order details.** `statusHistory` log + owner order-details page with timeline.
+- [ ] **M3–M5 — Taxonomy + browse.** `/categories` seed, `subcategoryId` on products, dependent
+      form dropdowns, home chips polish + category carried into shop page filter.
+- [ ] **M6–M7 — Collections.** Owner-scoped collections CRUD + product assignment + customer view.
+- [ ] **M8–M11 — Drivers.** Areas + driver profiles (suspended-by-default), assignment
+      transaction + owner sheet, courier shell, assignment push + regression matrix.
+- [ ] **M12–M13 — Commission.** `/config/platform`, order snapshot (bps/piasters, round-half-up),
+      payable-at-delivered, founder-gated finance summary (aggregate queries).
+- [ ] **M14 — Acceptance.** Full acceptance + regression sign-off.
 
 ## Standing regression (added 2026-07-10)
 
