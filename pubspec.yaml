@@ -79,6 +79,7 @@ flutter:
   assets:
     - assets/brand/
     - assets/shops/
+    - assets/products/
 
   fonts:
     - family: IBMPlexSansArabic

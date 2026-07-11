@@ -87,6 +87,27 @@ Rules:
 - Human statuses ("جارٍ تجهيز طلبك"), blame-free errors ("حصلت مشكلة — جرّب تاني").
 - RTL is the default layout. LTR (English) must read identically well.
 
+## Image / illustration style (product art, empty states, promos, stickers)
+
+Reference feel: flat "sticker" cartoon of a product (e.g. the Skittles pack sample in
+`Docs/ui-ref/` if saved) — playful, hand-drawn-adjacent, instantly readable.
+
+Rules — every illustrated image Dukkan ships follows ALL of these:
+1. **White background. Always.** Pure `#FFFFFF`, no scene, no floor shadow, no gradient
+   backdrop. Subject floats clean on white (works on cards, lists, and both themes).
+2. **Bold uniform outline.** Single dark stroke (near-black), one consistent weight around
+   every shape. No sketchy/variable linework.
+3. **Flat fills, no rendering.** Saturated flat colors; at most one simple flat highlight
+   shape. No gradients, no 3D, no photorealism, no soft shadows inside the art.
+4. **Real product colors allowed** inside the artwork (a red pack stays red) — brand green
+   stays the accent around it (chips, badges, buttons), never forced onto the product.
+5. **Playful tilt.** Single subject, centered, rotated ~5–12° for energy. One subject per
+   image — no clutter, no busy compositions.
+6. **Rounded forms** — corners and shapes echo the logo's roundness; nothing sharp/spiky.
+7. Same style for ALL illustration surfaces: product placeholders, category art, empty
+   states, promo banners, onboarding. One hand, one style — never mix with stock photos,
+   3D renders, or a second illustration style.
+
 ## UI/UX reference — Ben Soliman (com.BenSoliman.BSS)
 
 Patterns to borrow (screenshots live in `Docs/ui-ref/` when provided):

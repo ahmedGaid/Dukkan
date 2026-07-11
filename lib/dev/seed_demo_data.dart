@@ -461,6 +461,18 @@ List<Map<String, dynamic>> _demoShops(String ownerUid) => [
 /// practice — a catalog loading ~40 tiles at once trips Wikimedia's bulk-request
 /// rate limit (HTTP 429 → blank tiles); weserv's cache absorbs that burst. It
 /// also resizes to 600px. Free, no API key, no pub dependency (just a URL).
+/// Resolves a product's image. An `asset:<name>` subject ships our own bundled
+/// sticker-style art (white bg, flat outline — see Docs/Brand/BRAND.md "Image /
+/// illustration style") at `assets/products/<name>.png`, rendered by
+/// ShimmerImage via Image.asset. Anything else falls through to a Servier
+/// illustration; null keeps the branded-glyph fallback.
+String? _productImage(String? subject) {
+  if (subject != null && subject.startsWith('asset:')) {
+    return 'assets/products/${subject.substring(6)}.png';
+  }
+  return _servierImage(subject);
+}
+
 String? _servierImage(String? subject) {
   if (subject == null) return null;
   final file = 'Food - $subject -- Smart-Servier.png';
@@ -483,9 +495,9 @@ List<Map<String, dynamic>> _demoProducts() {
     _product('p4', shop1, 'Oranges (1kg)', 'برتقال (1 كجم)', 1800, 'خضروات وفواكه', 'fruits', 'Orange'),
     _product('p5', shop1, 'Milk 1L', 'لبن 1 لتر', 3500, 'ألبان', 'milk', 'Milk'),
     _product('p6', shop1, 'White Cheese 500g', 'جبنة بيضاء 500 جم', 6500, 'ألبان', 'cheese', 'Cottage cheese', low: true),
-    _product('p7', shop1, 'Yogurt Cup', 'زبادي كوب', 1200, 'ألبان', 'yogurt', 'Yogurt'),
+    _product('p7', shop1, 'Yogurt Cup', 'زبادي كوب', 1200, 'ألبان', 'yogurt', 'asset:yogurt'),
     _product('p8', shop1, 'Cola 1.5L', 'كولا 1.5 لتر', 2000, 'مشروبات', 'soda', 'Soda', promo: true),
-    _product('p9', shop1, 'Bottled Water 1.5L', 'مياه معدنية 1.5 لتر', 800, 'مشروبات', 'water', 'Water'),
+    _product('p9', shop1, 'Bottled Water 1.5L', 'مياه معدنية 1.5 لتر', 800, 'مشروبات', 'water', 'asset:water'),
     _product('p10', shop1, 'Canned Fava Beans', 'فول معلب', 1000, 'معلبات', 'beans', 'Beans', out: true),
     _product('p11', shop2, 'Baladi Bread (5pcs)', 'عيش بلدي (5 أرغفة)', 500, 'مخبوزات', 'baladiBread', 'Bread'),
     _product('p12', shop2, 'Toast Bread', 'توست', 2500, 'مخبوزات', 'toastBread', 'Bread'),
@@ -521,7 +533,7 @@ List<Map<String, dynamic>> _demoProducts() {
     _product('p39', shop5, 'Rice (1kg)', 'أرز (1 كجم)', 3000, 'معلبات', 'rice', 'Rice'),
     _product('p40', shop5, 'Dish Soap 750ml', 'سائل جلي 750 مل', 4300, 'منظفات', 'dishSoap', null), // non-food
     // shop_demo_6 — التوحيد (drinks + canned + bakery, نفس الشارع)
-    _product('p41', shop6, 'Water 1.5L (6-pack)', 'مياه 1.5 لتر (6 عبوات)', 4500, 'مشروبات', 'water', 'Water', promo: true),
+    _product('p41', shop6, 'Water 1.5L (6-pack)', 'مياه 1.5 لتر (6 عبوات)', 4500, 'مشروبات', 'water', 'asset:water', promo: true),
     _product('p42', shop6, 'Juice 1L', 'عصير 1 لتر', 2800, 'مشروبات', 'juice', 'Orange juice'),
     _product('p43', shop6, 'Canned Tuna', 'تونة معلبة', 3100, 'معلبات', 'tuna', 'Fish'),
     _product('p44', shop6, 'Canned Beans', 'فول معلب', 1000, 'معلبات', 'beans', 'Beans'),
@@ -673,7 +685,7 @@ Map<String, dynamic> _product(
       : low
           ? 'lowStock'
           : 'inStock';
-  final imageUrl = _servierImage(imageSubject);
+  final imageUrl = _productImage(imageSubject);
   return {
     'id': id,
     'shopId': shopId,
