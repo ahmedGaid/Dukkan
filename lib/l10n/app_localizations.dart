@@ -1532,17 +1532,71 @@ abstract class AppLocalizations {
   /// **'التوصيلات'**
   String get navDeliveries;
 
-  /// No description provided for @courierComingSoonTitle.
+  /// No description provided for @courierOnlineLabel.
   ///
   /// In ar, this message translates to:
-  /// **'قريبًا'**
-  String get courierComingSoonTitle;
+  /// **'أونلاين'**
+  String get courierOnlineLabel;
 
-  /// No description provided for @courierComingSoonBody.
+  /// No description provided for @courierOfflineLabel.
   ///
   /// In ar, this message translates to:
-  /// **'شاشة توصيلاتك هتظهر هنا قريب.'**
-  String get courierComingSoonBody;
+  /// **'أوفلاين'**
+  String get courierOfflineLabel;
+
+  /// No description provided for @courierSuspendedBannerBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسابك قيد المراجعة — تواصل مع دكان'**
+  String get courierSuspendedBannerBody;
+
+  /// No description provided for @courierActiveTabLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالية'**
+  String get courierActiveTabLabel;
+
+  /// No description provided for @courierHistoryTabLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'السجل'**
+  String get courierHistoryTabLabel;
+
+  /// No description provided for @courierActiveEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش توصيلات دلوقتي'**
+  String get courierActiveEmptyTitle;
+
+  /// No description provided for @courierHistoryEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش توصيلات سابقة'**
+  String get courierHistoryEmptyTitle;
+
+  /// No description provided for @courierActionPickedUp.
+  ///
+  /// In ar, this message translates to:
+  /// **'استلمت الطلب'**
+  String get courierActionPickedUp;
+
+  /// No description provided for @courierActionDelivered.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم التوصيل'**
+  String get courierActionDelivered;
+
+  /// No description provided for @courierActionDeliveredConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد إن الطلب اتوصّل؟'**
+  String get courierActionDeliveredConfirmTitle;
+
+  /// No description provided for @courierActionDeliveredConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش هتقدر ترجّعها بعد كده.'**
+  String get courierActionDeliveredConfirmBody;
 }
 
 class _AppLocalizationsDelegate

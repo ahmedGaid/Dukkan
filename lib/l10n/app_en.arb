@@ -267,6 +267,16 @@
   "areaRequired": "Choose your area",
   "areasErrorBody": "We can't load areas right now — try again.",
   "navDeliveries": "Deliveries",
-  "courierComingSoonTitle": "Coming soon",
-  "courierComingSoonBody": "Your deliveries screen will be here soon."
+
+  "courierOnlineLabel": "Online",
+  "courierOfflineLabel": "Offline",
+  "courierSuspendedBannerBody": "Your account is under review — contact Dukkan",
+  "courierActiveTabLabel": "Active",
+  "courierHistoryTabLabel": "History",
+  "courierActiveEmptyTitle": "No deliveries right now",
+  "courierHistoryEmptyTitle": "No delivery history yet",
+  "courierActionPickedUp": "Picked up",
+  "courierActionDelivered": "Delivered",
+  "courierActionDeliveredConfirmTitle": "Confirm delivery?",
+  "courierActionDeliveredConfirmBody": "You won't be able to undo this."
 }

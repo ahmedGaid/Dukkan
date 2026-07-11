@@ -23,6 +23,13 @@ abstract class OrderRepository {
 
   Stream<Order> watchOrder(String orderId);
 
+  /// The courier's own active deliveries (`preparing`/`outForDelivery`,
+  /// Session 10) — unordered on the wire, sorted client-side by the bloc.
+  Stream<List<Order>> watchDriverActiveOrders(String driverUid);
+
+  /// The courier's delivered history, newest first, capped at 20.
+  Stream<List<Order>> watchDriverHistory(String driverUid);
+
   /// Throws [AuthFailure]-free domain error if the order is past
   /// `OrderStatus.isCancellable` — see `order_status.dart`.
   Future<void> cancelOrder(String orderId);

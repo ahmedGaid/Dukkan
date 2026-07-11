@@ -250,8 +250,34 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       — up from 92, parity 241 — up from 229). Device smoke test (race two owners for a
       driver's last slot, offline/capacity/area rejections, decrement on delivery) still
       pending — no device this session; the new order-driver-field + drivers-count rules
-      are also still undeployed alongside M1/M3/M6/M8. **Next: M10
-      (`FILE_10_COURIER_SHELL.md`) — courier shell.**
+      are also still undeployed alongside M1/M3/M6/M8.
+      **M10 DONE 2026-07-11** (`FILE_10_COURIER_SHELL.md`), code-only —
+      `OrderRepository` gained `watchDriverActiveOrders` (driverUid +
+      preparing/outForDelivery, unordered — sorted client-side) and
+      `watchDriverHistory` (driverUid + delivered, newest first, capped at
+      20); two new composite indexes; `firestore.rules` lets the assigned
+      driver read their own orders and make exactly the two transitions
+      (preparing→outForDelivery, outForDelivery→delivered). `OrderDetailPage`/
+      `OrderDetailBloc` widened from a bool `isOwner` to an `OrderViewerRole`
+      enum (customer/owner/courier) instead of a new duplicate detail page —
+      courier view reuses the M2 customer-contact card (renamed
+      `_CustomerContactCard`), adds an area-name line to the address card
+      (one-shot `GetAreas` lookup, display-only) and a bottom "Picked
+      up"/"Delivered" action (own courier-facing copy, `courierPrimaryAction`
+      in `order_status_view.dart`; delivered confirms, picked-up doesn't;
+      reuses the same `UpdateOrderStatus` path as the owner desk, so
+      `statusHistory` records the courier's uid for free). New
+      `DeliveriesBloc` (two realtime subscriptions + a one-shot area list)
+      drives the courier shell's real deliveries tab (replacing the Session 8
+      placeholder): online/offline switch, suspended banner, Active/History
+      segmented list, cards with shop name (per-card one-shot `WatchShop`
+      lookup) + area + item count + total. Lexicon: courier pickup/delivered
+      copy + online/offline. Gates green (analyze 0, test 104/104 — up from
+      96, parity 250 — up from 241). Device smoke test (full list in
+      FILE_10) still pending — no device this session; the new order-driver
+      read/transition rules are also still undeployed alongside
+      M1/M3/M6/M8/M9. **Next: M11 (`FILE_11_DRIVER_NOTIFY.md`) — assignment
+      push + regression matrix.**
 - [ ] **M12–M13 — Commission.** `/config/platform`, order snapshot (bps/piasters, round-half-up),
       payable-at-delivered, founder-gated finance summary (aggregate queries).
 - [ ] **M14 — Acceptance.** Full acceptance + regression sign-off.

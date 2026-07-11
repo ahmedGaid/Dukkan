@@ -70,3 +70,19 @@ import '../widgets/common/status_chip.dart';
   if (status != OrderStatus.pending) return null;
   return (label: l10n.actionRejectOrder, target: OrderStatus.rejected);
 }
+
+/// The courier's one primary action (Session 10) — own wording ("Picked up"/
+/// "Delivered") distinct from the owner's order-desk labels for the same two
+/// transitions. `null` on every other status.
+({String label, OrderStatus target})? courierPrimaryAction(
+  AppLocalizations l10n,
+  OrderStatus status,
+) {
+  return switch (status) {
+    OrderStatus.preparing =>
+      (label: l10n.courierActionPickedUp, target: OrderStatus.outForDelivery),
+    OrderStatus.outForDelivery =>
+      (label: l10n.courierActionDelivered, target: OrderStatus.delivered),
+    _ => null,
+  };
+}

@@ -11,8 +11,10 @@ import 'package:dukkan/domain/order/entities/order_status.dart';
 import 'package:dukkan/domain/order/repositories/order_repository.dart';
 import 'package:dukkan/domain/order/usecases/cancel_order.dart';
 import 'package:dukkan/domain/order/usecases/rate_order.dart';
+import 'package:dukkan/domain/order/usecases/update_order_status.dart';
 import 'package:dukkan/domain/order/usecases/watch_order.dart';
 import 'package:dukkan/presentation/orders/bloc/order_detail_bloc.dart';
+import 'package:dukkan/presentation/orders/order_viewer_role.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Fake so the owner-view customer fetch (M2) is testable without Firebase.
@@ -64,6 +66,8 @@ class _FakeOrderRepository implements OrderRepository {
   int cancelCalls = 0;
   bool rateShouldFail = false;
   int rateCalls = 0;
+  bool advanceShouldFail = false;
+  int advanceCalls = 0;
 
   @override
   Stream<Order> watchOrder(String orderId) => controller.stream;
@@ -76,13 +80,24 @@ class _FakeOrderRepository implements OrderRepository {
   Stream<List<Order>> watchShopOrders(String shopId) => const Stream.empty();
 
   @override
+  Stream<List<Order>> watchDriverActiveOrders(String driverUid) =>
+      const Stream.empty();
+
+  @override
+  Stream<List<Order>> watchDriverHistory(String driverUid) =>
+      const Stream.empty();
+
+  @override
   Future<void> cancelOrder(String orderId) async {
     cancelCalls++;
     if (cancelShouldFail) throw Exception('boom');
   }
 
   @override
-  Future<void> updateOrderStatus(String orderId, OrderStatus status) async {}
+  Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
+    advanceCalls++;
+    if (advanceShouldFail) throw Exception('boom');
+  }
 
   @override
   Future<void> rateOrder({
@@ -137,6 +152,7 @@ void main() {
       watchOrder: WatchOrder(repo),
       cancelOrder: CancelOrder(repo),
       rateOrder: RateOrder(repo),
+      updateOrderStatus: UpdateOrderStatus(repo),
     );
   });
 
@@ -303,8 +319,9 @@ void main() {
       watchOrder: WatchOrder(repo),
       cancelOrder: CancelOrder(repo),
       rateOrder: RateOrder(repo),
+      updateOrderStatus: UpdateOrderStatus(repo),
       getUserById: GetUserById(authRepo),
-      isOwner: true,
+      role: OrderViewerRole.owner,
     );
     addTearDown(ownerBloc.close);
 
@@ -333,6 +350,7 @@ void main() {
       watchOrder: WatchOrder(repo),
       cancelOrder: CancelOrder(repo),
       rateOrder: RateOrder(repo),
+      updateOrderStatus: UpdateOrderStatus(repo),
       getUserById: GetUserById(authRepo),
     );
     addTearDown(customerBloc.close);
@@ -344,5 +362,48 @@ void main() {
 
     expect(authRepo.getUserByIdCalls, 0);
     expect(customerBloc.state.customer, isNull);
+  });
+
+  test('courier advance calls the repository once', () async {
+    bloc.add(const OrderDetailStarted());
+    await tick();
+    repo.controller.add(_order(OrderStatus.preparing));
+    await tick();
+
+    bloc.add(const OrderDetailAdvanceRequested(OrderStatus.outForDelivery));
+    await tick();
+
+    expect(repo.advanceCalls, 1);
+    // No local patch — status only changes when the stream delivers it.
+    expect(bloc.state.order!.status, OrderStatus.preparing);
+  });
+
+  test('a failed courier advance surfaces advanceStatus.failure', () async {
+    repo.advanceShouldFail = true;
+    bloc.add(const OrderDetailStarted());
+    await tick();
+    repo.controller.add(_order(OrderStatus.preparing));
+    await tick();
+
+    bloc.add(const OrderDetailAdvanceRequested(OrderStatus.outForDelivery));
+    await tick();
+
+    expect(bloc.state.advanceStatus, OrderAdvanceStatus.failure);
+  });
+
+  test('a new stream snapshot resets advanceStatus back to idle', () async {
+    repo.advanceShouldFail = true;
+    bloc.add(const OrderDetailStarted());
+    await tick();
+    repo.controller.add(_order(OrderStatus.preparing));
+    await tick();
+    bloc.add(const OrderDetailAdvanceRequested(OrderStatus.outForDelivery));
+    await tick();
+    expect(bloc.state.advanceStatus, OrderAdvanceStatus.failure);
+
+    repo.controller.add(_order(OrderStatus.outForDelivery));
+    await tick();
+
+    expect(bloc.state.advanceStatus, OrderAdvanceStatus.idle);
   });
 }

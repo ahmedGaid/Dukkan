@@ -747,8 +747,35 @@ class AppLocalizationsAr extends AppLocalizations {
   String get navDeliveries => 'التوصيلات';
 
   @override
-  String get courierComingSoonTitle => 'قريبًا';
+  String get courierOnlineLabel => 'أونلاين';
 
   @override
-  String get courierComingSoonBody => 'شاشة توصيلاتك هتظهر هنا قريب.';
+  String get courierOfflineLabel => 'أوفلاين';
+
+  @override
+  String get courierSuspendedBannerBody => 'حسابك قيد المراجعة — تواصل مع دكان';
+
+  @override
+  String get courierActiveTabLabel => 'الحالية';
+
+  @override
+  String get courierHistoryTabLabel => 'السجل';
+
+  @override
+  String get courierActiveEmptyTitle => 'لسه مفيش توصيلات دلوقتي';
+
+  @override
+  String get courierHistoryEmptyTitle => 'لسه مفيش توصيلات سابقة';
+
+  @override
+  String get courierActionPickedUp => 'استلمت الطلب';
+
+  @override
+  String get courierActionDelivered => 'تم التوصيل';
+
+  @override
+  String get courierActionDeliveredConfirmTitle => 'تأكيد إن الطلب اتوصّل؟';
+
+  @override
+  String get courierActionDeliveredConfirmBody => 'مش هتقدر ترجّعها بعد كده.';
 }

@@ -770,9 +770,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navDeliveries => 'Deliveries';
 
   @override
-  String get courierComingSoonTitle => 'Coming soon';
+  String get courierOnlineLabel => 'Online';
 
   @override
-  String get courierComingSoonBody =>
-      'Your deliveries screen will be here soon.';
+  String get courierOfflineLabel => 'Offline';
+
+  @override
+  String get courierSuspendedBannerBody =>
+      'Your account is under review — contact Dukkan';
+
+  @override
+  String get courierActiveTabLabel => 'Active';
+
+  @override
+  String get courierHistoryTabLabel => 'History';
+
+  @override
+  String get courierActiveEmptyTitle => 'No deliveries right now';
+
+  @override
+  String get courierHistoryEmptyTitle => 'No delivery history yet';
+
+  @override
+  String get courierActionPickedUp => 'Picked up';
+
+  @override
+  String get courierActionDelivered => 'Delivered';
+
+  @override
+  String get courierActionDeliveredConfirmTitle => 'Confirm delivery?';
+
+  @override
+  String get courierActionDeliveredConfirmBody =>
+      'You won\'t be able to undo this.';
 }

@@ -64,6 +64,8 @@ import '../../domain/order/usecases/place_order.dart';
 import '../../domain/order/usecases/rate_order.dart';
 import '../../domain/order/usecases/update_order_status.dart';
 import '../../domain/order/usecases/watch_customer_orders.dart';
+import '../../domain/order/usecases/watch_driver_active_orders.dart';
+import '../../domain/order/usecases/watch_driver_order_history.dart';
 import '../../domain/order/usecases/watch_order.dart';
 import '../../domain/order/usecases/watch_shop_orders.dart';
 import '../../domain/product/repositories/product_repository.dart';
@@ -85,12 +87,14 @@ import '../../domain/taxonomy/usecases/get_taxonomy.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/cart/bloc/cart_bloc.dart';
 import '../../presentation/catalog/bloc/collections_bloc.dart';
+import '../../presentation/driver/bloc/deliveries_bloc.dart';
 import '../../presentation/favorites/bloc/favorites_bloc.dart';
 import '../../presentation/favorites/bloc/favorites_page_bloc.dart';
 import '../../presentation/home/bloc/shops_bloc.dart';
 import '../../presentation/orders/bloc/order_detail_bloc.dart';
 import '../../presentation/orders/bloc/orders_bloc.dart';
 import '../../presentation/orders/bloc/owner_orders_bloc.dart';
+import '../../presentation/orders/order_viewer_role.dart';
 import '../../presentation/search/bloc/search_bloc.dart';
 import '../../presentation/shop/bloc/products_bloc.dart';
 import '../l10n/locale_controller.dart';
@@ -273,6 +277,8 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => CancelOrder(sl()));
   sl.registerLazySingleton(() => UpdateOrderStatus(sl()));
   sl.registerLazySingleton(() => RateOrder(sl()));
+  sl.registerLazySingleton(() => WatchDriverActiveOrders(sl()));
+  sl.registerLazySingleton(() => WatchDriverOrderHistory(sl()));
 
   // Order — blocs (page-scoped: the customer uid / shop id / order id is the
   // factory param, mirroring ProductsBloc's shopId).
@@ -283,14 +289,28 @@ Future<void> initDependencies() async {
   sl.registerFactoryParam<OwnerOrdersBloc, String, void>(
     (shopId, _) => OwnerOrdersBloc(shopId: shopId, watchShopOrders: sl()),
   );
-  sl.registerFactoryParam<OrderDetailBloc, String, bool>(
-    (orderId, isOwner) => OrderDetailBloc(
+  sl.registerFactoryParam<OrderDetailBloc, String, OrderViewerRole>(
+    (orderId, role) => OrderDetailBloc(
       orderId: orderId,
       watchOrder: sl(),
       cancelOrder: sl(),
       rateOrder: sl(),
+      updateOrderStatus: sl(),
       getUserById: sl(),
-      isOwner: isOwner,
+      getAreas: sl(),
+      role: role,
+    ),
+  );
+
+  // Deliveries — bloc (page-scoped: the courier's own uid is the factory
+  // param, mirroring OrdersBloc's customerUid; lives inside CourierHomeShell,
+  // one subscription pair per courier session).
+  sl.registerFactoryParam<DeliveriesBloc, String, void>(
+    (driverUid, _) => DeliveriesBloc(
+      driverUid: driverUid,
+      watchActive: sl(),
+      watchHistory: sl(),
+      getAreas: sl(),
     ),
   );
 

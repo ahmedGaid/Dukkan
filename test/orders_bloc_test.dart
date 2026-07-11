@@ -25,6 +25,14 @@ class _FakeOrderRepository implements OrderRepository {
   Stream<Order> watchOrder(String orderId) => const Stream.empty();
 
   @override
+  Stream<List<Order>> watchDriverActiveOrders(String driverUid) =>
+      const Stream.empty();
+
+  @override
+  Stream<List<Order>> watchDriverHistory(String driverUid) =>
+      const Stream.empty();
+
+  @override
   Future<void> cancelOrder(String orderId) async {}
 
   @override

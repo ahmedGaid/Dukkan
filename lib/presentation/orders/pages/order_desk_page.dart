@@ -234,7 +234,7 @@ class _OwnerOrderCardState extends State<_OwnerOrderCard> {
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),
-      onTap: () => context.push('/order/${order.id}?owner=true'),
+      onTap: () => context.push('/order/${order.id}?role=owner'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

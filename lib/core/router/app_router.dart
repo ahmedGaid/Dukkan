@@ -16,6 +16,7 @@ import '../../presentation/home/pages/home_page.dart';
 import '../../presentation/shell/courier_home_shell.dart';
 import '../../presentation/catalog/pages/collections_manager_page.dart';
 import '../../presentation/catalog/pages/product_form_page.dart';
+import '../../presentation/orders/order_viewer_role.dart';
 import '../../presentation/orders/pages/order_detail_page.dart';
 import '../../presentation/search/pages/search_page.dart';
 import '../../presentation/shop/pages/product_detail_page.dart';
@@ -113,7 +114,11 @@ class AppRouter {
         path: '/order/:id',
         builder: (context, state) => OrderDetailPage(
           orderId: state.pathParameters['id']!,
-          isOwner: state.uri.queryParameters['owner'] == 'true',
+          role: switch (state.uri.queryParameters['role']) {
+            'owner' => OrderViewerRole.owner,
+            'courier' => OrderViewerRole.courier,
+            _ => OrderViewerRole.customer,
+          },
         ),
       ),
     ],

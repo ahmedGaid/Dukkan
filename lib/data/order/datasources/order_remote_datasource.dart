@@ -83,6 +83,42 @@ class OrderRemoteDataSource {
         );
   }
 
+  static const _driverActiveStatuses = [
+    OrderStatus.preparing,
+    OrderStatus.outForDelivery,
+  ];
+
+  /// The courier's active-deliveries tab (Session 10) — no `orderBy` (a
+  /// composite index on `driverUid`+`status` covers the equality+`in` filter);
+  /// sorted client-side by the bloc instead.
+  Stream<List<OrderModel>> watchDriverActiveOrders(String driverUid) {
+    return _orders
+        .where('driverUid', isEqualTo: driverUid)
+        .where('status', whereIn: _driverActiveStatuses.map((s) => s.wire).toList())
+        .snapshots()
+        .map(
+          (snap) => snap.docs
+              .map((doc) => OrderModel.fromFirestore(doc.id, doc.data()))
+              .toList(),
+        );
+  }
+
+  /// The courier's history tab (Session 10) — delivered only, newest first,
+  /// capped at 20 so a long-tenured driver's read cost stays bounded.
+  Stream<List<OrderModel>> watchDriverHistory(String driverUid) {
+    return _orders
+        .where('driverUid', isEqualTo: driverUid)
+        .where('status', isEqualTo: OrderStatus.delivered.wire)
+        .orderBy('assignedAt', descending: true)
+        .limit(20)
+        .snapshots()
+        .map(
+          (snap) => snap.docs
+              .map((doc) => OrderModel.fromFirestore(doc.id, doc.data()))
+              .toList(),
+        );
+  }
+
   Stream<OrderModel> watchOrder(String orderId) {
     return _orders.doc(orderId).snapshots().map((doc) {
       final data = doc.data();

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/di/injector.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../domain/areas/entities/area.dart';
 import '../../../domain/auth/entities/app_user.dart';
 import '../../../domain/order/entities/order.dart';
 import '../../../domain/order/entities/order_item.dart';
@@ -18,39 +19,42 @@ import '../../widgets/common/skeletons.dart';
 import '../../widgets/common/status_chip.dart';
 import '../bloc/order_detail_bloc.dart';
 import '../order_status_view.dart';
+import '../order_viewer_role.dart';
 import '../widgets/assign_driver_sheet.dart';
 import '../widgets/order_status_stepper.dart';
 import '../widgets/star_rating_picker.dart';
 
 /// One order's tracking page — realtime status stepper, items, delivery
 /// address, and a cancel action while `isCancellable`. Reused for the owner
-/// order-desk (M2): `isOwner` gates the customer/payment/fee/driver blocks
-/// and the bloc additionally resolves the customer's `/users` profile. Owns
-/// its [OrderDetailBloc] (order id + isOwner are the factory params).
+/// order-desk (M2) and the courier detail view (M10): [role] gates the
+/// customer/payment/fee/driver/advance blocks, and the bloc additionally
+/// resolves the customer's `/users` profile (owner+courier) and the delivery
+/// area's name (courier). Owns its [OrderDetailBloc] (order id + role are the
+/// factory params).
 class OrderDetailPage extends StatelessWidget {
   const OrderDetailPage({
     super.key,
     required this.orderId,
-    this.isOwner = false,
+    this.role = OrderViewerRole.customer,
   });
 
   final String orderId;
-  final bool isOwner;
+  final OrderViewerRole role;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<OrderDetailBloc>(param1: orderId, param2: isOwner)
+      create: (_) => sl<OrderDetailBloc>(param1: orderId, param2: role)
         ..add(const OrderDetailStarted()),
-      child: _OrderDetailView(isOwner: isOwner),
+      child: _OrderDetailView(role: role),
     );
   }
 }
 
 class _OrderDetailView extends StatelessWidget {
-  const _OrderDetailView({required this.isOwner});
+  const _OrderDetailView({required this.role});
 
-  final bool isOwner;
+  final OrderViewerRole role;
 
   Future<void> _confirmCancel(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
@@ -76,6 +80,36 @@ class _OrderDetailView extends StatelessWidget {
     }
   }
 
+  /// Only the final `delivered` step confirms — "picked up" is a single tap
+  /// (plan: `FILE_10_COURIER_SHELL.md` Task C).
+  Future<void> _handleCourierAction(
+    BuildContext context,
+    OrderStatus target,
+  ) async {
+    if (target == OrderStatus.delivered) {
+      final l10n = AppLocalizations.of(context)!;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(l10n.courierActionDeliveredConfirmTitle),
+          content: Text(l10n.courierActionDeliveredConfirmBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.actionCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.courierActionDelivered),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !context.mounted) return;
+    }
+    context.read<OrderDetailBloc>().add(OrderDetailAdvanceRequested(target));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -85,13 +119,17 @@ class _OrderDetailView extends StatelessWidget {
       body: BlocConsumer<OrderDetailBloc, OrderDetailState>(
         listenWhen: (previous, current) =>
             previous.cancelStatus != current.cancelStatus ||
-            previous.rateStatus != current.rateStatus,
+            previous.rateStatus != current.rateStatus ||
+            previous.advanceStatus != current.advanceStatus,
         listener: (context, state) {
           if (state.cancelStatus == OrderCancelStatus.failure) {
             AppSnackBar.error(context, l10n.orderCancelErrorBody);
           }
           if (state.rateStatus == OrderRateStatus.failure) {
             AppSnackBar.error(context, l10n.orderRateErrorBody);
+          }
+          if (state.advanceStatus == OrderAdvanceStatus.failure) {
+            AppSnackBar.error(context, l10n.orderActionErrorBody);
           }
         },
         builder: (context, state) => switch (state.status) {
@@ -106,14 +144,17 @@ class _OrderDetailView extends StatelessWidget {
             ),
           OrderDetailStatus.loaded => _OrderDetailContent(
               order: state.order!,
-              isOwner: isOwner,
+              role: role,
               customer: state.customer,
+              area: state.area,
               isCancelling: state.isCancelling,
               isRating: state.isRating,
+              isAdvancing: state.isAdvancing,
               onCancel: () => _confirmCancel(context),
               onRate: (rating) => context
                   .read<OrderDetailBloc>()
                   .add(OrderDetailRateSubmitted(rating)),
+              onAdvance: (target) => _handleCourierAction(context, target),
             ),
         },
       ),
@@ -124,24 +165,32 @@ class _OrderDetailView extends StatelessWidget {
 class _OrderDetailContent extends StatelessWidget {
   const _OrderDetailContent({
     required this.order,
-    required this.isOwner,
+    required this.role,
     required this.customer,
+    required this.area,
     required this.isCancelling,
     required this.isRating,
+    required this.isAdvancing,
     required this.onCancel,
     required this.onRate,
+    required this.onAdvance,
   });
 
   final Order order;
-  final bool isOwner;
+  final OrderViewerRole role;
 
-  /// The customer's `/users` profile — owner view only, resolved by the bloc.
-  /// Null while it's still loading or the doc is missing.
+  /// The customer's `/users` profile — owner/courier view only, resolved by
+  /// the bloc. Null while it's still loading or the doc is missing.
   final AppUser? customer;
+
+  /// The delivery area's display name — courier view only (M10).
+  final Area? area;
   final bool isCancelling;
   final bool isRating;
+  final bool isAdvancing;
   final VoidCallback onCancel;
   final ValueChanged<int> onRate;
+  final ValueChanged<OrderStatus> onAdvance;
 
   @override
   Widget build(BuildContext context) {
@@ -150,6 +199,9 @@ class _OrderDetailContent extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final view = orderStatusView(l10n, order.status);
+    final isOwner = role == OrderViewerRole.owner;
+    final isCourier = role == OrderViewerRole.courier;
+    final areaName = area == null ? null : (locale == 'ar' ? area!.nameAr : area!.nameEn);
     final isTerminalBranch =
         order.status == OrderStatus.cancelled || order.status == OrderStatus.rejected;
 
@@ -181,8 +233,9 @@ class _OrderDetailContent extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               Text(l10n.checkoutAddressSection, style: text.titleSmall),
               const SizedBox(height: AppSpacing.sm),
-              _AddressCard(order: order),
-              if (!isOwner && order.status == OrderStatus.delivered) ...[
+              _AddressCard(order: order, areaName: areaName),
+              if (role == OrderViewerRole.customer &&
+                  order.status == OrderStatus.delivered) ...[
                 const SizedBox(height: AppSpacing.lg),
                 _RatingCard(
                   rating: order.rating,
@@ -190,11 +243,11 @@ class _OrderDetailContent extends StatelessWidget {
                   onRate: onRate,
                 ),
               ],
-              if (isOwner && customer != null) ...[
+              if (role != OrderViewerRole.customer && customer != null) ...[
                 const SizedBox(height: AppSpacing.lg),
                 Text(l10n.orderCustomerSection, style: text.titleSmall),
                 const SizedBox(height: AppSpacing.sm),
-                _OwnerCustomerCard(customer: customer!),
+                _CustomerContactCard(customer: customer!),
               ],
               if (isOwner) ...[
                 const SizedBox(height: AppSpacing.lg),
@@ -218,7 +271,7 @@ class _OrderDetailContent extends StatelessWidget {
             ],
           ),
         ),
-        if (!isOwner && order.status.isCancellable)
+        if (role == OrderViewerRole.customer && order.status.isCancellable)
           DecoratedBox(
             decoration: BoxDecoration(
               color: scheme.surface,
@@ -246,6 +299,36 @@ class _OrderDetailContent extends StatelessWidget {
                           ),
                         )
                       : Text(l10n.actionCancelOrder),
+                ),
+              ),
+            ),
+          )
+        else if (isCourier && courierPrimaryAction(l10n, order.status) != null)
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: scheme.surface,
+              border: Border(top: BorderSide(color: scheme.outline)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: FilledButton(
+                  onPressed: isAdvancing
+                      ? null
+                      : () => onAdvance(
+                          courierPrimaryAction(l10n, order.status)!.target),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(52),
+                    shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
+                  ),
+                  child: isAdvancing
+                      ? const SizedBox(
+                          width: AppSpacing.lg,
+                          height: AppSpacing.lg,
+                          child: CircularProgressIndicator(strokeWidth: 2.5),
+                        )
+                      : Text(courierPrimaryAction(l10n, order.status)!.label),
                 ),
               ),
             ),
@@ -372,9 +455,13 @@ class _RatingCard extends StatelessWidget {
 }
 
 class _AddressCard extends StatelessWidget {
-  const _AddressCard({required this.order});
+  const _AddressCard({required this.order, this.areaName});
 
   final Order order;
+
+  /// The delivery area's display name — courier view only (M10). Optional
+  /// secondary info, never blocks the card if it's null.
+  final String? areaName;
 
   @override
   Widget build(BuildContext context) {
@@ -401,6 +488,14 @@ class _AddressCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('${address.line1}، ${address.city}', style: text.bodyMedium),
+                if (areaName != null) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    areaName!,
+                    style: text.bodySmall
+                        ?.copyWith(color: scheme.onSurface.withValues(alpha: 0.6)),
+                  ),
+                ],
                 if (address.notes != null) ...[
                   const SizedBox(height: AppSpacing.xs),
                   Text(
@@ -418,11 +513,11 @@ class _AddressCard extends StatelessWidget {
   }
 }
 
-/// Owner-only: the customer's name + phone (M2). Phone shows as selectable
-/// text rather than a `tel:` link — `url_launcher` isn't a dependency here
-/// and this session doesn't add one.
-class _OwnerCustomerCard extends StatelessWidget {
-  const _OwnerCustomerCard({required this.customer});
+/// Owner+courier: the customer's name + phone (M2, widened to courier M10).
+/// Phone shows as selectable text rather than a `tel:` link — `url_launcher`
+/// isn't a dependency here and this session doesn't add one.
+class _CustomerContactCard extends StatelessWidget {
+  const _CustomerContactCard({required this.customer});
 
   final AppUser customer;
 

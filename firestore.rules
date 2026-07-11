@@ -105,6 +105,19 @@ service cloud.firestore {
           get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerUid
             == request.auth.uid;
       }
+      function isAssignedDriver() {
+        return isSignedIn() && resource.data.driverUid == request.auth.uid;
+      }
+
+      // Courier's own two-step handoff (M10): pick up (preparing ->
+      // outForDelivery), then deliver (outForDelivery -> delivered) — the
+      // only transitions the courier shell offers.
+      function isValidDriverTransition() {
+        let from = resource.data.status;
+        let to = request.resource.data.status;
+        return (from == 'preparing' && to == 'outForDelivery')
+          || (from == 'outForDelivery' && to == 'delivered');
+      }
 
       // Shop-owner status advances (S3): each `from -> to` pair below is the
       // only next step the order desk offers (order_status_view.dart's
@@ -118,7 +131,7 @@ service cloud.firestore {
           || (from == 'outForDelivery' && to == 'delivered');
       }
 
-      allow read: if isOrderOwner() || isShopOwner();
+      allow read: if isOrderOwner() || isShopOwner() || isAssignedDriver();
 
       allow create: if isSelf(request.resource.data.customerUid);
 
@@ -154,7 +167,10 @@ service cloud.firestore {
           && isValidOwnerTransition()
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusHistory']))
         || isValidRating()
-        || isValidDriverAssignment();
+        || isValidDriverAssignment()
+        || (isAssignedDriver()
+          && isValidDriverTransition()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusHistory']));
 
       allow delete: if false;
     }

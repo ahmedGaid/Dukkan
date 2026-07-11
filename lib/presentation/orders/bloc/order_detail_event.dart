@@ -27,6 +27,17 @@ class OrderDetailRateSubmitted extends OrderDetailEvent {
   List<Object?> get props => [rating];
 }
 
+/// Courier tapped their one primary action ("Picked up" / "Delivered",
+/// Session 10) — already confirmed by the page for the final `delivered` step.
+class OrderDetailAdvanceRequested extends OrderDetailEvent {
+  const OrderDetailAdvanceRequested(this.target);
+
+  final OrderStatus target;
+
+  @override
+  List<Object?> get props => [target];
+}
+
 /// Internal: a new snapshot arrived from the stream.
 class _OrderArrived extends OrderDetailEvent {
   const _OrderArrived(this.order);
@@ -76,4 +87,25 @@ class _CustomerArrived extends OrderDetailEvent {
 
   @override
   List<Object?> get props => [customer];
+}
+
+/// Internal: the courier-view area lookup resolved — null if there's no
+/// `areaId` on the order or the lookup failed (display-only, never blocks).
+class _AreaArrived extends OrderDetailEvent {
+  const _AreaArrived(this.area);
+
+  final Area? area;
+
+  @override
+  List<Object?> get props => [area];
+}
+
+/// Internal: the courier's advance-status call failed.
+class _OrderAdvanceFailed extends OrderDetailEvent {
+  const _OrderAdvanceFailed(this.error);
+
+  final Object error;
+
+  @override
+  List<Object?> get props => [error];
 }

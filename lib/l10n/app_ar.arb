@@ -276,6 +276,16 @@
   "areaRequired": "اختر منطقتك",
   "areasErrorBody": "مش قادرين نجيب المناطق دلوقتي — جرّب تاني.",
   "navDeliveries": "التوصيلات",
-  "courierComingSoonTitle": "قريبًا",
-  "courierComingSoonBody": "شاشة توصيلاتك هتظهر هنا قريب."
+
+  "courierOnlineLabel": "أونلاين",
+  "courierOfflineLabel": "أوفلاين",
+  "courierSuspendedBannerBody": "حسابك قيد المراجعة — تواصل مع دكان",
+  "courierActiveTabLabel": "الحالية",
+  "courierHistoryTabLabel": "السجل",
+  "courierActiveEmptyTitle": "لسه مفيش توصيلات دلوقتي",
+  "courierHistoryEmptyTitle": "لسه مفيش توصيلات سابقة",
+  "courierActionPickedUp": "استلمت الطلب",
+  "courierActionDelivered": "تم التوصيل",
+  "courierActionDeliveredConfirmTitle": "تأكيد إن الطلب اتوصّل؟",
+  "courierActionDeliveredConfirmBody": "مش هتقدر ترجّعها بعد كده."
 }

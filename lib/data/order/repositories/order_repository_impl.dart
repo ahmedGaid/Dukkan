@@ -43,6 +43,14 @@ class OrderRepositoryImpl implements OrderRepository {
   Stream<Order> watchOrder(String orderId) => _remote.watchOrder(orderId);
 
   @override
+  Stream<List<Order>> watchDriverActiveOrders(String driverUid) =>
+      _remote.watchDriverActiveOrders(driverUid);
+
+  @override
+  Stream<List<Order>> watchDriverHistory(String driverUid) =>
+      _remote.watchDriverHistory(driverUid);
+
+  @override
   Future<void> cancelOrder(String orderId) => _remote.cancelOrder(orderId);
 
   @override
