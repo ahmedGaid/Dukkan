@@ -22,6 +22,9 @@ class OrderModel extends Order {
     super.rating,
     super.statusHistory,
     super.driverUid,
+    super.driverName,
+    super.driverPhone,
+    super.assignedAt,
   });
 
   factory OrderModel.fromFirestore(String id, Map<String, dynamic> data) {
@@ -52,6 +55,11 @@ class OrderModel extends Order {
           .map((e) => _statusChangeFromMap(Map<String, dynamic>.from(e as Map)))
           .toList(),
       driverUid: data['driverUid'] as String?,
+      driverName: data['driverName'] as String?,
+      driverPhone: data['driverPhone'] as String?,
+      assignedAt: data['assignedAt'] != null
+          ? DateTime.parse(data['assignedAt'] as String)
+          : null,
     );
   }
 

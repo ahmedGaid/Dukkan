@@ -488,6 +488,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderDriverSection => 'Driver';
 
   @override
+  String get orderAssignDriverButton => 'Assign courier';
+
+  @override
+  String get orderAssignDriverSheetTitle => 'Assign a courier';
+
+  @override
+  String get orderAssignDriverEmptyTitle => 'No couriers available';
+
+  @override
+  String get orderAssignDriverEmptyBody =>
+      'No couriers available right now — you can deliver it yourself';
+
+  @override
+  String get orderAssignDriverConfirmTitle => 'Assign this courier?';
+
+  @override
+  String get orderAssignDriverConfirmBody =>
+      'The order moves to this courier once assigned.';
+
+  @override
+  String get orderAssignDriverErrorOffline =>
+      'This courier just went offline — try another one.';
+
+  @override
+  String get orderAssignDriverErrorCapacity =>
+      'This courier is at full capacity — try another one.';
+
+  @override
+  String get orderAssignDriverErrorArea =>
+      'This courier doesn\'t cover this area — try another one.';
+
+  @override
+  String get orderAssignDriverErrorTaken =>
+      'This order already has a courier assigned.';
+
+  @override
+  String get orderAssignDriverErrorGeneric =>
+      'We couldn\'t assign this courier — try again.';
+
+  @override
+  String get orderAssignedAtLabel => 'Assigned';
+
+  @override
   String get orderTimelineTitle => 'Order history';
 
   @override

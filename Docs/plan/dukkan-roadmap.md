@@ -231,8 +231,27 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       signup → suspended `/drivers` doc → placeholder shell; checkout area dropdown; own-`isOnline`
       write allowed, `isSuspended` write denied; `availableDrivers('abu-atwa')` returns the active
       seed driver only) still pending — no device this session; the new `/areas` + `/drivers`
-      rules blocks are also still undeployed alongside the earlier M1/M3/M6 rules. **Next: M9
-      (`FILE_09_ASSIGNMENT_TXN.md`) — assignment transaction + owner "assign driver" sheet.**
+      rules blocks are also still undeployed alongside the earlier M1/M3/M6 rules.
+      **M9 DONE 2026-07-11** (`FILE_09_ASSIGNMENT_TXN.md`), code-only — `Order` gained
+      `driverName`/`driverPhone`/`assignedAt` (denormalized at assignment, nullable, old
+      docs parse); `DriverRemoteDataSource.assignDriver` runs the capacity/area/status/
+      online/taken validation transaction (`DriverUnavailable` failure + reason enum),
+      `OrderRemoteDataSource._advanceStatus` decrements `activeOrdersCount` (floor 0) in
+      the same transaction as any delivered/cancelled/rejected write; `firestore.rules`
+      lets any signed-in user bump `drivers/{uid}.activeOrdersCount` by exactly ±1 and
+      lets the shop owner set the order's driver-block fields once, while
+      accepted/preparing and unassigned (deliberately loose — comment flags a Worker
+      endpoint as the future hardening path, same pattern as M8); owner order-details page
+      now shows an "assign courier" sheet (`assign_driver_sheet.dart`, `FutureBuilder`
+      over `Future.wait([availableDrivers, GetAreas])`, client-side capacity filter,
+      designed empty state, confirm dialog, reason-specific snackbar) when
+      accepted/preparing with no driver, and a driver-info card (name/phone/assigned
+      time) to BOTH owner and customer once assigned. Gates green (analyze 0, test 96/96
+      — up from 92, parity 241 — up from 229). Device smoke test (race two owners for a
+      driver's last slot, offline/capacity/area rejections, decrement on delivery) still
+      pending — no device this session; the new order-driver-field + drivers-count rules
+      are also still undeployed alongside M1/M3/M6/M8. **Next: M10
+      (`FILE_10_COURIER_SHELL.md`) — courier shell.**
 - [ ] **M12–M13 — Commission.** `/config/platform`, order snapshot (bps/piasters, round-half-up),
       payable-at-delivered, founder-gated finance summary (aggregate queries).
 - [ ] **M14 — Acceptance.** Full acceptance + regression sign-off.

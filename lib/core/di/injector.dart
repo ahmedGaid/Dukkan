@@ -46,6 +46,7 @@ import '../../domain/collections/usecases/get_collections.dart';
 import '../../domain/collections/usecases/rename_collection.dart';
 import '../../domain/collections/usecases/watch_collections.dart';
 import '../../domain/driver/repositories/driver_repository.dart';
+import '../../domain/driver/usecases/assign_driver.dart';
 import '../../domain/driver/usecases/available_drivers.dart';
 import '../../domain/driver/usecases/create_driver_profile.dart';
 import '../../domain/driver/usecases/get_driver.dart';
@@ -169,6 +170,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => WatchDriver(sl()));
   sl.registerLazySingleton(() => SetDriverOnline(sl()));
   sl.registerLazySingleton(() => AvailableDrivers(sl()));
+  sl.registerLazySingleton(() => AssignDriver(sl()));
 
   // Shop — data
   sl.registerLazySingleton(() => ShopRemoteDataSource(firestore: sl()));

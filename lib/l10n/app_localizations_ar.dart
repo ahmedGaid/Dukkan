@@ -480,6 +480,48 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orderDriverSection => 'المندوب';
 
   @override
+  String get orderAssignDriverButton => 'تعيين مندوب';
+
+  @override
+  String get orderAssignDriverSheetTitle => 'تعيين مندوب';
+
+  @override
+  String get orderAssignDriverEmptyTitle => 'مفيش مندوبين متاحين';
+
+  @override
+  String get orderAssignDriverEmptyBody =>
+      'لا يوجد مندوبون متاحون الآن — يمكنك التوصيل بنفسك';
+
+  @override
+  String get orderAssignDriverConfirmTitle => 'تعيين المندوب ده؟';
+
+  @override
+  String get orderAssignDriverConfirmBody =>
+      'الطلب هينتقل للمندوب ده بعد التعيين.';
+
+  @override
+  String get orderAssignDriverErrorOffline =>
+      'المندوب ده بقى أوفلاين دلوقتي — جرّب واحد تاني.';
+
+  @override
+  String get orderAssignDriverErrorCapacity =>
+      'المندوب ده وصل لأقصى عدد طلبات — جرّب واحد تاني.';
+
+  @override
+  String get orderAssignDriverErrorArea =>
+      'المندوب ده مش بيغطي المنطقة دي — جرّب واحد تاني.';
+
+  @override
+  String get orderAssignDriverErrorTaken => 'الطلب ده اتعيّنله مندوب بالفعل.';
+
+  @override
+  String get orderAssignDriverErrorGeneric =>
+      'معرفناش نعيّن المندوب ده — جرّب تاني.';
+
+  @override
+  String get orderAssignedAtLabel => 'اتعيّن';
+
+  @override
   String get orderTimelineTitle => 'سجل الطلب';
 
   @override

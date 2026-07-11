@@ -135,6 +135,17 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rating']);
       }
 
+      // Owner assigns a driver (M9): only while the order is still
+      // accepted/preparing and unassigned, only the driver-block fields.
+      function isValidDriverAssignment() {
+        return isShopOwner()
+          && resource.data.status in ['accepted', 'preparing']
+          && !('driverUid' in resource.data)
+          && request.resource.data.driverUid is string
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['driverUid', 'driverName', 'driverPhone', 'assignedAt']);
+      }
+
       allow update: if (isOrderOwner()
           && resource.data.status in ['pending', 'accepted']
           && request.resource.data.status == 'cancelled'
@@ -142,7 +153,8 @@ service cloud.firestore {
         || (isShopOwner()
           && isValidOwnerTransition()
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusHistory']))
-        || isValidRating();
+        || isValidRating()
+        || isValidDriverAssignment();
 
       allow delete: if false;
     }
@@ -177,9 +189,21 @@ service cloud.firestore {
         && request.resource.data.isSuspended == true
         && request.resource.data.activeOrdersCount == 0;
 
-      allow update: if isSelf(uid)
-        && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['isOnline', 'name', 'phone']);
+      // Assignment (M9) bumps activeOrdersCount by exactly +1 (owner assigns)
+      // or -1 (order reaches a terminal status) — any signed-in user, since
+      // rule language can't cheaply confirm "owner of the order's shop" from
+      // here. Loose by design; a Worker endpoint is the future hardening path.
+      function isValidActiveCountBump() {
+        return isSignedIn()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['activeOrdersCount'])
+          && (request.resource.data.activeOrdersCount == resource.data.activeOrdersCount + 1
+            || request.resource.data.activeOrdersCount == resource.data.activeOrdersCount - 1);
+      }
+
+      allow update: if (isSelf(uid)
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['isOnline', 'name', 'phone']))
+        || isValidActiveCountBump();
 
       allow delete: if false;
     }

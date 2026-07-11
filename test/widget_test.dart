@@ -73,6 +73,10 @@ class _NoopDriverRepository implements DriverRepository {
   @override
   Future<List<Driver>> availableDrivers(String areaId) =>
       throw UnimplementedError();
+
+  @override
+  Future<void> assignDriver({required String orderId, required String driverUid}) =>
+      throw UnimplementedError();
 }
 
 void main() {

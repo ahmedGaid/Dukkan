@@ -18,6 +18,7 @@ import '../../widgets/common/skeletons.dart';
 import '../../widgets/common/status_chip.dart';
 import '../bloc/order_detail_bloc.dart';
 import '../order_status_view.dart';
+import '../widgets/assign_driver_sheet.dart';
 import '../widgets/order_status_stepper.dart';
 import '../widgets/star_rating_picker.dart';
 
@@ -199,9 +200,16 @@ class _OrderDetailContent extends StatelessWidget {
                 const SizedBox(height: AppSpacing.lg),
                 _OwnerPaymentCard(order: order),
               ],
-              if (isOwner && order.driverUid != null) ...[
+              if (order.driverUid != null) ...[
                 const SizedBox(height: AppSpacing.lg),
-                _DriverCard(driverUid: order.driverUid!),
+                Text(l10n.orderDriverSection, style: text.titleSmall),
+                const SizedBox(height: AppSpacing.sm),
+                _DriverCard(order: order, locale: locale),
+              ] else if (isOwner &&
+                  (order.status == OrderStatus.accepted ||
+                      order.status == OrderStatus.preparing)) ...[
+                const SizedBox(height: AppSpacing.lg),
+                _AssignDriverButton(order: order),
               ],
               const SizedBox(height: AppSpacing.lg),
               Text(l10n.orderTimelineTitle, style: text.titleSmall),
@@ -507,35 +515,87 @@ class _OwnerPaymentCard extends StatelessWidget {
   }
 }
 
-/// Owner-only placeholder (M2) — renders only once `order.driverUid` is set.
-/// No order ever sets it yet (Phase 5 M9 adds shared-driver assignment); this
-/// just gives that session a widget + data slot to wire into, per
-/// `FILE_02_OWNER_ORDER_DETAILS.md` Task A.
+/// Assigned courier's name/phone/assigned-time (M9, Task D) — shown to both
+/// the owner and the customer once `order.driverUid` is set. Phone shows as
+/// selectable text, same reasoning as `_OwnerCustomerCard`.
 class _DriverCard extends StatelessWidget {
-  const _DriverCard({required this.driverUid});
+  const _DriverCard({required this.order, required this.locale});
 
-  final String driverUid;
+  final Order order;
+  final String locale;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    final phone = order.driverPhone;
+    final assignedAt = order.assignedAt;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration:
           BoxDecoration(color: scheme.surface, borderRadius: AppRadius.lgAll),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.delivery_dining_outlined,
-              size: 20, color: scheme.onSurface.withValues(alpha: 0.6)),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(child: Text(l10n.orderDriverSection, style: text.bodyMedium)),
-          Text(driverUid,
+          Row(
+            children: [
+              Icon(Icons.delivery_dining_outlined,
+                  size: 20, color: scheme.onSurface.withValues(alpha: 0.6)),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(order.driverName ?? '', style: text.bodyMedium),
+              ),
+            ],
+          ),
+          if (phone != null && phone.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Row(
+              children: [
+                Icon(Icons.call_outlined,
+                    size: 20, color: scheme.onSurface.withValues(alpha: 0.6)),
+                const SizedBox(width: AppSpacing.sm),
+                SelectableText(phone, style: text.bodyMedium),
+              ],
+            ),
+          ],
+          if (assignedAt != null) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              '${l10n.orderAssignedAtLabel} '
+              '${DateFormat.yMMMd(locale).add_Hm().format(assignedAt)}',
               style: text.bodySmall
-                  ?.copyWith(color: scheme.onSurface.withValues(alpha: 0.6))),
+                  ?.copyWith(color: scheme.onSurface.withValues(alpha: 0.6)),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+/// Owner-only "assign courier" trigger (M9, Task C) — shown while the order
+/// is accepted/preparing and no driver is set yet; opens the assignment
+/// sheet. Success needs no local patch: the new driver fields arrive through
+/// the page's own watch stream, same pattern as cancel/rate.
+class _AssignDriverButton extends StatelessWidget {
+  const _AssignDriverButton({required this.order});
+
+  final Order order;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return OutlinedButton.icon(
+      onPressed: () => showAssignDriverSheet(context, order),
+      icon: const Icon(Icons.delivery_dining_outlined),
+      label: Text(l10n.orderAssignDriverButton),
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size.fromHeight(48),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
       ),
     );
   }

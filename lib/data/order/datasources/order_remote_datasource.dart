@@ -24,6 +24,9 @@ class OrderRemoteDataSource {
   CollectionReference<Map<String, dynamic>> get _shops =>
       _firestore.collection('shops');
 
+  CollectionReference<Map<String, dynamic>> get _drivers =>
+      _firestore.collection('drivers');
+
   Future<OrderModel> placeOrder({
     required String shopId,
     required String customerUid,
@@ -98,21 +101,57 @@ class OrderRemoteDataSource {
   Future<void> updateOrderStatus(String orderId, OrderStatus status) =>
       _advanceStatus(orderId, status);
 
+  static const _terminalStatuses = {
+    OrderStatus.delivered,
+    OrderStatus.cancelled,
+    OrderStatus.rejected,
+  };
+
   Future<void> _advanceStatus(String orderId, OrderStatus status) async {
     try {
       final uid = _auth.currentUser?.uid;
       if (uid == null) {
         throw const ServerFailure('Not signed in');
       }
-      await _orders.doc(orderId).update({
+      final orderRef = _orders.doc(orderId);
+      final change = {
         'status': status.wire,
-        'statusHistory': FieldValue.arrayUnion([
-          {
-            'status': status.wire,
-            'at': DateTime.now().toIso8601String(),
-            'byUid': uid,
-          },
-        ]),
+        'at': DateTime.now().toIso8601String(),
+        'byUid': uid,
+      };
+
+      // A driver-carrying order reaching a terminal status frees its slot on
+      // the driver's profile — done inside the same transaction as the
+      // status write so the count never drifts from reality.
+      if (!_terminalStatuses.contains(status)) {
+        await orderRef.update({
+          'status': status.wire,
+          'statusHistory': FieldValue.arrayUnion([change]),
+        });
+        return;
+      }
+
+      await _firestore.runTransaction((txn) async {
+        // Firestore transactions require every read before any write, so the
+        // driver doc (if any) is read here, ahead of both updates below.
+        final orderSnap = await txn.get(orderRef);
+        final driverUid = orderSnap.data()?['driverUid'] as String?;
+        final driverRef = driverUid == null ? null : _drivers.doc(driverUid);
+        final active = driverRef == null
+            ? 0
+            : ((await txn.get(driverRef)).data()?['activeOrdersCount'] as num?)
+                    ?.toInt() ??
+                0;
+
+        txn.update(orderRef, {
+          'status': status.wire,
+          'statusHistory': FieldValue.arrayUnion([change]),
+        });
+        if (driverRef != null) {
+          txn.update(driverRef, {
+            'activeOrdersCount': active > 0 ? active - 1 : 0,
+          });
+        }
       });
     } on FirebaseException catch (e) {
       throw ServerFailure(e.message ?? e.code);

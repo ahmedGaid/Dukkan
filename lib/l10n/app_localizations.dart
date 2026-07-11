@@ -1022,6 +1022,78 @@ abstract class AppLocalizations {
   /// **'المندوب'**
   String get orderDriverSection;
 
+  /// No description provided for @orderAssignDriverButton.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعيين مندوب'**
+  String get orderAssignDriverButton;
+
+  /// No description provided for @orderAssignDriverSheetTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعيين مندوب'**
+  String get orderAssignDriverSheetTitle;
+
+  /// No description provided for @orderAssignDriverEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش مندوبين متاحين'**
+  String get orderAssignDriverEmptyTitle;
+
+  /// No description provided for @orderAssignDriverEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد مندوبون متاحون الآن — يمكنك التوصيل بنفسك'**
+  String get orderAssignDriverEmptyBody;
+
+  /// No description provided for @orderAssignDriverConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعيين المندوب ده؟'**
+  String get orderAssignDriverConfirmTitle;
+
+  /// No description provided for @orderAssignDriverConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب هينتقل للمندوب ده بعد التعيين.'**
+  String get orderAssignDriverConfirmBody;
+
+  /// No description provided for @orderAssignDriverErrorOffline.
+  ///
+  /// In ar, this message translates to:
+  /// **'المندوب ده بقى أوفلاين دلوقتي — جرّب واحد تاني.'**
+  String get orderAssignDriverErrorOffline;
+
+  /// No description provided for @orderAssignDriverErrorCapacity.
+  ///
+  /// In ar, this message translates to:
+  /// **'المندوب ده وصل لأقصى عدد طلبات — جرّب واحد تاني.'**
+  String get orderAssignDriverErrorCapacity;
+
+  /// No description provided for @orderAssignDriverErrorArea.
+  ///
+  /// In ar, this message translates to:
+  /// **'المندوب ده مش بيغطي المنطقة دي — جرّب واحد تاني.'**
+  String get orderAssignDriverErrorArea;
+
+  /// No description provided for @orderAssignDriverErrorTaken.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب ده اتعيّنله مندوب بالفعل.'**
+  String get orderAssignDriverErrorTaken;
+
+  /// No description provided for @orderAssignDriverErrorGeneric.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نعيّن المندوب ده — جرّب تاني.'**
+  String get orderAssignDriverErrorGeneric;
+
+  /// No description provided for @orderAssignedAtLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتعيّن'**
+  String get orderAssignedAtLabel;
+
   /// No description provided for @orderTimelineTitle.
   ///
   /// In ar, this message translates to:

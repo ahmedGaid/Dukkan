@@ -28,4 +28,8 @@ class DriverRepositoryImpl implements DriverRepository {
   @override
   Future<List<Driver>> availableDrivers(String areaId) =>
       _remote.availableDrivers(areaId);
+
+  @override
+  Future<void> assignDriver({required String orderId, required String driverUid}) =>
+      _remote.assignDriver(orderId: orderId, driverUid: driverUid);
 }

@@ -19,6 +19,9 @@ class Order extends Equatable {
     this.rating,
     this.statusHistory = const [],
     this.driverUid,
+    this.driverName,
+    this.driverPhone,
+    this.assignedAt,
   });
 
   final String id;
@@ -40,9 +43,14 @@ class Order extends Equatable {
   final List<StatusChange> statusHistory;
 
   /// Assigned delivery driver (Phase 5 M9 — shared driver pool). Null until
-  /// that session wires assignment; the owner detail page (M2) already
-  /// renders a driver block behind this null check so M9 only adds data.
+  /// the owner assigns one via the assignment transaction; the order detail
+  /// page renders a driver block behind this null check. Name/phone are
+  /// denormalized from the driver's profile at assignment time so both
+  /// customer and owner views read them without an extra `/drivers` fetch.
   final String? driverUid;
+  final String? driverName;
+  final String? driverPhone;
+  final DateTime? assignedAt;
 
   @override
   List<Object?> get props => [
@@ -58,5 +66,8 @@ class Order extends Equatable {
         rating,
         statusHistory,
         driverUid,
+        driverName,
+        driverPhone,
+        assignedAt,
       ];
 }

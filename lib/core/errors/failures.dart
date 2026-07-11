@@ -44,3 +44,17 @@ class AuthFailure extends Failure {
   @override
   List<Object?> get props => [code, message];
 }
+
+/// Why the driver-assignment transaction (M9) rejected a candidate — the
+/// owner assignment sheet switches on this to pick a reason-specific,
+/// blame-free message instead of a generic failure.
+enum DriverUnavailableReason { suspended, offline, capacity, area, status, taken }
+
+class DriverUnavailable extends Failure {
+  const DriverUnavailable(this.reason, [super.message]);
+
+  final DriverUnavailableReason reason;
+
+  @override
+  List<Object?> get props => [reason, message];
+}

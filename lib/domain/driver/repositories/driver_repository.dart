@@ -21,4 +21,9 @@ abstract class DriverRepository {
   /// Active, unsuspended drivers covering [areaId] — the owner assignment
   /// list (Session 9).
   Future<List<Driver>> availableDrivers(String areaId);
+
+  /// Owner assigns [driverUid] to [orderId] — a transaction validating
+  /// capacity/area/status/online, throwing [DriverUnavailable] on rejection.
+  /// See `FILE_09_ASSIGNMENT_TXN.md` Task B.
+  Future<void> assignDriver({required String orderId, required String driverUid});
 }
