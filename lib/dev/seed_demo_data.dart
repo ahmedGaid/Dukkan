@@ -18,8 +18,8 @@ import 'package:flutter/material.dart';
 
 import '../firebase_options.dart';
 
-const _seedEmail = 'seed-owner@dukkan.dev';
-const _seedPassword = 'DukkanSeed123!';
+const _seedEmail = 'owner@dukkan.dev';
+const _seedPassword = 'owner123';
 
 // Customer to fill with orders + favorites, passed at runtime so no real
 // password ever lands in source:
@@ -100,7 +100,7 @@ Future<void> _seed(String ownerUid, StringBuffer log) async {
   // The owner's own /users profile — so logging in as the seed owner lands on
   // the owner UI (order desk) instead of falling back to a customer.
   await firestore.collection('users').doc(ownerUid).set({
-    'name': 'صاحب الدكان',
+    'name': 'Owner',
     'email': _seedEmail,
     'role': 'owner',
     'phone': '01000000000',
