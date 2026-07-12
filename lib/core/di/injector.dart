@@ -333,6 +333,7 @@ Future<void> initDependencies() async {
       updateOrderStatus: sl(),
       getUserById: sl(),
       getAreas: sl(),
+      notifyOrderEvent: sl(),
       role: role,
     ),
   );

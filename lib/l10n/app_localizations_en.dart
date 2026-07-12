@@ -557,6 +557,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get notifyOrderDeliveredTitle => 'Order delivered';
+
+  @override
+  String get notifyOrderDeliveredBody => 'The courier delivered the order.';
+
+  @override
   String get shopProductsEmptyTitle => 'This shop is still stocking up';
 
   @override

@@ -3,16 +3,21 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:flutter/widgets.dart' show Locale;
+
 import '../../../domain/areas/entities/area.dart';
 import '../../../domain/areas/usecases/get_areas.dart';
 import '../../../domain/auth/entities/app_user.dart';
 import '../../../domain/auth/usecases/get_user_by_id.dart';
+import '../../../domain/notifications/repositories/notification_repository.dart';
+import '../../../domain/notifications/usecases/notify_order_event.dart';
 import '../../../domain/order/entities/order.dart';
 import '../../../domain/order/entities/order_status.dart';
 import '../../../domain/order/usecases/cancel_order.dart';
 import '../../../domain/order/usecases/rate_order.dart';
 import '../../../domain/order/usecases/update_order_status.dart';
 import '../../../domain/order/usecases/watch_order.dart';
+import '../../../l10n/app_localizations.dart';
 import '../order_viewer_role.dart';
 
 part 'order_detail_event.dart';
@@ -37,6 +42,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     required UpdateOrderStatus updateOrderStatus,
     GetUserById? getUserById,
     GetAreas? getAreas,
+    NotifyOrderEvent? notifyOrderEvent,
     OrderViewerRole role = OrderViewerRole.customer,
   })  : _orderId = orderId,
         _watchOrder = watchOrder,
@@ -45,6 +51,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         _updateOrderStatus = updateOrderStatus,
         _getUserById = getUserById,
         _getAreas = getAreas,
+        _notifyOrderEvent = notifyOrderEvent,
         _role = role,
         super(const OrderDetailState()) {
     on<OrderDetailStarted>(_onStarted);
@@ -67,6 +74,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
   final UpdateOrderStatus _updateOrderStatus;
   final GetUserById? _getUserById;
   final GetAreas? _getAreas;
+  final NotifyOrderEvent? _notifyOrderEvent;
   final OrderViewerRole _role;
   StreamSubscription<Order>? _sub;
 
@@ -205,9 +213,33 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     emit(state.copyWith(advanceStatus: OrderAdvanceStatus.submitting));
     try {
       await _updateOrderStatus(_orderId, event.target);
+      if (_role == OrderViewerRole.courier &&
+          event.target == OrderStatus.delivered) {
+        _notifyShopOwner();
+      }
     } catch (error) {
       add(_OrderAdvanceFailed(error));
     }
+  }
+
+  /// Fire-and-forget push to the shop owner once the courier confirms
+  /// delivery (M11-followup — the symmetric case to `driverAssigned`, `owner
+  /// -> driver`). Bilingual, same reasoning as the other `_notify*` call
+  /// sites (order_desk_page/assign_driver_sheet): the app never tracks each
+  /// user's chosen language, so every push carries both. A failure here must
+  /// never surface to the UI — `NotifyOrderEvent`'s repository swallows its
+  /// own errors.
+  void _notifyShopOwner() {
+    final notify = _notifyOrderEvent;
+    if (notify == null) return;
+    final lAr = lookupAppLocalizations(const Locale('ar'));
+    final lEn = lookupAppLocalizations(const Locale('en'));
+    unawaited(notify(
+      orderId: _orderId,
+      type: NotificationEventType.orderDelivered,
+      title: '${lAr.notifyOrderDeliveredTitle} / ${lEn.notifyOrderDeliveredTitle}',
+      body: '${lAr.notifyOrderDeliveredBody} / ${lEn.notifyOrderDeliveredBody}',
+    ));
   }
 
   void _onAdvanceFailed(

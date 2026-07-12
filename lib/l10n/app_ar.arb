@@ -204,6 +204,8 @@
   "notifyOrderStatusBody": "طلبك بقى {status}.",
   "notifyDriverAssignedTitle": "طلب جديد لتوصيله",
   "notifyDriverAssignedBody": "{shop} عندهم طلب لك في {area}.",
+  "notifyOrderDeliveredTitle": "تسليم الطلب",
+  "notifyOrderDeliveredBody": "المندوب سلّم الطلب.",
 
   "shopProductsEmptyTitle": "الدكان لسه بيرتّب رفوفه",
   "shopProductsEmptyBody": "المنتجات هتظهر هنا أول ما الدكان يضيفها.",

@@ -547,6 +547,12 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get notifyOrderDeliveredTitle => 'تسليم الطلب';
+
+  @override
+  String get notifyOrderDeliveredBody => 'المندوب سلّم الطلب.';
+
+  @override
   String get shopProductsEmptyTitle => 'الدكان لسه بيرتّب رفوفه';
 
   @override

@@ -195,6 +195,8 @@
   "notifyOrderStatusBody": "Your order is now {status}.",
   "notifyDriverAssignedTitle": "New delivery",
   "notifyDriverAssignedBody": "{shop} has a delivery for you in {area}.",
+  "notifyOrderDeliveredTitle": "Order delivered",
+  "notifyOrderDeliveredBody": "The courier delivered the order.",
 
   "shopProductsEmptyTitle": "This shop is still stocking up",
   "shopProductsEmptyBody": "Products will show up here as soon as the shop adds them.",

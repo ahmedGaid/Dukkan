@@ -13,9 +13,29 @@ import 'package:dukkan/domain/order/usecases/cancel_order.dart';
 import 'package:dukkan/domain/order/usecases/rate_order.dart';
 import 'package:dukkan/domain/order/usecases/update_order_status.dart';
 import 'package:dukkan/domain/order/usecases/watch_order.dart';
+import 'package:dukkan/domain/notifications/repositories/notification_repository.dart';
+import 'package:dukkan/domain/notifications/usecases/notify_order_event.dart';
 import 'package:dukkan/presentation/orders/bloc/order_detail_bloc.dart';
 import 'package:dukkan/presentation/orders/order_viewer_role.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+/// Fake so the courier-delivered push (M11-followup) is testable without a
+/// real Worker call.
+class _FakeNotificationRepository implements NotificationRepository {
+  int calls = 0;
+  NotificationEventType? lastType;
+
+  @override
+  Future<void> notifyOrderEvent({
+    required String orderId,
+    required NotificationEventType type,
+    required String title,
+    required String body,
+  }) async {
+    calls++;
+    lastType = type;
+  }
+}
 
 /// Fake so the owner-view customer fetch (M2) is testable without Firebase.
 class _FakeAuthRepository implements AuthRepository {
@@ -411,5 +431,54 @@ void main() {
     await tick();
 
     expect(bloc.state.advanceStatus, OrderAdvanceStatus.idle);
+  });
+
+  test('courier marking an order delivered notifies the shop owner', () async {
+    final notifyRepo = _FakeNotificationRepository();
+    final courierBloc = OrderDetailBloc(
+      orderId: 'o1',
+      watchOrder: WatchOrder(repo),
+      cancelOrder: CancelOrder(repo),
+      rateOrder: RateOrder(repo),
+      updateOrderStatus: UpdateOrderStatus(repo),
+      notifyOrderEvent: NotifyOrderEvent(notifyRepo),
+      role: OrderViewerRole.courier,
+    );
+    addTearDown(courierBloc.close);
+
+    courierBloc.add(const OrderDetailStarted());
+    await tick();
+    repo.controller.add(_order(OrderStatus.outForDelivery));
+    await tick();
+
+    courierBloc.add(const OrderDetailAdvanceRequested(OrderStatus.delivered));
+    await tick();
+
+    expect(notifyRepo.calls, 1);
+    expect(notifyRepo.lastType, NotificationEventType.orderDelivered);
+  });
+
+  test('a non-delivered courier advance does not notify', () async {
+    final notifyRepo = _FakeNotificationRepository();
+    final courierBloc = OrderDetailBloc(
+      orderId: 'o1',
+      watchOrder: WatchOrder(repo),
+      cancelOrder: CancelOrder(repo),
+      rateOrder: RateOrder(repo),
+      updateOrderStatus: UpdateOrderStatus(repo),
+      notifyOrderEvent: NotifyOrderEvent(notifyRepo),
+      role: OrderViewerRole.courier,
+    );
+    addTearDown(courierBloc.close);
+
+    courierBloc.add(const OrderDetailStarted());
+    await tick();
+    repo.controller.add(_order(OrderStatus.preparing));
+    await tick();
+
+    courierBloc.add(const OrderDetailAdvanceRequested(OrderStatus.outForDelivery));
+    await tick();
+
+    expect(notifyRepo.calls, 0);
   });
 }

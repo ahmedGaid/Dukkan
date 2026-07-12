@@ -41,7 +41,7 @@ const GOOGLE_CERTS_URL =
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB — a logo / product photo, not a video
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const ALLOWED_FOLDERS = new Set(['shop-logos', 'product-images']);
-const NOTIFY_TYPES = new Set(['newOrder', 'statusUpdate', 'driverAssigned']);
+const NOTIFY_TYPES = new Set(['newOrder', 'statusUpdate', 'driverAssigned', 'orderDelivered']);
 const SA_SCOPES =
   'https://www.googleapis.com/auth/datastore https://www.googleapis.com/auth/firebase.messaging';
 
@@ -112,6 +112,7 @@ async function handleUpload(request, env, cors) {
  *   newOrder       — caller must be the order's customer; target = shop owner.
  *   statusUpdate   — caller must be the shop's owner;    target = customer.
  *   driverAssigned — caller must be the shop's owner;    target = order's driver.
+ *   orderDelivered — caller must be the order's driver;  target = shop owner.
  * Title/body come from the app (already bilingual, built from its own i18n
  * strings) — the Worker only decides *whether* to send and *to whom*.
  */
@@ -163,10 +164,13 @@ async function handleNotify(request, env, cors) {
   } else if (type === 'statusUpdate') {
     if (callerUid !== shop.ownerUid) return json({ error: 'forbidden' }, 403, cors);
     targetUid = order.customerUid;
-  } else {
-    // driverAssigned
+  } else if (type === 'driverAssigned') {
     if (callerUid !== shop.ownerUid) return json({ error: 'forbidden' }, 403, cors);
     targetUid = order.driverUid;
+  } else {
+    // orderDelivered
+    if (callerUid !== order.driverUid) return json({ error: 'forbidden' }, 403, cors);
+    targetUid = shop.ownerUid;
   }
   if (!targetUid) return json({ error: 'no_recipient' }, 404, cors);
 

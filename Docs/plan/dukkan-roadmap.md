@@ -293,9 +293,22 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       back empty). Lexicon: notifyDriverAssignedTitle/Body (`ar.json`/
       `en.json`). Skipped the plan's optional `orderDelivered` (owner
       notified on courier completion) — same trivial pattern, but out of
-      this session's scope, no restructuring blocker. Gates green (analyze
-      0, test 104/104 — unchanged, no new unit-testable logic; parity 252 —
-      up from 250). Task C (device regression matrix: no-driver order,
+      this session's scope, no restructuring blocker.
+      **`orderDelivered` added 2026-07-12** (device-free follow-up while
+      R0 waits on Worker/rules deploy) — `NotificationEventType.
+      orderDelivered` (`'orderDelivered'` wire), Worker `/notify` branch
+      (caller must be the order's `driverUid`, target = `shop.ownerUid`,
+      mirror of `driverAssigned`'s reverse direction), fired from
+      `OrderDetailBloc._onAdvanceRequested` right after a successful
+      courier `delivered` transition (new optional `NotifyOrderEvent?`
+      constructor param, wired in `injector.dart`) — bilingual
+      fire-and-forget, same swallow-errors contract as the other
+      `_notify*` call sites. Lexicon: notifyOrderDeliveredTitle/Body
+      (ar/en, reuses existing "delivered" vocabulary, no new lexicon row
+      needed). Gates green (analyze 0, test 120/120 — up from 118, parity
+      263 — up from 261). Device verification rides the same Phase 6 R0
+      session as the rest of Marketplace V2 pushes. Task C (device
+      regression matrix: no-driver order,
       driver order full flow, owner-cancels-after-assignment, customer-
       cancels-pending) deferred — no device this session, same as
       M8/M9/M10; Worker deploy + rules deploy (dukkan-status blockers 1–2)
