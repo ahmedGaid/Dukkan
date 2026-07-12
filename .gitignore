@@ -28,3 +28,7 @@ platform-tools/
 # Local dev/demo account passwords — never commit (matches the
 # "passwords in local notes, never in this file" rule in E2E_MASTER_PROMPT.md)
 Docs/users_passwords.md
+
+# local run/crash logs
+.flutter_run.log
+.flutter_crash_test*.log
