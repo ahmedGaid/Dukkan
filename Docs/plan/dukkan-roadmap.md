@@ -403,6 +403,24 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       auth-race fix (fresh signup → Settings shows the entered name, not the email) and Phase 4
       of the master prompt must add journeys for everything M1–M14 shipped.
 
+### Phase 7 — Founder Console (planned 2026-07-12, runs after Phase 6 R0 is green)
+> Complete in-app Back Office: RBAC (permission strings, `/admins` + `/roles`), admin API on
+> the existing Cloudflare Worker (`/admin/*`), desktop-first `/console` area, management
+> verticals (users, shops, products, taxonomy, geo, orders, drivers, settings, notifications,
+> media, promotions, reports), immutable audit log, soft delete, impersonation, dev tools.
+> Kills the recurring Firebase-console chores (config/taxonomy/areas edits, driver activation,
+> user admin). **Session authority: `Docs/plan/founder-console-plan/` — load `FILE_00_INDEX.md`
+> first, then one FILE_NN per session (18 sessions).**
+- [ ] **FC1–FC5 — Foundation.** RBAC + rules helpers · Worker admin API + audit writer ·
+      console shell + guard · audit log vertical · live dashboard. (FILE_01–05)
+- [ ] **FC6–FC11 — Management verticals.** Users (Auth ops via Worker) · shops (lifecycle,
+      transfer) · products (bulk ops) · taxonomy+geo (console-editable) · orders
+      (force-status, reassign, notes) · drivers (activation!). (FILE_06–11)
+- [ ] **FC12–FC15 — Platform ops.** Settings/flags/maintenance+version gates · notification
+      center (topics) · media library (R2) · impersonation + dev tools. (FILE_12–15)
+- [ ] **FC16–FC18 — Growth + close.** Promotions (coupons/banners/featured) · global search +
+      CSV exports + reports · acceptance + security matrix + regression. (FILE_16–18)
+
 ## Standing regression (added 2026-07-10)
 
 `Docs/testing/E2E_MASTER_PROMPT.md` is the master daily E2E test prompt (same pattern as
