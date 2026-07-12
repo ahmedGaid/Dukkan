@@ -427,7 +427,17 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       + `/admin/audit`), `index.js` `/admin/` dispatch (upload/notify unchanged), Flutter
       `AdminApiDataSource` (post + fire-and-forget `reportAudit`) registered in injector. Gates
       green (analyze 0, test 132, parity 263). No rules change this session; Worker deploy owed
-      (user). **Next: FC3 (FILE_03) — console shell.**
+      (user).
+      **FC3 DONE (code) 2026-07-13** — `/console` ShellRoute + admin guard in `app_router.dart`
+      (any active staff enters; non-staff bounced `/home`), `lib/presentation/console/shell/`
+      (`console_sections.dart` = `ConsoleSection` registry + pure `visibleConsoleSections` filter;
+      `console_shell.dart` = desktop-first `NavigationRail` ≥900px / `Drawer` below, top-bar section
+      title + staff chip, Ctrl+K `ConsoleSearchIntent` placeholder unmapped till FC17),
+      `console/dashboard/pages/dashboard_page.dart` (designed EmptyState placeholder, FC5 fills),
+      `_ConsoleRow` in settings (active-staff only). Registry seeds dashboard + audit; audit routes
+      to an EmptyState placeholder until FC4. 10 i18n keys ×2 + lexicon rows (Console→لوحة التحكم,
+      Founder→المؤسس). No rules/Worker change. Gates green (analyze 0, test 138, parity 273).
+      **Next: FC4 (FILE_04) — audit log vertical.**
 - [ ] **FC6–FC11 — Management verticals.** Users (Auth ops via Worker) · shops (lifecycle,
       transfer) · products (bulk ops) · taxonomy+geo (console-editable) · orders
       (force-status, reassign, notes) · drivers (activation!). (FILE_06–11)

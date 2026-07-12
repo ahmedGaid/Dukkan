@@ -821,4 +821,34 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get financeErrorBody =>
       'مقدرناش نجيب أرقام المالية دلوقتي — جرّب تاني';
+
+  @override
+  String get consoleTitle => 'لوحة التحكم';
+
+  @override
+  String get consoleNavDashboard => 'الرئيسية';
+
+  @override
+  String get consoleNavAudit => 'سجل العمليات';
+
+  @override
+  String get consoleDashboardSubtitle => 'نظرة عامة على المنصة هتظهر هنا قريب.';
+
+  @override
+  String get consoleComingSoon => 'القسم ده جاي قريب.';
+
+  @override
+  String get settingsConsoleRow => 'لوحة التحكم';
+
+  @override
+  String get roleFounder => 'المؤسس';
+
+  @override
+  String get roleAdmin => 'مشرف عام';
+
+  @override
+  String get roleModerator => 'مشرف';
+
+  @override
+  String get roleSupport => 'دعم';
 }

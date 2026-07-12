@@ -73,6 +73,10 @@ class SettingsPage extends StatelessWidget {
                 ],
               ),
             ),
+            if (authState.adminProfile?.isActive == true) ...[
+              const SizedBox(height: AppSpacing.lg),
+              const _ConsoleRow(),
+            ],
             if (authState.can(Permissions.financeRead) ||
                 user?.uid == AppConfig.founderUid) ...[
               const SizedBox(height: AppSpacing.lg),
@@ -303,6 +307,42 @@ class _ThemeSetting extends StatelessWidget {
 /// break-glass uid), so no gate check is repeated here. `/finance` also bounces
 /// unauthorized users at the router level, so this row is a convenience, not
 /// the security boundary (Firestore rules are).
+/// Entry to the Founder Console — shown only to active staff (any tier). The
+/// console area guards itself at the router (`/console` bounces non-staff), so
+/// this row is a convenience, not the security boundary.
+class _ConsoleRow extends StatelessWidget {
+  const _ConsoleRow();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+
+    return AppCard(
+      onTap: () => context.push('/console'),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.dashboard_customize_outlined, color: scheme.onSurface),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(l10n.settingsConsoleRow,
+                style: Theme.of(context).textTheme.bodyMedium),
+          ),
+          Icon(
+            isRtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+            color: scheme.onSurface.withValues(alpha: 0.4),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _FinanceRow extends StatelessWidget {
   const _FinanceRow();
 

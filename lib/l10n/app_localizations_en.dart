@@ -846,4 +846,35 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get financeErrorBody =>
       'We can\'t load the finance numbers right now — try again.';
+
+  @override
+  String get consoleTitle => 'Console';
+
+  @override
+  String get consoleNavDashboard => 'Dashboard';
+
+  @override
+  String get consoleNavAudit => 'Activity log';
+
+  @override
+  String get consoleDashboardSubtitle =>
+      'Your platform overview will appear here soon.';
+
+  @override
+  String get consoleComingSoon => 'This section is coming soon.';
+
+  @override
+  String get settingsConsoleRow => 'Console';
+
+  @override
+  String get roleFounder => 'Founder';
+
+  @override
+  String get roleAdmin => 'Admin';
+
+  @override
+  String get roleModerator => 'Moderator';
+
+  @override
+  String get roleSupport => 'Support';
 }

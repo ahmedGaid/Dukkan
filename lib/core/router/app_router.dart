@@ -8,7 +8,12 @@ import '../../presentation/auth/pages/signup_page.dart';
 import '../../presentation/cart/pages/cart_page.dart';
 import '../../presentation/cart/pages/checkout_page.dart';
 import '../../presentation/cart/pages/order_placed_page.dart';
+import '../../presentation/console/dashboard/pages/dashboard_page.dart';
+import '../../presentation/console/shell/console_shell.dart';
 import '../../presentation/finance/pages/finance_page.dart';
+import '../../presentation/widgets/common/empty_state.dart';
+import '../../l10n/app_localizations.dart';
+import '../../domain/admin/entities/admin_profile.dart';
 import '../../domain/admin/entities/permissions.dart';
 import '../../domain/auth/entities/user_role.dart';
 import '../../domain/order/entities/order.dart';
@@ -117,6 +122,31 @@ class AppRouter {
         path: '/finance',
         builder: (context, state) => const FinancePage(),
       ),
+      // Founder Console (Phase 7). Desktop-first back office behind an admin
+      // guard (see `_redirect`). The shell hosts one child per vertical; routes
+      // land across sessions 03–17.
+      ShellRoute(
+        builder: (context, state, child) => ConsoleShell(child: child),
+        routes: [
+          GoRoute(
+            path: '/console',
+            builder: (context, state) => const DashboardPage(),
+          ),
+          // Placeholder until FILE_04 builds the audit vertical — keeps the
+          // menu's audit item from routing nowhere.
+          GoRoute(
+            path: '/console/audit',
+            builder: (context, state) {
+              final l10n = AppLocalizations.of(context)!;
+              return EmptyState(
+                icon: Icons.receipt_long_outlined,
+                title: l10n.consoleNavAudit,
+                message: l10n.consoleComingSoon,
+              );
+            },
+          ),
+        ],
+      ),
       GoRoute(
         path: '/order/:id',
         builder: (context, state) => OrderDetailPage(
@@ -148,6 +178,13 @@ class AppRouter {
             !_authBloc.state.can(Permissions.financeRead) &&
             _authBloc.state.user?.uid != AppConfig.founderUid) {
           return '/home';
+        }
+        // Founder Console — any active staff member may enter the shell; each
+        // section is gated again inside (UI), and every write by Firestore
+        // rules + the Worker. A non-staff account is bounced home.
+        if (location.startsWith('/console')) {
+          final AdminProfile? admin = _authBloc.state.adminProfile;
+          if (admin == null || !admin.isActive) return '/home';
         }
         if (location != '/' && !_authPages.contains(location)) return null;
         final user = _authBloc.state.user;

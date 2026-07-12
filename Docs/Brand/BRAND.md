@@ -88,6 +88,8 @@ Rules:
 | Courier online/offline switch | أونلاين / أوفلاين | متاح / غير متاح |
 | Finance (founder-only summary) | المالية | الحسابات، التقارير المالية |
 | Permission (staff capability) | صلاحية | إذن، تصريح |
+| Console (founder back office) | لوحة التحكم | لوحة الإدارة، الأدمن |
+| Founder (top staff role) | المؤسس | الأدمن، المالك |
 
 - Human statuses ("جارٍ تجهيز طلبك"), blame-free errors ("حصلت مشكلة — جرّب تاني").
 - RTL is the default layout. LTR (English) must read identically well.

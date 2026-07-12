@@ -1675,6 +1675,66 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'مقدرناش نجيب أرقام المالية دلوقتي — جرّب تاني'**
   String get financeErrorBody;
+
+  /// No description provided for @consoleTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لوحة التحكم'**
+  String get consoleTitle;
+
+  /// No description provided for @consoleNavDashboard.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرئيسية'**
+  String get consoleNavDashboard;
+
+  /// No description provided for @consoleNavAudit.
+  ///
+  /// In ar, this message translates to:
+  /// **'سجل العمليات'**
+  String get consoleNavAudit;
+
+  /// No description provided for @consoleDashboardSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'نظرة عامة على المنصة هتظهر هنا قريب.'**
+  String get consoleDashboardSubtitle;
+
+  /// No description provided for @consoleComingSoon.
+  ///
+  /// In ar, this message translates to:
+  /// **'القسم ده جاي قريب.'**
+  String get consoleComingSoon;
+
+  /// No description provided for @settingsConsoleRow.
+  ///
+  /// In ar, this message translates to:
+  /// **'لوحة التحكم'**
+  String get settingsConsoleRow;
+
+  /// No description provided for @roleFounder.
+  ///
+  /// In ar, this message translates to:
+  /// **'المؤسس'**
+  String get roleFounder;
+
+  /// No description provided for @roleAdmin.
+  ///
+  /// In ar, this message translates to:
+  /// **'مشرف عام'**
+  String get roleAdmin;
+
+  /// No description provided for @roleModerator.
+  ///
+  /// In ar, this message translates to:
+  /// **'مشرف'**
+  String get roleModerator;
+
+  /// No description provided for @roleSupport.
+  ///
+  /// In ar, this message translates to:
+  /// **'دعم'**
+  String get roleSupport;
 }
 
 class _AppLocalizationsDelegate

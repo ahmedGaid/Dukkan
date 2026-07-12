@@ -291,5 +291,16 @@
   "financeTotalCommission": "Total commission",
   "financeDeliveryRevenue": "Delivery revenue",
   "financeTotalPlatformRevenue": "Total platform revenue",
-  "financeErrorBody": "We can't load the finance numbers right now — try again."
+  "financeErrorBody": "We can't load the finance numbers right now — try again.",
+
+  "consoleTitle": "Console",
+  "consoleNavDashboard": "Dashboard",
+  "consoleNavAudit": "Activity log",
+  "consoleDashboardSubtitle": "Your platform overview will appear here soon.",
+  "consoleComingSoon": "This section is coming soon.",
+  "settingsConsoleRow": "Console",
+  "roleFounder": "Founder",
+  "roleAdmin": "Admin",
+  "roleModerator": "Moderator",
+  "roleSupport": "Support"
 }

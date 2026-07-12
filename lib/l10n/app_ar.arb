@@ -300,5 +300,16 @@
   "financeTotalCommission": "إجمالي العمولات",
   "financeDeliveryRevenue": "إيراد التوصيل",
   "financeTotalPlatformRevenue": "إجمالي إيراد المنصة",
-  "financeErrorBody": "مقدرناش نجيب أرقام المالية دلوقتي — جرّب تاني"
+  "financeErrorBody": "مقدرناش نجيب أرقام المالية دلوقتي — جرّب تاني",
+
+  "consoleTitle": "لوحة التحكم",
+  "consoleNavDashboard": "الرئيسية",
+  "consoleNavAudit": "سجل العمليات",
+  "consoleDashboardSubtitle": "نظرة عامة على المنصة هتظهر هنا قريب.",
+  "consoleComingSoon": "القسم ده جاي قريب.",
+  "settingsConsoleRow": "لوحة التحكم",
+  "roleFounder": "المؤسس",
+  "roleAdmin": "مشرف عام",
+  "roleModerator": "مشرف",
+  "roleSupport": "دعم"
 }
