@@ -146,22 +146,32 @@ Future<void> main() async {
   _SeedApp.log.value = log.toString();
 }
 
+/// Signs in (or creates) the account and returns its uid. Waits for
+/// Firestore's own credentials stream to pick up the new auth state before
+/// returning — firing a `.set()` right after `signInWithEmailAndPassword()`
+/// can race Firestore's internal auth listener (it restarts its gRPC stream
+/// asynchronously on auth changes), landing the write on stale/no
+/// credentials and failing `PERMISSION_DENIED` even though the rule would
+/// otherwise allow it. A fixed delay is the simplest fix for this dev-only
+/// script; production code should never need this pattern.
 Future<String> _signInOrCreate(String email, String password) async {
   final auth = FirebaseAuth.instance;
+  UserCredential cred;
   try {
-    final cred = await auth.signInWithEmailAndPassword(
+    cred = await auth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
-    return cred.user!.uid;
   } on FirebaseAuthException catch (e) {
     if (e.code != 'user-not-found' && e.code != 'invalid-credential') rethrow;
-    final cred = await auth.createUserWithEmailAndPassword(
+    cred = await auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
-    return cred.user!.uid;
   }
+  await cred.user!.getIdToken(true);
+  await Future.delayed(const Duration(milliseconds: 800));
+  return cred.user!.uid;
 }
 
 Future<void> _seed(
