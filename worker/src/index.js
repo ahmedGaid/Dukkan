@@ -1,53 +1,51 @@
 /**
- * Dukkan Worker — image uploads (R2) + order push notifications (FCM v1).
+ * Dukkan Worker — image uploads (R2) + order push notifications (FCM v1) +
+ * privileged Back-Office API.
  *
  * The Flutter app cannot hold R2 credentials or an FCM service account (an
  * APK is unpackable, so any embedded secret is effectively public). This
- * Worker is the trusted middle-man for both:
+ * Worker is the trusted middle-man:
  *
- *   POST /upload  — app --(bytes + Bearer <Firebase ID token>)--> Worker
- *                   Worker verifies token -> env.BUCKET.put(key, bytes)
- *                   -> returns { url }
+ *   POST /upload   — app --(bytes + Bearer <Firebase ID token>)--> Worker
+ *                    Worker verifies token -> env.BUCKET.put(key, bytes)
+ *                    -> returns { url }
  *
- *   POST /notify  — app --(orderId/type/title/body + Bearer ID token)--> Worker
- *                   Worker verifies token, reads the order+shop from Firestore
- *                   (service account, bypasses security rules by design —
- *                   this is the trusted backend), checks the caller is a real
- *                   party to that order, resolves the *other* party's saved
- *                   FCM token, and sends via FCM HTTP v1.
- *                   -> returns { ok: true } (or a no-op if the recipient has
- *                   no token yet — not an error, just nothing to deliver to)
+ *   POST /notify   — app --(orderId/type/title/body + Bearer ID token)--> Worker
+ *                    Worker verifies token, reads the order+shop from Firestore
+ *                    (service account, bypasses security rules by design —
+ *                    this is the trusted backend), checks the caller is a real
+ *                    party to that order, resolves the *other* party's saved
+ *                    FCM token, and sends via FCM HTTP v1.
+ *                    -> returns { ok: true } (or a no-op if the recipient has
+ *                    no token yet — not an error, just nothing to deliver to)
  *
- * Bindings (see wrangler.toml + `wrangler secret put`):
+ *   POST /admin/*  — Founder Console back-office ops. Permission-checked
+ *                    against `/admins/{uid}` and audited server-side. See
+ *                    `admin.js`.
+ *
+ * Shared Firebase plumbing (token verify, service-account token, Firestore
+ * REST, FCM) lives in `firebase.js` so `/notify` and `/admin/*` share one
+ * copy. Bindings (see wrangler.toml + `wrangler secret put`):
  *   BUCKET                    R2 bucket that stores uploaded images
  *   PROJECT_ID                Firebase project id (dukkan-93042)
  *   PUBLIC_BASE_URL           public-read origin for the bucket
  *   ALLOWED_ORIGIN            CORS origin for the app
- *   FIREBASE_SERVICE_ACCOUNT  secret — the Firebase service-account JSON key
- *                             (Firebase console -> Project settings ->
- *                             Service accounts -> Generate new private key).
- *                             Used to mint an OAuth2 access token for both
- *                             the Firestore REST API (order/shop/user reads)
- *                             and the FCM v1 send endpoint.
+ *   FIREBASE_SERVICE_ACCOUNT  secret — the Firebase service-account JSON key.
  */
-import { importPKCS8, importX509, jwtVerify, SignJWT } from 'jose';
-
-// Firebase session tokens are signed by this Google service account. Its public
-// keys are published only as X.509 certs here (there is no JWK endpoint for
-// them) — `jose.importX509` turns each PEM into a verify key.
-const GOOGLE_CERTS_URL =
-  'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
+import {
+  verifyFirebaseToken,
+  getServiceAccountToken,
+  firestoreGetFields,
+  sendFcm,
+  bearer,
+  json,
+} from './firebase.js';
+import { handleAdmin } from './admin.js';
 
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB — a logo / product photo, not a video
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const ALLOWED_FOLDERS = new Set(['shop-logos', 'product-images']);
 const NOTIFY_TYPES = new Set(['newOrder', 'statusUpdate', 'driverAssigned', 'orderDelivered']);
-const SA_SCOPES =
-  'https://www.googleapis.com/auth/datastore https://www.googleapis.com/auth/firebase.messaging';
-
-// Module-scope caches: survive across requests on a warm isolate.
-let certCache = { certs: null, expiresAt: 0 };
-let saTokenCache = { token: null, expiresAt: 0 };
 
 export default {
   async fetch(request, env) {
@@ -61,6 +59,7 @@ export default {
     }
 
     const pathname = new URL(request.url).pathname;
+    if (pathname.startsWith('/admin/')) return handleAdmin(request, env, cors);
     if (pathname === '/notify') return handleNotify(request, env, cors);
     return handleUpload(request, env, cors);
   },
@@ -187,109 +186,6 @@ async function handleNotify(request, env, cors) {
   return json({ ok: true }, 200, cors);
 }
 
-function bearer(request) {
-  const m = (request.headers.get('authorization') ?? '').match(/^Bearer (.+)$/);
-  return m ? m[1] : null;
-}
-
-async function verifyFirebaseToken(token, projectId) {
-  const kid = JSON.parse(b64urlDecode(token.split('.')[0])).kid;
-  const pem = (await googleCerts())[kid];
-  if (!pem) throw new Error('unknown_kid');
-  const key = await importX509(pem, 'RS256');
-  // jose checks the RS256 signature plus exp/iat/nbf; we pin issuer + audience.
-  const { payload } = await jwtVerify(token, key, {
-    issuer: `https://securetoken.google.com/${projectId}`,
-    audience: projectId,
-  });
-  return payload;
-}
-
-async function googleCerts() {
-  const now = Date.now();
-  if (certCache.certs && now < certCache.expiresAt) return certCache.certs;
-  const res = await fetch(GOOGLE_CERTS_URL);
-  const certs = await res.json();
-  const maxAge = parseMaxAge(res.headers.get('cache-control')) ?? 3600;
-  certCache = { certs, expiresAt: now + maxAge * 1000 };
-  return certs;
-}
-
-function parseMaxAge(cacheControl) {
-  const m = (cacheControl ?? '').match(/max-age=(\d+)/);
-  return m ? parseInt(m[1], 10) : null;
-}
-
-/**
- * Mints (and caches, module-scope, for its ~1h lifetime) an OAuth2 access
- * token for the service account via the JWT-bearer grant — this is the same
- * flow the Firebase Admin SDK uses under the hood, done by hand here since
- * Workers can't run the Node Admin SDK.
- */
-async function getServiceAccountToken(env) {
-  const now = Date.now();
-  if (saTokenCache.token && now < saTokenCache.expiresAt) return saTokenCache.token;
-
-  const sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
-  const key = await importPKCS8(sa.private_key, 'RS256');
-  const iat = Math.floor(now / 1000);
-  const jwt = await new SignJWT({ scope: SA_SCOPES })
-    .setProtectedHeader({ alg: 'RS256', typ: 'JWT' })
-    .setIssuer(sa.client_email)
-    .setSubject(sa.client_email)
-    .setAudience('https://oauth2.googleapis.com/token')
-    .setIssuedAt(iat)
-    .setExpirationTime(iat + 3600)
-    .sign(key);
-
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion: jwt,
-    }),
-  });
-  if (!res.ok) throw new Error(`token_exchange_${res.status}: ${await res.text()}`);
-  const tok = await res.json();
-  saTokenCache = { token: tok.access_token, expiresAt: now + (tok.expires_in - 60) * 1000 };
-  return saTokenCache.token;
-}
-
-/** Reads one Firestore doc via REST and unwraps its typed fields to plain JS. */
-async function firestoreGetFields(env, accessToken, path) {
-  const res = await fetch(
-    `https://firestore.googleapis.com/v1/projects/${env.PROJECT_ID}/databases/(default)/documents/${path}`,
-    { headers: { authorization: `Bearer ${accessToken}` } },
-  );
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`firestore_get_${res.status}: ${await res.text()}`);
-  const doc = await res.json();
-  const out = {};
-  for (const [k, v] of Object.entries(doc.fields ?? {})) {
-    if (v.stringValue !== undefined) out[k] = v.stringValue;
-    else if (v.integerValue !== undefined) out[k] = Number(v.integerValue);
-    else if (v.booleanValue !== undefined) out[k] = v.booleanValue;
-  }
-  return out;
-}
-
-async function sendFcm(env, accessToken, { token, title, body, data }) {
-  const res = await fetch(
-    `https://fcm.googleapis.com/v1/projects/${env.PROJECT_ID}/messages:send`,
-    {
-      method: 'POST',
-      headers: { authorization: `Bearer ${accessToken}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ message: { token, notification: { title, body }, data } }),
-    },
-  );
-  if (!res.ok) throw new Error(`fcm_send_${res.status}: ${await res.text()}`);
-}
-
-function b64urlDecode(s) {
-  return atob(s.replace(/-/g, '+').replace(/_/g, '/'));
-}
-
 function corsHeaders(env) {
   return {
     'access-control-allow-origin': env.ALLOWED_ORIGIN ?? '*',
@@ -297,11 +193,4 @@ function corsHeaders(env) {
     'access-control-allow-headers': 'authorization, content-type',
     'access-control-max-age': '86400',
   };
-}
-
-function json(body, status, extra) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'content-type': 'application/json', ...extra },
-  });
 }

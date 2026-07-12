@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../data/admin/datasources/admin_api_datasource.dart';
 import '../../data/admin/datasources/admin_remote_datasource.dart';
 import '../../data/admin/repositories/admin_repository_impl.dart';
 import '../../data/areas/datasources/areas_local_datasource.dart';
@@ -158,6 +159,10 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<AdminRepository>(() => AdminRepositoryImpl(sl()));
   sl.registerLazySingleton(() => GetAdminProfile(sl()));
   sl.registerLazySingleton(() => ResetAdminProfile(sl()));
+  // Worker `/admin/*` client (privileged back-office ops + best-effort audit
+  // reporting). Uses the Firebase ID token as bearer — repos wire it in from
+  // Session 6 on; registered here so the plumbing lands with the API.
+  sl.registerLazySingleton(() => AdminApiDataSource(auth: sl()));
 
   // Auth — bloc (app lifetime; createDriverProfile only fires for a courier
   // signup, see AuthBloc._onSignUpRequested; getAdminProfile enriches the

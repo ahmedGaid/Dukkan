@@ -12,6 +12,14 @@ POST /notify  app --(orderId/type/title/body + Bearer ID token)--> Worker
               Worker verifies token, checks the caller is a real party to
               that order (via Firestore), resolves the other party's saved
               FCM token, and sends -> { "ok": true }
+
+POST /admin/* Founder Console back-office ops (Bearer ID token). Worker
+              verifies token, loads /admins/{uid}, requires isActive + the
+              route's permission (or '*'), and audits to /auditLogs. Shared
+              Firebase plumbing lives in src/firebase.js; the router + perm
+              middleware in src/admin.js. Skeleton endpoints today:
+                /admin/ping  -> { uid, role, permissions }  (perm system.tools)
+                /admin/audit -> writes a reported: true audit entry (any staff)
 ```
 
 ## One-time setup (you run these — Cloudflare login can't run in the agent shell)
@@ -47,6 +55,12 @@ Then set the notify secret (needed for `/notify`, not `/upload`):
 2. `cd worker && npx wrangler secret put FIREBASE_SERVICE_ACCOUNT`, then paste
    the **entire contents** of that JSON file (one line is fine) and press
    Enter.
+
+The service-account token is minted with three scopes (`src/firebase.js`
+→ `SA_SCOPES`): `datastore` (Firestore REST), `firebase.messaging` (FCM),
+and `identitytoolkit` (Auth admin — user disable/reset/lookup, used by the
+Founder Console user-management endpoints from Session 6 on). No extra secret
+is needed for these; the same key covers all three.
 
 ## Deploy
 

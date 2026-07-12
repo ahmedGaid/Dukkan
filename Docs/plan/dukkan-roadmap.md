@@ -419,7 +419,15 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       gates on `can(financeRead)` (founder-uid break-glass kept), seed `_seedRbac` (4 roles +
       founder `/admins`), `firestore.rules` `hasPerm`/`isStaff` helpers + `/admins`+`/roles` +
       extended `/orders`,`/users` reads. Gates green (analyze 0, test 132, parity 263). Rules
-      UNDEPLOYED. **Next: FC2 (FILE_02).**
+      UNDEPLOYED.
+      **FC2 DONE (code) 2026-07-12** — Worker `/admin/*`: `worker/src/firebase.js` (shared
+      plumbing extracted from `index.js` + `firestoreCreateDoc`/`PatchFields`/`Commit` write
+      helpers + generalized `to/fromFirestoreFields` type conversion + `identitytoolkit` scope),
+      `worker/src/admin.js` (fail-closed `requireAdmin` perm middleware, `writeAudit`, `/admin/ping`
+      + `/admin/audit`), `index.js` `/admin/` dispatch (upload/notify unchanged), Flutter
+      `AdminApiDataSource` (post + fire-and-forget `reportAudit`) registered in injector. Gates
+      green (analyze 0, test 132, parity 263). No rules change this session; Worker deploy owed
+      (user). **Next: FC3 (FILE_03) — console shell.**
 - [ ] **FC6–FC11 — Management verticals.** Users (Auth ops via Worker) · shops (lifecycle,
       transfer) · products (bulk ops) · taxonomy+geo (console-editable) · orders
       (force-status, reassign, notes) · drivers (activation!). (FILE_06–11)
