@@ -14,9 +14,26 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    // RBAC (Founder Console session 1). /admins/{uid} carries a FLAT
+    // `permissions` array — the Worker denormalizes role permissions + extras
+    // into it on every change, so rules do exactly one get() here. hasPerm is
+    // deliberately auth-only (never resource.data) so aggregate queries stay
+    // legal (M13 lesson).
+    function adminDoc() {
+      return get(/databases/$(database)/documents/admins/$(request.auth.uid)).data;
+    }
+    function isStaff() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function hasPerm(p) {
+      return isStaff() && adminDoc().isActive == true
+        && adminDoc().permissions.hasAny([p, '*']);
+    }
+
     // A user owns exactly their own /users/{uid} profile.
     match /users/{userId} {
-      allow read: if isSelf(userId);
+      allow read: if isSelf(userId) || hasPerm('users.read');
 
       allow create: if isSelf(userId)
         && request.resource.data.role in ['customer', 'owner', 'courier']
@@ -156,7 +173,8 @@ service cloud.firestore {
         return isSignedIn() && request.auth.uid == 'LPPjx32MJpWlMR3SEksJ7sY2NAF2';
       }
 
-      allow read: if isFounder() || isOrderOwner() || isShopOwner() || isAssignedDriver();
+      allow read: if isFounder() || hasPerm('orders.read')
+        || isOrderOwner() || isShopOwner() || isAssignedDriver();
 
       allow create: if isSelf(request.resource.data.customerUid);
 
@@ -256,6 +274,20 @@ service cloud.firestore {
     // console. Same shape/rule as `/categories`/`/areas`.
     match /config/{docId} {
       allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // Staff registry + role definitions (Founder Console session 1) —
+    // Worker/seed-managed only. A staff member may read their own admin doc
+    // (the app loads it at login); `admins.manage` may read all (the user
+    // management screens). No client write path: the Worker denormalizes
+    // permissions and writes these, so the client never does.
+    match /admins/{uid} {
+      allow read: if isSelf(uid) || hasPerm('admins.manage');
+      allow write: if false;
+    }
+    match /roles/{roleId} {
+      allow read: if isStaff();
       allow write: if false;
     }
 

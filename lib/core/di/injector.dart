@@ -4,6 +4,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../data/admin/datasources/admin_remote_datasource.dart';
+import '../../data/admin/repositories/admin_repository_impl.dart';
 import '../../data/areas/datasources/areas_local_datasource.dart';
 import '../../data/areas/datasources/areas_remote_datasource.dart';
 import '../../data/areas/repositories/areas_repository_impl.dart';
@@ -34,6 +36,9 @@ import '../../data/storage/repositories/storage_repository_impl.dart';
 import '../../data/taxonomy/datasources/taxonomy_local_datasource.dart';
 import '../../data/taxonomy/datasources/taxonomy_remote_datasource.dart';
 import '../../data/taxonomy/repositories/taxonomy_repository_impl.dart';
+import '../../domain/admin/repositories/admin_repository.dart';
+import '../../domain/admin/usecases/get_admin_profile.dart';
+import '../../domain/admin/usecases/reset_admin_profile.dart';
 import '../../domain/areas/repositories/areas_repository.dart';
 import '../../domain/areas/usecases/get_areas.dart';
 import '../../domain/auth/repositories/auth_repository.dart';
@@ -147,8 +152,16 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => LogOut(sl()));
   sl.registerLazySingleton(() => GetUserById(sl()));
 
+  // Admin / RBAC — data (Founder Console: /admins staff profile, memoized per
+  // uid for the app session, reset on sign-out). Datasource -> repo -> cases.
+  sl.registerLazySingleton(() => AdminRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<AdminRepository>(() => AdminRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => GetAdminProfile(sl()));
+  sl.registerLazySingleton(() => ResetAdminProfile(sl()));
+
   // Auth — bloc (app lifetime; createDriverProfile only fires for a courier
-  // signup, see AuthBloc._onSignUpRequested)
+  // signup, see AuthBloc._onSignUpRequested; getAdminProfile enriches the
+  // session with the staff profile, resetAdminProfile clears it on sign-out)
   sl.registerLazySingleton(
     () => AuthBloc(
       watchAuthState: sl(),
@@ -157,6 +170,8 @@ Future<void> initDependencies() async {
       sendPasswordReset: sl(),
       logOut: sl(),
       createDriverProfile: sl(),
+      getAdminProfile: sl(),
+      resetAdminProfile: sl(),
     ),
   );
 

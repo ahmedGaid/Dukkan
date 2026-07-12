@@ -9,6 +9,7 @@ import '../../presentation/cart/pages/cart_page.dart';
 import '../../presentation/cart/pages/checkout_page.dart';
 import '../../presentation/cart/pages/order_placed_page.dart';
 import '../../presentation/finance/pages/finance_page.dart';
+import '../../domain/admin/entities/permissions.dart';
 import '../../domain/auth/entities/user_role.dart';
 import '../../domain/order/entities/order.dart';
 import '../../domain/product/entities/product.dart';
@@ -140,9 +141,11 @@ class AppRouter {
       case SessionStatus.unauthenticated:
         return _authPages.contains(location) ? null : '/login';
       case SessionStatus.authenticated:
-        // Founder-only finance summary (M13) — bounces anyone else who lands
-        // on this path directly, since it's otherwise a normal in-app route.
+        // Finance summary (M13) — permission-gated (Founder Console RBAC).
+        // Bounces anyone without `finance.read`; the founder uid stays as a
+        // break-glass fallback until `/admins` seeding is verified on device.
         if (location == '/finance' &&
+            !_authBloc.state.can(Permissions.financeRead) &&
             _authBloc.state.user?.uid != AppConfig.founderUid) {
           return '/home';
         }

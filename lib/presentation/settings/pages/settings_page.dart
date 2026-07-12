@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/theme_controller.dart';
+import '../../../domain/admin/entities/permissions.dart';
 import '../../../domain/auth/entities/app_user.dart';
 import '../../../domain/auth/entities/user_role.dart';
 import '../../../l10n/app_localizations.dart';
@@ -25,7 +26,8 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final user = context.watch<AuthBloc>().state.user;
+    final authState = context.watch<AuthBloc>().state;
+    final user = authState.user;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
@@ -71,7 +73,8 @@ class SettingsPage extends StatelessWidget {
                 ],
               ),
             ),
-            if (user?.uid == AppConfig.founderUid) ...[
+            if (authState.can(Permissions.financeRead) ||
+                user?.uid == AppConfig.founderUid) ...[
               const SizedBox(height: AppSpacing.lg),
               const _FinanceRow(),
             ],
@@ -296,9 +299,10 @@ class _ThemeSetting extends StatelessWidget {
 }
 
 /// Hidden entry to the finance summary (M13) — only ever built when
-/// [SettingsPage] has already checked `user.uid == AppConfig.founderUid`, so
-/// no gate check is repeated here. `/finance` also bounces non-founders at
-/// the router level, so this row is a convenience, not the security boundary.
+/// [SettingsPage] has already checked `finance.read` (or the founder
+/// break-glass uid), so no gate check is repeated here. `/finance` also bounces
+/// unauthorized users at the router level, so this row is a convenience, not
+/// the security boundary (Firestore rules are).
 class _FinanceRow extends StatelessWidget {
   const _FinanceRow();
 

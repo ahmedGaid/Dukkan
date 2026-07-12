@@ -1,33 +1,85 @@
 // Dev-only seed script — NOT part of the shipping app (nothing under lib/dev
-// is imported from lib/main.dart). Writes 2 demo shops + ~20 demo products to
-// Firestore so C2 (Browse) has real data to build against.
+// is imported from lib/main.dart). Writes the full demo dataset to Firestore:
+// 1 owner (7 shops, ~53 products, 2 shop collections), 2 couriers (real
+// Firebase Auth accounts so they can actually log in and see deliveries),
+// and 3 customers (real accounts, profiles, favorites, and orders spanning
+// every OrderStatus) — plus the seed-managed taxonomy/areas/config.
 //
 // Firebase plugins need Flutter engine bindings, so this can't run as a plain
 // `dart run` — it's a second Flutter entrypoint instead:
-//   flutter run -t lib/dev/seed_demo_data.dart -d chrome
-// (only the Web app is registered in Firebase so far — see dukkan-status).
+//   flutter run -t lib/dev/seed_demo_data.dart -d <device>
 //
-// Idempotent: shop/product ids are fixed, so re-running overwrites the same
-// docs instead of duplicating them. Requires `firestore.rules` deployed with
-// the /shops and /products rules (C1) — write needs a signed-in user, so this
-// signs into (or creates) a throwaway "seed-owner" account first.
+// Idempotent: every id (shops/products/drivers-by-uid/orders) is fixed, so
+// re-running overwrites the same docs instead of duplicating them. Requires
+// `firestore.rules`'s /categories, /areas, /drivers, /config, /roles, /admins
+// `write: false` lines temporarily relaxed to `allow write: if isSignedIn();`
+// for the pass (then restored) — /shops, /products, /users, /orders,
+// /collections need no relax since their normal rules already permit the
+// owner/courier/customer writes this script does while signed in as each of
+// those accounts.
+//
+// Demo accounts (all created on first run, password same across each role):
+//   owner@dukkan.dev / owner123        — owns all 7 shops
+//   courier1@dukkan.dev / courier123   — online, active, Abu Atwa + El Sheikh Zayed
+//   courier2@dukkan.dev / courier123   — offline, suspended (tests the blocked state)
+//   customer1@dukkan.dev / customer123
+//   customer2@dukkan.dev / customer123
+//   customer3@dukkan.dev / customer123
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import '../core/config/app_config.dart';
+import '../domain/admin/entities/permissions.dart';
 import '../firebase_options.dart';
 
 const _seedEmail = 'owner@dukkan.dev';
 const _seedPassword = 'owner123';
 
-// Customer to fill with orders + favorites, passed at runtime so no real
-// password ever lands in source:
-//   flutter run -t lib/dev/seed_demo_data.dart -d <device> \
-//     --dart-define=SEED_CUSTOMER_EMAIL=you@example.com \
-//     --dart-define=SEED_CUSTOMER_PASSWORD=yourpassword
-const _customerEmail = String.fromEnvironment('SEED_CUSTOMER_EMAIL');
-const _customerPassword = String.fromEnvironment('SEED_CUSTOMER_PASSWORD');
+const _couriers = <Map<String, Object>>[
+  {
+    'email': 'courier1@dukkan.dev',
+    'password': 'courier123',
+    'name': 'كريم عبد العزيز',
+    'phone': '01011111111',
+    'areaIds': ['abu-atwa', 'el-sheikh-zayed'],
+    'maxActiveOrders': 5,
+    'isOnline': true,
+    'isSuspended': false,
+  },
+  {
+    'email': 'courier2@dukkan.dev',
+    'password': 'courier123',
+    'name': 'محمود سعيد',
+    'phone': '01022222222',
+    'areaIds': ['downtown-ismailia'],
+    'maxActiveOrders': 5,
+    'isOnline': false,
+    'isSuspended': true,
+  },
+];
+
+const _customers = <Map<String, String>>[
+  {
+    'email': 'customer1@dukkan.dev',
+    'password': 'customer123',
+    'name': 'أحمد',
+    'phone': '01011112222',
+  },
+  {
+    'email': 'customer2@dukkan.dev',
+    'password': 'customer123',
+    'name': 'مريم',
+    'phone': '01022223333',
+  },
+  {
+    'email': 'customer3@dukkan.dev',
+    'password': 'customer123',
+    'name': 'يوسف',
+    'phone': '01033334444',
+  },
+];
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,28 +89,54 @@ Future<void> main() async {
 
   final log = StringBuffer();
   try {
-    // Phase 1 — owner: catalog (shops + products) + the owner's own profile,
-    // written while signed in as the seed owner so the /shops + /products +
-    // /users(self) rules pass.
-    final ownerUid = await _signInSeedOwner();
-    log.writeln('Signed in as seed owner ($ownerUid).');
-    await _seed(ownerUid, log);
-
-    // Phase 2 — customer: profile + favorites + order history, written while
-    // signed in AS that customer (rules gate /users and /orders to the owner).
-    if (_customerEmail.isEmpty || _customerPassword.isEmpty) {
-      log.writeln('No SEED_CUSTOMER_* creds — skipped customer data '
-          '(orders/favorites). Pass --dart-define to fill them.');
-    } else {
+    // Phase 1 — couriers: real Firebase Auth accounts, signed in as
+    // themselves to write their own /users profile (rules gate /users
+    // create to isSelf). The driver doc (phase 2) is keyed by this same uid
+    // so logging in as courier1@dukkan.dev opens straight onto their
+    // deliveries.
+    final courierUids = <String>[];
+    for (final courier in _couriers) {
       await FirebaseAuth.instance.signOut();
-      final customerUid = await _signInCustomer();
-      log.writeln('Signed in as customer ($customerUid).');
-      await _seedCustomer(customerUid, log);
+      final uid = await _signInOrCreate(
+        courier['email'] as String,
+        courier['password'] as String,
+      );
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'name': courier['name'],
+        'email': courier['email'],
+        'role': 'courier',
+        'phone': courier['phone'],
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      courierUids.add(uid);
+      log.writeln('Courier ${courier['email']} -> $uid');
+    }
+
+    // Phase 2 — owner: catalog (shops + products + collections) + driver
+    // docs (keyed by the real courier uids from phase 1) + taxonomy/areas/
+    // config, all written while signed in as the seed owner.
+    await FirebaseAuth.instance.signOut();
+    final ownerUid = await _signInOrCreate(_seedEmail, _seedPassword);
+    log.writeln('Signed in as seed owner ($ownerUid).');
+    await _seed(ownerUid, courierUids, log);
+
+    // Phase 3 — customers: each signs in as themselves (rules gate /orders
+    // create to isSelf(customerUid)) and gets a profile + favorites + a full
+    // spread of orders across every status, some assigned to courier1.
+    final courier1Uid = courierUids.first;
+    for (var i = 0; i < _customers.length; i++) {
+      final customer = _customers[i];
+      await FirebaseAuth.instance.signOut();
+      final uid = await _signInOrCreate(
+        customer['email']!,
+        customer['password']!,
+      );
+      await _seedCustomer(uid, customer, i, ownerUid, courier1Uid, log);
     }
 
     // Don't leave the device authenticated as a seed account — otherwise the
-    // next launch of the real app opens as the seed owner/customer instead of
-    // whoever was signed in before. Sign out so the app returns to its login.
+    // next launch of the real app opens as the last seeded customer instead
+    // of whoever was signed in before. Sign out so the app returns to login.
     await FirebaseAuth.instance.signOut();
 
     log.writeln('Seed complete. Signed out — log in as your own account.');
@@ -68,33 +146,29 @@ Future<void> main() async {
   _SeedApp.log.value = log.toString();
 }
 
-Future<String> _signInCustomer() async {
-  final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
-    email: _customerEmail.trim(),
-    password: _customerPassword,
-  );
-  return cred.user!.uid;
-}
-
-Future<String> _signInSeedOwner() async {
+Future<String> _signInOrCreate(String email, String password) async {
   final auth = FirebaseAuth.instance;
   try {
     final cred = await auth.signInWithEmailAndPassword(
-      email: _seedEmail,
-      password: _seedPassword,
+      email: email,
+      password: password,
     );
     return cred.user!.uid;
   } on FirebaseAuthException catch (e) {
     if (e.code != 'user-not-found' && e.code != 'invalid-credential') rethrow;
     final cred = await auth.createUserWithEmailAndPassword(
-      email: _seedEmail,
-      password: _seedPassword,
+      email: email,
+      password: password,
     );
     return cred.user!.uid;
   }
 }
 
-Future<void> _seed(String ownerUid, StringBuffer log) async {
+Future<void> _seed(
+  String ownerUid,
+  List<String> courierUids,
+  StringBuffer log,
+) async {
   final firestore = FirebaseFirestore.instance;
 
   // The owner's own /users profile — so logging in as the seed owner lands on
@@ -126,16 +200,49 @@ Future<void> _seed(String ownerUid, StringBuffer log) async {
   }
   await productBatch.commit();
 
+  await _seedShopCollections(firestore);
   await _seedTaxonomy(firestore);
   await _seedAreas(firestore);
-  await _seedDrivers(firestore);
+  await _seedDrivers(firestore, courierUids);
   await _seedPlatformConfig(firestore);
+  await _seedRbac(firestore);
 
   log.writeln('Wrote ${_demoShops(ownerUid).length} shops, '
-      '${_demoProducts().length} products, ${_taxonomy.length} '
-      'categories, ${_areas.length} areas, ${_drivers.length} demo '
-      'drivers, and the platform config.');
+      '${_demoProducts().length} products, ${_shopCollections.length} shop '
+      'collections, ${_taxonomy.length} categories, ${_areas.length} areas, '
+      '${courierUids.length} couriers, the platform config, 4 roles, and the '
+      'founder admin.');
 }
+
+/// `/shops/{shopId}/collections` (M6) — owner-curated product groupings.
+/// Rules require `ownsThisShop()`, which the seed owner satisfies directly
+/// (no relax needed, unlike taxonomy/areas/drivers). Only `shop_demo_1` gets
+/// collections for the demo; a few of its products carry matching
+/// `collectionIds` (see `_demoProducts`).
+Future<void> _seedShopCollections(FirebaseFirestore firestore) async {
+  final batch = firestore.batch();
+  for (final collection in _shopCollections) {
+    batch.set(
+      firestore
+          .collection('shops')
+          .doc('shop_demo_1')
+          .collection('collections')
+          .doc(collection['id'] as String),
+      {
+        'nameAr': collection['nameAr'],
+        'nameEn': collection['nameEn'],
+        'sort': collection['sort'],
+        'createdAt': FieldValue.serverTimestamp(),
+      },
+    );
+  }
+  await batch.commit();
+}
+
+final _shopCollections = <Map<String, dynamic>>[
+  {'id': 'col_deals', 'nameAr': 'عروض اليوم', 'nameEn': "Today's Deals", 'sort': 1},
+  {'id': 'col_essentials', 'nameAr': 'أساسيات', 'nameEn': 'Essentials', 'sort': 2},
+];
 
 /// `/config/platform` (M12) — founder-managed commission/fee rates;
 /// `firestore.rules` denies all client writes (`allow write: if false`),
@@ -148,6 +255,89 @@ Future<void> _seedPlatformConfig(FirebaseFirestore firestore) async {
     'driverDeliveryShareMinor': 2500,
   });
 }
+
+/// `/roles` + `/admins` (Founder Console session 1) — the four role permission
+/// sets and the founder's own admin doc. `firestore.rules` denies all client
+/// writes to both (`allow write: if false`), so this needs the same relax-
+/// then-restore pass as `_seedTaxonomy`. Permission strings come from
+/// [Permissions] so the three sources (constants / rules / seed) stay in sync;
+/// the founder gets the `*` wildcard and rank 100. Runs in the owner-signed-in
+/// phase — the writes only work because the rules are relaxed, not because the
+/// owner is staff.
+Future<void> _seedRbac(FirebaseFirestore firestore) async {
+  final batch = firestore.batch();
+
+  batch.set(firestore.collection('roles').doc('founder'), {
+    'permissions': [Permissions.all],
+    'rank': 100,
+  });
+  batch.set(firestore.collection('roles').doc('admin'), {
+    'permissions': _adminPermissions,
+    'rank': 80,
+  });
+  batch.set(firestore.collection('roles').doc('moderator'), {
+    'permissions': _moderatorPermissions,
+    'rank': 60,
+  });
+  batch.set(firestore.collection('roles').doc('support'), {
+    'permissions': _supportPermissions,
+    'rank': 40,
+  });
+
+  batch.set(firestore.collection('admins').doc(AppConfig.founderUid), {
+    'role': 'founder',
+    'permissions': [Permissions.all],
+    'isActive': true,
+    'rank': 100,
+    'createdAt': FieldValue.serverTimestamp(),
+  });
+
+  await batch.commit();
+}
+
+// admin = everything except the three founder-reserved powers (managing other
+// admins, impersonation, platform settings).
+const _adminPermissions = <String>[
+  Permissions.usersRead,
+  Permissions.usersCreate,
+  Permissions.usersUpdate,
+  Permissions.usersDelete,
+  Permissions.shopsUpdate,
+  Permissions.shopsTransfer,
+  Permissions.productsCreate,
+  Permissions.productsUpdate,
+  Permissions.productsDelete,
+  Permissions.ordersRead,
+  Permissions.ordersUpdate,
+  Permissions.ordersForceStatus,
+  Permissions.ordersAssignDriver,
+  Permissions.driversManage,
+  Permissions.taxonomyEdit,
+  Permissions.geoEdit,
+  Permissions.financeRead,
+  Permissions.notificationsSend,
+  Permissions.promosEdit,
+  Permissions.reportsExport,
+  Permissions.imagesDelete,
+  Permissions.auditlogsRead,
+  Permissions.systemTools,
+];
+
+// moderator = day-to-day content + order handling, no destructive/staff powers.
+const _moderatorPermissions = <String>[
+  Permissions.shopsUpdate,
+  Permissions.productsUpdate,
+  Permissions.taxonomyEdit,
+  Permissions.ordersRead,
+  Permissions.ordersUpdate,
+];
+
+// support = read users, read + nudge orders.
+const _supportPermissions = <String>[
+  Permissions.usersRead,
+  Permissions.ordersRead,
+  Permissions.ordersUpdate,
+];
 
 /// `/categories` (M3) — fixed, seed-managed tree; `firestore.rules` denies
 /// all client writes to this collection (`allow write: if false`), so this
@@ -209,55 +399,37 @@ final _areas = <Map<String, dynamic>>[
   {'id': 'el-quds', 'nameAr': 'القدس', 'nameEn': 'El Quds', 'sort': 5},
 ];
 
-/// `/drivers` (M8) demo profiles — id is a fixed doc id, not a real Firebase
-/// Auth uid (these never log in; real couriers get their own doc via the app
-/// signup flow). `firestore.rules` restricts `create` to `isSelf(uid)`, which
-/// an owner-authenticated seed write can never satisfy, and even a driver's
-/// own signup can't create the ACTIVE case (the rule pins `isSuspended ==
-/// true` at create) — so, same as `_seedTaxonomy`, this only succeeds with
-/// `/drivers`'s `write: false` temporarily relaxed to `isSignedIn()`.
-Future<void> _seedDrivers(FirebaseFirestore firestore) async {
+/// `/drivers` (M8) demo profiles — doc id IS the courier's real Firebase Auth
+/// uid (phase 1), so logging in as `courier1@dukkan.dev` opens straight onto
+/// that same driver's deliveries. `firestore.rules` restricts `create` to
+/// `isSelf(uid)` with `isSuspended == true` pinned, which even a driver's own
+/// signup can't satisfy for the active case — so, same as `_seedTaxonomy`,
+/// this only succeeds with `/drivers`'s `write: false` temporarily relaxed to
+/// `isSignedIn()`. Written while signed in as the owner (any signed-in user
+/// works under the relaxed rule).
+Future<void> _seedDrivers(
+  FirebaseFirestore firestore,
+  List<String> courierUids,
+) async {
   final batch = firestore.batch();
-  for (final driver in _drivers) {
+  for (var i = 0; i < _couriers.length; i++) {
+    final courier = _couriers[i];
     batch.set(
-      firestore.collection('drivers').doc(driver['id'] as String),
+      firestore.collection('drivers').doc(courierUids[i]),
       {
-        'name': driver['name'],
-        'phone': driver['phone'],
-        'areaIds': driver['areaIds'],
-        'maxActiveOrders': driver['maxActiveOrders'],
-        'activeOrdersCount': driver['activeOrdersCount'],
-        'isOnline': driver['isOnline'],
-        'isSuspended': driver['isSuspended'],
+        'name': courier['name'],
+        'phone': courier['phone'],
+        'areaIds': courier['areaIds'],
+        'maxActiveOrders': courier['maxActiveOrders'],
+        'activeOrdersCount': 0,
+        'isOnline': courier['isOnline'],
+        'isSuspended': courier['isSuspended'],
         'createdAt': FieldValue.serverTimestamp(),
       },
     );
   }
   await batch.commit();
 }
-
-final _drivers = <Map<String, dynamic>>[
-  {
-    'id': 'driver_demo_1',
-    'name': 'كريم عبد العزيز',
-    'phone': '01011111111',
-    'areaIds': ['abu-atwa', 'el-sheikh-zayed'],
-    'maxActiveOrders': 5,
-    'activeOrdersCount': 0,
-    'isOnline': true,
-    'isSuspended': false,
-  },
-  {
-    'id': 'driver_demo_2',
-    'name': 'محمود سعيد',
-    'phone': '01022222222',
-    'areaIds': ['downtown-ismailia'],
-    'maxActiveOrders': 5,
-    'activeOrdersCount': 0,
-    'isOnline': false,
-    'isSuspended': true,
-  },
-];
 
 Map<String, dynamic> _subcat(String id, String nameAr, String nameEn) =>
     {'id': id, 'nameAr': nameAr, 'nameEn': nameEn};
@@ -349,28 +521,54 @@ final _taxonomy = <Map<String, dynamic>>[
   },
 ];
 
-/// Customer-side demo: profile (with favorites) + a spread of orders across
-/// every status. Runs while signed in AS the customer.
-Future<void> _seedCustomer(String customerUid, StringBuffer log) async {
+/// Customer-side demo: profile (with favorites) + a spread of orders. Runs
+/// while signed in AS the customer (rules gate /users and /orders create to
+/// isSelf). `index` (0/1/2) picks a distinct favorites set and order slice
+/// from `_demoOrders` so the 3 demo customers don't look identical, and
+/// together their orders cover every `OrderStatus`.
+final _favoritesByCustomer = <List<List<String>>>[
+  [
+    ['shop_demo_1', 'shop_demo_5'],
+    ['p1', 'p5', 'p33', 'p36'],
+  ],
+  [
+    ['shop_demo_2', 'shop_demo_6'],
+    ['p13', 'p20', 'p41', 'p45'],
+  ],
+  [
+    ['shop_demo_3', 'shop_demo_7'],
+    ['p22', 'p23', 'p48', 'p52'],
+  ],
+];
+
+Future<void> _seedCustomer(
+  String customerUid,
+  Map<String, String> customer,
+  int index,
+  String ownerUid,
+  String courier1Uid,
+  StringBuffer log,
+) async {
   final firestore = FirebaseFirestore.instance;
+  final favorites = _favoritesByCustomer[index];
 
   await firestore.collection('users').doc(customerUid).set({
-    'name': 'أحمد',
-    'email': _customerEmail,
+    'name': customer['name'],
+    'email': customer['email'],
     'role': 'customer',
-    'phone': '01234567890',
-    'favoriteShopIds': ['shop_demo_1', 'shop_demo_3'],
-    'favoriteProductIds': ['p1', 'p5', 'p13', 'p23'],
+    'phone': customer['phone'],
+    'favoriteShopIds': favorites[0],
+    'favoriteProductIds': favorites[1],
     'createdAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
 
-  final orders = _demoOrders(customerUid);
+  final orders = _demoOrders(customerUid, index, ownerUid, courier1Uid);
   for (final order in orders) {
     await firestore.collection('orders').doc(order['id'] as String).set(order);
   }
 
-  log.writeln('Wrote customer profile + 4 favorites and '
-      '${orders.length} orders.');
+  log.writeln('Customer ${customer['email']}: profile + '
+      '${favorites[1].length} favorites + ${orders.length} orders.');
 }
 
 List<Map<String, dynamic>> _demoShops(String ownerUid) => [
@@ -502,15 +700,15 @@ List<Map<String, dynamic>> _demoProducts() {
   const shop6 = 'shop_demo_6';
   const shop7 = 'shop_demo_7';
   return [
-    _product('p1', shop1, 'Tomatoes (1kg)', 'طماطم (1 كجم)', 1500, 'خضروات وفواكه', 'vegetables', 'Tomato', promo: true),
+    _product('p1', shop1, 'Tomatoes (1kg)', 'طماطم (1 كجم)', 1500, 'خضروات وفواكه', 'vegetables', 'Tomato', promo: true, collectionIds: ['col_deals']),
     _product('p2', shop1, 'Cucumbers (1kg)', 'خيار (1 كجم)', 1200, 'خضروات وفواكه', 'vegetables', null), // SMART has no cucumber
     _product('p3', shop1, 'Bananas (1kg)', 'موز (1 كجم)', 2200, 'خضروات وفواكه', 'fruits', 'Banana'),
     _product('p4', shop1, 'Oranges (1kg)', 'برتقال (1 كجم)', 1800, 'خضروات وفواكه', 'fruits', 'Orange'),
-    _product('p5', shop1, 'Milk 1L', 'لبن 1 لتر', 3500, 'ألبان', 'milk', 'Milk'),
+    _product('p5', shop1, 'Milk 1L', 'لبن 1 لتر', 3500, 'ألبان', 'milk', 'Milk', collectionIds: ['col_essentials']),
     _product('p6', shop1, 'White Cheese 500g', 'جبنة بيضاء 500 جم', 6500, 'ألبان', 'cheese', 'Cottage cheese', low: true),
     _product('p7', shop1, 'Yogurt Cup', 'زبادي كوب', 1200, 'ألبان', 'yogurt', 'asset:yogurt'),
-    _product('p8', shop1, 'Cola 1.5L', 'كولا 1.5 لتر', 2000, 'مشروبات', 'soda', 'Soda', promo: true),
-    _product('p9', shop1, 'Bottled Water 1.5L', 'مياه معدنية 1.5 لتر', 800, 'مشروبات', 'water', 'asset:water'),
+    _product('p8', shop1, 'Cola 1.5L', 'كولا 1.5 لتر', 2000, 'مشروبات', 'soda', 'Soda', promo: true, collectionIds: ['col_deals']),
+    _product('p9', shop1, 'Bottled Water 1.5L', 'مياه معدنية 1.5 لتر', 800, 'مشروبات', 'water', 'asset:water', collectionIds: ['col_essentials']),
     _product('p10', shop1, 'Canned Fava Beans', 'فول معلب', 1000, 'معلبات', 'beans', 'Beans', out: true),
     _product('p11', shop2, 'Baladi Bread (5pcs)', 'عيش بلدي (5 أرغفة)', 500, 'مخبوزات', 'baladiBread', 'Bread'),
     _product('p12', shop2, 'Toast Bread', 'توست', 2500, 'مخبوزات', 'toastBread', 'Bread'),
@@ -563,13 +761,23 @@ List<Map<String, dynamic>> _demoProducts() {
   ];
 }
 
-/// Orders spanning every status so طلباتي shows a realistic history: an active
-/// order on the way, one being prepared, a just-placed one, plus delivered
-/// (one rated), cancelled, and rejected history. Ordered newest-first via
-/// createdAt so the list reads top-to-bottom by recency.
-List<Map<String, dynamic>> _demoOrders(String customerUid) {
+/// Orders spanning every `OrderStatus` across the 3 demo customers (`index`
+/// 0/1/2), so طلباتي / order desk / driver deliveries / finance all have
+/// something real to show. `statusHistory`, driver-assignment fields, and
+/// the commission split are pre-baked to match what the real app writes at
+/// each transition (`firestore.rules`'s `/orders` `create` only checks
+/// `isSelf(customerUid)`, so a full pre-populated lifecycle is a valid
+/// create, not just a valid update). `platform` mirrors `_seedPlatformConfig`
+/// (5% commission, 30 EGP delivery fee, 25 EGP of it to the driver).
+List<Map<String, dynamic>> _demoOrders(
+  String customerUid,
+  int index,
+  String ownerUid,
+  String courierUid,
+) {
   final now = DateTime.now();
-  Timestamp ago(Duration d) => Timestamp.fromDate(now.subtract(d));
+  Timestamp ts(Duration d) => Timestamp.fromDate(now.subtract(d));
+  String iso(Duration d) => now.subtract(d).toIso8601String();
 
   Map<String, dynamic> item(
     String productId,
@@ -585,99 +793,274 @@ List<Map<String, dynamic>> _demoOrders(String customerUid) {
         'quantity': quantity,
       };
 
-  const cairo = {'line1': '12 شارع الجمهورية، الدور 3', 'city': 'القاهرة'};
+  Map<String, dynamic> statusEntry(String status, Duration d, String byUid) =>
+      {'status': status, 'at': iso(d), 'byUid': byUid};
 
-  return [
-    {
-      'id': 'order_demo_1',
-      'shopId': 'shop_demo_1',
+  const courierName = 'كريم عبد العزيز';
+  const courierPhone = '01011111111';
+  const deliveryFeeMinor = 3000;
+  const commissionBps = 500;
+  const driverDeliveryShareMinor = 2500;
+  const platformDeliveryShareMinor = 500;
+
+  Map<String, dynamic> order({
+    required String id,
+    required String shopId,
+    required List<Map<String, dynamic>> items,
+    required int subtotalMinor,
+    required String status,
+    required Duration createdAgo,
+    required List<Map<String, dynamic>> statusHistory,
+    required Map<String, String> address,
+    Duration? assignedAgo,
+    int? rating,
+  }) {
+    final delivered = status == 'delivered';
+    return {
+      'id': id,
+      'shopId': shopId,
       'customerUid': customerUid,
-      'items': [
-        item('p1', 'Tomatoes (1kg)', 'طماطم (1 كجم)', 1500, 2),
-        item('p5', 'Milk 1L', 'لبن 1 لتر', 3500, 1),
-      ],
-      'totalMinor': 6500,
-      'status': 'outForDelivery',
-      'createdAt': ago(const Duration(minutes: 25)),
-      'deliveryAddress': cairo,
-    },
-    {
-      'id': 'order_demo_2',
-      'shopId': 'shop_demo_2',
-      'customerUid': customerUid,
-      'items': [
-        item('p14', 'Chicken (1kg)', 'دجاج (1 كجم)', 9000, 1),
-        item('p11', 'Baladi Bread (5pcs)', 'عيش بلدي (5 أرغفة)', 500, 3),
-      ],
-      'totalMinor': 10500,
-      'status': 'preparing',
-      'createdAt': ago(const Duration(hours: 1, minutes: 10)),
-      'deliveryAddress': cairo,
-    },
-    {
-      'id': 'order_demo_3',
-      'shopId': 'shop_demo_3',
-      'customerUid': customerUid,
-      'items': [
-        item('p22', 'Apples (1kg)', 'تفاح (1 كجم)', 4000, 1),
-        item('p23', 'Strawberries (500g)', 'فراولة (500 جم)', 3500, 2),
-      ],
-      'totalMinor': 11000,
-      'status': 'pending',
-      'createdAt': ago(const Duration(hours: 3)),
-      'deliveryAddress': cairo,
-    },
-    {
-      'id': 'order_demo_4',
-      'shopId': 'shop_demo_1',
-      'customerUid': customerUid,
-      'items': [
-        item('p8', 'Cola 1.5L', 'كولا 1.5 لتر', 2000, 2),
-        item('p9', 'Bottled Water 1.5L', 'مياه معدنية 1.5 لتر', 800, 6),
-      ],
-      'totalMinor': 8800,
-      'status': 'delivered',
-      'rating': 5,
-      'createdAt': ago(const Duration(days: 2)),
-      'deliveryAddress': cairo,
-    },
-    {
-      'id': 'order_demo_5',
-      'shopId': 'shop_demo_2',
-      'customerUid': customerUid,
-      'items': [
-        item('p17', 'Dish Soap 750ml', 'سائل جلي 750 مل', 4500, 1),
-      ],
-      'totalMinor': 4500,
-      'status': 'delivered',
-      'createdAt': ago(const Duration(days: 4)),
-      'deliveryAddress': cairo,
-    },
-    {
-      'id': 'order_demo_6',
-      'shopId': 'shop_demo_3',
-      'customerUid': customerUid,
-      'items': [
-        item('p25', 'Feta Cheese 250g', 'جبنة فيتا 250 جم', 4800, 1),
-      ],
-      'totalMinor': 4800,
-      'status': 'cancelled',
-      'createdAt': ago(const Duration(days: 6)),
-      'deliveryAddress': cairo,
-    },
-    {
-      'id': 'order_demo_7',
-      'shopId': 'shop_demo_4',
-      'customerUid': customerUid,
-      'items': [
-        item('p29', 'Energy Drink 250ml', 'مشروب طاقة 250 مل', 2500, 4),
-      ],
-      'totalMinor': 10000,
-      'status': 'rejected',
-      'createdAt': ago(const Duration(days: 8)),
-      'deliveryAddress': cairo,
-    },
-  ];
+      'items': items,
+      'subtotalMinor': subtotalMinor,
+      'deliveryFeeMinor': deliveryFeeMinor,
+      'totalMinor': subtotalMinor + deliveryFeeMinor,
+      'commissionBps': commissionBps,
+      'commissionMinor': (subtotalMinor * commissionBps / 10000).round(),
+      'driverDeliveryShareMinor': driverDeliveryShareMinor,
+      'platformDeliveryShareMinor': platformDeliveryShareMinor,
+      'commissionPayable': delivered,
+      'status': status,
+      'createdAt': ts(createdAgo),
+      'deliveryAddress': address,
+      'statusHistory': statusHistory,
+      if (assignedAgo != null) 'driverUid': courierUid,
+      if (assignedAgo != null) 'driverName': courierName,
+      if (assignedAgo != null) 'driverPhone': courierPhone,
+      if (assignedAgo != null) 'assignedAt': iso(assignedAgo),
+      'rating': ?rating,
+    };
+  }
+
+  const cairo = {
+    'line1': '12 شارع الجمهورية، الدور 3',
+    'city': 'الإسماعيلية',
+    'areaId': 'downtown-ismailia',
+  };
+  const abuAtwa = {
+    'line1': 'الشارع التجاري، أبوعطوة',
+    'city': 'الإسماعيلية',
+    'areaId': 'abu-atwa',
+  };
+
+  switch (index) {
+    case 0:
+      return [
+        order(
+          id: 'order_demo_0_1',
+          shopId: 'shop_demo_1',
+          items: [
+            item('p1', 'Tomatoes (1kg)', 'طماطم (1 كجم)', 1500, 2),
+            item('p5', 'Milk 1L', 'لبن 1 لتر', 3500, 1),
+          ],
+          subtotalMinor: 6500,
+          status: 'pending',
+          createdAgo: const Duration(minutes: 20),
+          statusHistory: [
+            statusEntry('pending', const Duration(minutes: 20), customerUid),
+          ],
+          address: cairo,
+        ),
+        order(
+          id: 'order_demo_0_2',
+          shopId: 'shop_demo_2',
+          items: [
+            item('p14', 'Chicken (1kg)', 'دجاج (1 كجم)', 9000, 1),
+            item('p11', 'Baladi Bread (5pcs)', 'عيش بلدي (5 أرغفة)', 500, 3),
+          ],
+          subtotalMinor: 10500,
+          status: 'accepted',
+          createdAgo: const Duration(hours: 1),
+          statusHistory: [
+            statusEntry('pending', const Duration(hours: 1), customerUid),
+            statusEntry('accepted', const Duration(minutes: 50), ownerUid),
+          ],
+          address: cairo,
+        ),
+        order(
+          id: 'order_demo_0_3',
+          shopId: 'shop_demo_1',
+          items: [
+            item('p8', 'Cola 1.5L', 'كولا 1.5 لتر', 2000, 2),
+            item('p9', 'Bottled Water 1.5L', 'مياه معدنية 1.5 لتر', 800, 6),
+          ],
+          subtotalMinor: 8800,
+          status: 'outForDelivery',
+          createdAgo: const Duration(hours: 2),
+          statusHistory: [
+            statusEntry('pending', const Duration(hours: 2), customerUid),
+            statusEntry('accepted', const Duration(hours: 1, minutes: 50), ownerUid),
+            statusEntry('preparing', const Duration(hours: 1, minutes: 30), ownerUid),
+            statusEntry('outForDelivery', const Duration(minutes: 20), courierUid),
+          ],
+          address: cairo,
+          assignedAgo: const Duration(minutes: 25),
+        ),
+      ];
+    case 1:
+      return [
+        order(
+          id: 'order_demo_1_1',
+          shopId: 'shop_demo_3',
+          items: [
+            item('p22', 'Apples (1kg)', 'تفاح (1 كجم)', 4000, 1),
+            item('p23', 'Strawberries (500g)', 'فراولة (500 جم)', 3500, 2),
+          ],
+          subtotalMinor: 11000,
+          status: 'preparing',
+          createdAgo: const Duration(hours: 3),
+          statusHistory: [
+            statusEntry('pending', const Duration(hours: 3), customerUid),
+            statusEntry('accepted', const Duration(hours: 2, minutes: 50), ownerUid),
+            statusEntry('preparing', const Duration(hours: 2, minutes: 30), ownerUid),
+          ],
+          address: cairo,
+        ),
+        order(
+          // preparing WITH a driver already assigned — waiting pickup, hasn't
+          // hit outForDelivery yet (the courier's own two-step handoff, M10).
+          id: 'order_demo_1_2',
+          shopId: 'shop_demo_5',
+          items: [
+            item('p33', 'Tomatoes (1kg)', 'طماطم (1 كجم)', 1400, 3),
+            item('p36', 'Milk 1L', 'لبن 1 لتر', 3400, 2),
+          ],
+          subtotalMinor: 11000,
+          status: 'preparing',
+          createdAgo: const Duration(hours: 4),
+          statusHistory: [
+            statusEntry('pending', const Duration(hours: 4), customerUid),
+            statusEntry('accepted', const Duration(hours: 3, minutes: 50), ownerUid),
+            statusEntry('preparing', const Duration(hours: 3, minutes: 30), ownerUid),
+          ],
+          address: abuAtwa,
+          assignedAgo: const Duration(hours: 1),
+        ),
+        order(
+          id: 'order_demo_1_3',
+          shopId: 'shop_demo_3',
+          items: [
+            item('p25', 'Feta Cheese 250g', 'جبنة فيتا 250 جم', 4800, 1),
+          ],
+          subtotalMinor: 4800,
+          status: 'cancelled',
+          createdAgo: const Duration(days: 6),
+          statusHistory: [
+            statusEntry('pending', const Duration(days: 6), customerUid),
+            statusEntry(
+              'cancelled',
+              const Duration(days: 5, hours: 23, minutes: 50),
+              customerUid,
+            ),
+          ],
+          address: cairo,
+        ),
+      ];
+    default:
+      return [
+        order(
+          id: 'order_demo_2_1',
+          shopId: 'shop_demo_4',
+          items: [
+            item('p29', 'Energy Drink 250ml', 'مشروب طاقة 250 مل', 2500, 4),
+          ],
+          subtotalMinor: 10000,
+          status: 'rejected',
+          createdAgo: const Duration(days: 8),
+          statusHistory: [
+            statusEntry('pending', const Duration(days: 8), customerUid),
+            statusEntry(
+              'rejected',
+              const Duration(days: 7, hours: 23, minutes: 50),
+              ownerUid,
+            ),
+          ],
+          address: cairo,
+        ),
+        order(
+          id: 'order_demo_2_2',
+          shopId: 'shop_demo_7',
+          items: [
+            item('p48', 'Oranges (1kg)', 'برتقال (1 كجم)', 1700, 2),
+            item('p50', 'Chicken (1kg)', 'دجاج (1 كجم)', 8800, 1),
+          ],
+          subtotalMinor: 12200,
+          status: 'delivered',
+          createdAgo: const Duration(days: 2),
+          statusHistory: [
+            statusEntry('pending', const Duration(days: 2), customerUid),
+            statusEntry(
+              'accepted',
+              const Duration(days: 1, hours: 23, minutes: 50),
+              ownerUid,
+            ),
+            statusEntry(
+              'preparing',
+              const Duration(days: 1, hours: 23, minutes: 30),
+              ownerUid,
+            ),
+            statusEntry(
+              'outForDelivery',
+              const Duration(days: 1, hours: 23),
+              courierUid,
+            ),
+            statusEntry(
+              'delivered',
+              const Duration(days: 1, hours: 22, minutes: 30),
+              courierUid,
+            ),
+          ],
+          address: abuAtwa,
+          assignedAgo: const Duration(days: 1, hours: 23, minutes: 20),
+          rating: 5,
+        ),
+        order(
+          id: 'order_demo_2_3',
+          shopId: 'shop_demo_7',
+          items: [
+            item('p52', 'White Cheese 500g', 'جبنة بيضاء 500 جم', 6300, 1),
+            item('p53', 'Baladi Bread (5pcs)', 'عيش بلدي (5 أرغفة)', 500, 2),
+          ],
+          subtotalMinor: 7300,
+          status: 'delivered',
+          createdAgo: const Duration(days: 4),
+          statusHistory: [
+            statusEntry('pending', const Duration(days: 4), customerUid),
+            statusEntry(
+              'accepted',
+              const Duration(days: 3, hours: 23, minutes: 50),
+              ownerUid,
+            ),
+            statusEntry(
+              'preparing',
+              const Duration(days: 3, hours: 23, minutes: 30),
+              ownerUid,
+            ),
+            statusEntry(
+              'outForDelivery',
+              const Duration(days: 3, hours: 21),
+              courierUid,
+            ),
+            statusEntry(
+              'delivered',
+              const Duration(days: 3, hours: 20),
+              courierUid,
+            ),
+          ],
+          address: abuAtwa,
+          assignedAgo: const Duration(days: 3, hours: 21, minutes: 30),
+        ),
+      ];
+  }
 }
 
 Map<String, dynamic> _product(
@@ -692,6 +1075,7 @@ Map<String, dynamic> _product(
   bool promo = false,
   bool low = false,
   bool out = false,
+  List<String> collectionIds = const [],
 }) {
   final status = out
       ? 'outOfStock'
@@ -712,6 +1096,7 @@ Map<String, dynamic> _product(
     'subcategoryId': subcategoryId,
     'stockStatus': status,
     'isPromo': promo,
+    'collectionIds': collectionIds,
   };
 }
 

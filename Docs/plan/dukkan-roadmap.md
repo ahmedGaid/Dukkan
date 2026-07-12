@@ -411,8 +411,15 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
 > Kills the recurring Firebase-console chores (config/taxonomy/areas edits, driver activation,
 > user admin). **Session authority: `Docs/plan/founder-console-plan/` — load `FILE_00_INDEX.md`
 > first, then one FILE_NN per session (18 sessions).**
-- [ ] **FC1–FC5 — Foundation.** RBAC + rules helpers · Worker admin API + audit writer ·
+- [~] **FC1–FC5 — Foundation.** RBAC + rules helpers · Worker admin API + audit writer ·
       console shell + guard · audit log vertical · live dashboard. (FILE_01–05)
+      **FC1 DONE (code) 2026-07-12** — `lib/{domain,data}/admin/` (Permissions, StaffRole,
+      AdminProfile + fail-closed model, memoized AdminRepository+reset, Get/ResetAdminProfile),
+      AuthBloc staff-profile load → `AuthState.adminProfile`/`can()`, `/finance` router+settings
+      gates on `can(financeRead)` (founder-uid break-glass kept), seed `_seedRbac` (4 roles +
+      founder `/admins`), `firestore.rules` `hasPerm`/`isStaff` helpers + `/admins`+`/roles` +
+      extended `/orders`,`/users` reads. Gates green (analyze 0, test 132, parity 263). Rules
+      UNDEPLOYED. **Next: FC2 (FILE_02).**
 - [ ] **FC6–FC11 — Management verticals.** Users (Auth ops via Worker) · shops (lifecycle,
       transfer) · products (bulk ops) · taxonomy+geo (console-editable) · orders
       (force-status, reassign, notes) · drivers (activation!). (FILE_06–11)

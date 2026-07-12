@@ -1,4 +1,6 @@
 import 'package:dukkan/core/di/injector.dart';
+import 'package:dukkan/domain/admin/entities/admin_profile.dart';
+import 'package:dukkan/domain/admin/repositories/admin_repository.dart';
 import 'package:dukkan/domain/auth/entities/app_user.dart';
 import 'package:dukkan/domain/auth/entities/user_role.dart';
 import 'package:dukkan/domain/auth/repositories/auth_repository.dart';
@@ -79,6 +81,18 @@ class _NoopDriverRepository implements DriverRepository {
       throw UnimplementedError();
 }
 
+/// `AuthBloc` now resolves an `AdminRepository` (Founder Console RBAC) to load
+/// the staff profile at login. That datasource is Firestore-backed, so — same
+/// reason as the two fakes above — it's swapped for a signed-out no-op that
+/// never reports staff.
+class _NoopAdminRepository implements AdminRepository {
+  @override
+  Future<AdminProfile?> getAdminProfile(String uid) async => null;
+
+  @override
+  void reset() {}
+}
+
 void main() {
   setUp(() async {
     // initDependencies now loads SharedPreferences (locale/theme controllers);
@@ -90,6 +104,8 @@ void main() {
     sl.registerLazySingleton<AuthRepository>(_SignedOutAuthRepository.new);
     await sl.unregister<DriverRepository>();
     sl.registerLazySingleton<DriverRepository>(_NoopDriverRepository.new);
+    await sl.unregister<AdminRepository>();
+    sl.registerLazySingleton<AdminRepository>(_NoopAdminRepository.new);
   });
 
   tearDown(() async {

@@ -4,6 +4,9 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/errors/failures.dart';
+import '../../../domain/admin/entities/admin_profile.dart';
+import '../../../domain/admin/usecases/get_admin_profile.dart';
+import '../../../domain/admin/usecases/reset_admin_profile.dart';
 import '../../../domain/auth/entities/app_user.dart';
 import '../../../domain/auth/entities/user_role.dart';
 import '../../../domain/auth/usecases/log_in.dart';
@@ -27,11 +30,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required SendPasswordReset sendPasswordReset,
     required LogOut logOut,
     required CreateDriverProfile createDriverProfile,
+    required GetAdminProfile getAdminProfile,
+    required ResetAdminProfile resetAdminProfile,
   })  : _logIn = logIn,
         _signUp = signUp,
         _sendPasswordReset = sendPasswordReset,
         _logOut = logOut,
         _createDriverProfile = createDriverProfile,
+        _getAdminProfile = getAdminProfile,
+        _resetAdminProfile = resetAdminProfile,
         super(const AuthState()) {
     on<AuthUserChanged>(_onUserChanged);
     on<AuthLoginRequested>(_onLoginRequested);
@@ -50,18 +57,48 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SendPasswordReset _sendPasswordReset;
   final LogOut _logOut;
   final CreateDriverProfile _createDriverProfile;
+  final GetAdminProfile _getAdminProfile;
+  final ResetAdminProfile _resetAdminProfile;
   StreamSubscription<AppUser?>? _userSub;
 
-  void _onUserChanged(AuthUserChanged event, Emitter<AuthState> emit) {
-    if (event.user != null) {
-      emit(state.copyWith(
-        session: SessionStatus.authenticated,
-        user: event.user,
-      ));
-    } else {
+  Future<void> _onUserChanged(
+    AuthUserChanged event,
+    Emitter<AuthState> emit,
+  ) async {
+    final user = event.user;
+    if (user == null) {
+      _resetAdminProfile();
       emit(state.copyWith(
         session: SessionStatus.unauthenticated,
         clearUser: true,
+        clearAdminProfile: true,
+      ));
+      return;
+    }
+
+    // Route first: authenticated is emitted immediately so login never waits
+    // on the admin lookup below.
+    emit(state.copyWith(
+      session: SessionStatus.authenticated,
+      user: user,
+    ));
+
+    // Enrich the session with the staff/admin profile (Founder Console RBAC).
+    // A failed load is treated as "not staff" (null), never an error that
+    // blocks the app.
+    AdminProfile? profile;
+    try {
+      profile = await _getAdminProfile(user.uid);
+    } on Failure {
+      profile = null;
+    }
+
+    // Skip if a sign-out or account switch landed while the profile loaded.
+    if (state.session == SessionStatus.authenticated &&
+        state.user?.uid == user.uid) {
+      emit(state.copyWith(
+        adminProfile: profile,
+        clearAdminProfile: profile == null,
       ));
     }
   }
