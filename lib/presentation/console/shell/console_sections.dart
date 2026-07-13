@@ -49,6 +49,12 @@ const consoleSections = <ConsoleSection>[
     labelKey: 'consoleNavShops',
     requiredPerm: Permissions.shopsUpdate,
   ),
+  ConsoleSection(
+    route: '/console/products',
+    icon: Icons.inventory_2_outlined,
+    labelKey: 'consoleNavProducts',
+    requiredPerm: Permissions.productsUpdate,
+  ),
 ];
 
 /// The sections a given staff member may see, in order. Empty for a non-staff

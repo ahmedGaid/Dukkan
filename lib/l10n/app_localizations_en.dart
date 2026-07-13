@@ -285,6 +285,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionConfirm => 'Confirm';
 
   @override
+  String get actionEnable => 'Enable';
+
+  @override
+  String get actionDisable => 'Disable';
+
+  @override
   String get actionClear => 'Clear';
 
   @override
@@ -1374,4 +1380,92 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shopCreateOwnerRequired => 'Find the owner first.';
+
+  @override
+  String get consoleNavProducts => 'Products';
+
+  @override
+  String get productsBoardSearchLabel => 'Search by name';
+
+  @override
+  String get productsBoardErrorBody =>
+      'We can\'t load the product list right now — try again.';
+
+  @override
+  String get productsBoardEmptyTitle => 'No products match';
+
+  @override
+  String get productsBoardEmptyBody => 'Try a different filter or search.';
+
+  @override
+  String get productsBoardActionFailed =>
+      'That didn\'t go through — try again.';
+
+  @override
+  String get productsBoardFilterShop => 'Shop';
+
+  @override
+  String get productsBoardDeletedOnly => 'Deleted';
+
+  @override
+  String get productsBoardDuplicate => 'Duplicate';
+
+  @override
+  String get productsBoardSoftDelete => 'Remove';
+
+  @override
+  String get productsBoardRestore => 'Restore';
+
+  @override
+  String get productsBoardHardDelete => 'Delete forever';
+
+  @override
+  String get productsBoardConfirmSoftDelete =>
+      'Remove this product? It can be restored later.';
+
+  @override
+  String productsBoardHardDeleteWarning(Object name) {
+    return 'This permanently deletes \"$name\" — it can\'t be restored. Type the product\'s name to confirm.';
+  }
+
+  @override
+  String get productsBoardTypeNameLabel => 'Product name';
+
+  @override
+  String productsBoardSelectedCount(Object count) {
+    return '$count selected';
+  }
+
+  @override
+  String get productsBoardBulkAction => 'Bulk action';
+
+  @override
+  String get productsBoardBulkPrice => 'Change price';
+
+  @override
+  String get productsBoardBulkStock => 'Set stock status';
+
+  @override
+  String get productsBoardBulkPromo => 'Promo flag';
+
+  @override
+  String get productsBoardBulkCategory => 'Move category';
+
+  @override
+  String get productsBoardBulkPricePercent => 'Percent';
+
+  @override
+  String get productsBoardBulkPriceFixed => 'Fixed amount';
+
+  @override
+  String get productsBoardBulkPriceIncrease => 'Increase';
+
+  @override
+  String get productsBoardBulkPriceDecrease => 'Decrease';
+
+  @override
+  String get productsBoardBulkPricePercentLabel => 'Percent';
+
+  @override
+  String get productsBoardBulkPriceFixedLabel => 'Amount (EGP)';
 }

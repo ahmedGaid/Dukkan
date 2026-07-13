@@ -108,7 +108,8 @@ service cloud.firestore {
 
     // Catalog products (S2): only the owner of the product's own shop can
     // create/update/delete it, and a product can't be reassigned to another
-    // shop after creation.
+    // shop after creation. Founder Console staff (FC8) get the same access,
+    // gated by the `products.*` perms — never a shopId reassignment either.
     match /products/{productId} {
       function ownsShop(shopId) {
         return isSignedIn() &&
@@ -118,12 +119,16 @@ service cloud.firestore {
 
       allow read: if true;
 
-      allow create: if ownsShop(request.resource.data.shopId);
+      allow create: if ownsShop(request.resource.data.shopId) || hasPerm('products.create');
 
-      allow update: if ownsShop(resource.data.shopId)
+      allow update: if (ownsShop(resource.data.shopId) || hasPerm('products.update'))
         && request.resource.data.shopId == resource.data.shopId;
 
-      allow delete: if ownsShop(resource.data.shopId);
+      // Hard delete stays possible for owners as today; the console UI uses
+      // soft delete (an `update` writing `deleted`/`deletedAt`/`deletedBy`)
+      // except an explicit founder-only "delete forever" on an already
+      // soft-deleted doc, which lands here.
+      allow delete: if ownsShop(resource.data.shopId) || hasPerm('products.delete');
     }
 
     // A customer owns their own orders; a shop owner can read orders placed

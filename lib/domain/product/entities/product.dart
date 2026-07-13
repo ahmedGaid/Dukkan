@@ -17,6 +17,10 @@ class Product extends Equatable {
     this.imageUrl,
     this.subcategoryId,
     this.collectionIds = const [],
+    this.isFeatured = false,
+    this.deleted = false,
+    this.deletedAt,
+    this.deletedBy,
   });
 
   final String id;
@@ -28,6 +32,16 @@ class Product extends Equatable {
   final String category;
   final StockStatus stockStatus;
   final bool isPromo;
+
+  /// Founder Console curation flag (FC8) — customer-facing badge only, no
+  /// behavior gate.
+  final bool isFeatured;
+
+  /// Soft delete (FC8) — reversible, never a real Firestore delete. The
+  /// spec's "archive" maps to this one hide mechanism instead of two.
+  final bool deleted;
+  final DateTime? deletedAt;
+  final String? deletedBy;
 
   /// Links to a `/categories/{categoryId}` subcategory (M3). Nullable — the
   /// 53 products seeded before this session don't have one yet; `category`
@@ -53,5 +67,9 @@ class Product extends Equatable {
         isPromo,
         subcategoryId,
         collectionIds,
+        isFeatured,
+        deleted,
+        deletedAt,
+        deletedBy,
       ];
 }

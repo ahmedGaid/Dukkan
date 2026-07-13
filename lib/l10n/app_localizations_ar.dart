@@ -284,6 +284,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get actionConfirm => 'تأكيد';
 
   @override
+  String get actionEnable => 'تفعيل';
+
+  @override
+  String get actionDisable => 'إلغاء التفعيل';
+
+  @override
   String get actionClear => 'امسح';
 
   @override
@@ -1345,4 +1351,91 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get shopCreateOwnerRequired => 'دور على المالك الأول.';
+
+  @override
+  String get consoleNavProducts => 'المنتجات';
+
+  @override
+  String get productsBoardSearchLabel => 'دور بالاسم';
+
+  @override
+  String get productsBoardErrorBody =>
+      'مقدرناش نجيب قايمة المنتجات دلوقتي — جرّب تاني.';
+
+  @override
+  String get productsBoardEmptyTitle => 'مفيش منتجات مطابقة';
+
+  @override
+  String get productsBoardEmptyBody => 'جرّب فلتر أو بحث تاني.';
+
+  @override
+  String get productsBoardActionFailed => 'الحركة دي معملتش — جرّب تاني.';
+
+  @override
+  String get productsBoardFilterShop => 'الدكان';
+
+  @override
+  String get productsBoardDeletedOnly => 'متشال';
+
+  @override
+  String get productsBoardDuplicate => 'نسخ';
+
+  @override
+  String get productsBoardSoftDelete => 'شيل';
+
+  @override
+  String get productsBoardRestore => 'رجّع';
+
+  @override
+  String get productsBoardHardDelete => 'حذف نهائي';
+
+  @override
+  String get productsBoardConfirmSoftDelete =>
+      'تشيل المنتج ده؟ ممكن ترجّعه تاني بعدين.';
+
+  @override
+  String productsBoardHardDeleteWarning(Object name) {
+    return 'الحركة دي هتمسح \"$name\" نهائي — مش هترجع تاني. اكتب اسم المنتج علشان تأكد.';
+  }
+
+  @override
+  String get productsBoardTypeNameLabel => 'اسم المنتج';
+
+  @override
+  String productsBoardSelectedCount(Object count) {
+    return '$count متحدد';
+  }
+
+  @override
+  String get productsBoardBulkAction => 'حركة جماعية';
+
+  @override
+  String get productsBoardBulkPrice => 'تغيير السعر';
+
+  @override
+  String get productsBoardBulkStock => 'تحديد حالة المخزون';
+
+  @override
+  String get productsBoardBulkPromo => 'علامة العرض';
+
+  @override
+  String get productsBoardBulkCategory => 'نقل القسم';
+
+  @override
+  String get productsBoardBulkPricePercent => 'نسبة مئوية';
+
+  @override
+  String get productsBoardBulkPriceFixed => 'مبلغ ثابت';
+
+  @override
+  String get productsBoardBulkPriceIncrease => 'زيادة';
+
+  @override
+  String get productsBoardBulkPriceDecrease => 'تخفيض';
+
+  @override
+  String get productsBoardBulkPricePercentLabel => 'النسبة';
+
+  @override
+  String get productsBoardBulkPriceFixedLabel => 'المبلغ (جنيه)';
 }

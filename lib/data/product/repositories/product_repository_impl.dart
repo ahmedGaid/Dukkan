@@ -19,10 +19,10 @@ class ProductRepositoryImpl implements ProductRepository {
     if (await _networkInfo.isConnected) {
       await for (final products in _remote.watchProductsByShop(shopId)) {
         await _local.cacheProductsByShop(shopId, products);
-        yield products;
+        yield _visible(products);
       }
     } else {
-      yield await _local.getCachedProductsByShop(shopId);
+      yield _visible(await _local.getCachedProductsByShop(shopId));
     }
   }
 
@@ -31,12 +31,20 @@ class ProductRepositoryImpl implements ProductRepository {
     if (await _networkInfo.isConnected) {
       await for (final products in _remote.watchAllProducts()) {
         await _local.cacheAllProducts(products);
-        yield products;
+        yield _visible(products);
       }
     } else {
-      yield await _local.getCachedAllProducts();
+      yield _visible(await _local.getCachedAllProducts());
     }
   }
+
+  /// Every product stream shared between the customer shop page and the
+  /// owner's own catalog manager (`ProductsBloc`) drops soft-deleted
+  /// products — a Founder Console removal (FC8) hides a product everywhere
+  /// except the console, which reads `AdminProductsRepository` unfiltered
+  /// instead. Same client-side-filter tradeoff as `ShopRepositoryImpl`.
+  List<Product> _visible(List<Product> products) =>
+      products.where((p) => !p.deleted).toList();
 
   @override
   Future<Product> getProduct(String productId) async {
@@ -98,6 +106,10 @@ class ProductRepositoryImpl implements ProductRepository {
       imageUrl: product.imageUrl,
       subcategoryId: product.subcategoryId,
       collectionIds: product.collectionIds,
+      isFeatured: product.isFeatured,
+      deleted: product.deleted,
+      deletedAt: product.deletedAt,
+      deletedBy: product.deletedBy,
     ));
   }
 

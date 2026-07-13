@@ -498,6 +498,37 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       `actionConfirm`/`consoleNavUsers`. Added `users_bloc_test.dart` (9 cases),
       `user_detail_bloc_test.dart` (6 cases), `managed_user_model_test.dart` (5 cases). Gates
       green (analyze 0, test 181, parity 378). **Next: FC7 (FILE_07) — shop management.**
+      **FC7 DONE (code) 2026-07-14** — shop management (FILE_07). `Shop` gained `status`
+      (pending/active/suspended, missing→active), `featured`, `verified`, soft-delete fields,
+      `hoursNote`; `watchShops()` filters non-active shops for customers only (owner + console
+      views stay unfiltered); onboarding always creates a `pending` shop + review banner.
+      `firestore.rules` `shops.update` branches on `/shops` create/update (never lets
+      `ownerUid` change client-side) + `/collections`. Worker `/admin/shops/transfer` is the
+      only path allowed to change `ownerUid`. New `AdminShopsRepository` (9 usecases) +
+      `console/shops/` board + detail + create pages. 47 i18n keys ×2, 3 model tests. Gates
+      green (analyze 0, test 184, parity 419). Transfer + rules-deny still need a live
+      wrangler/device smoke test — not run this session.
+      **FC8 DONE (code) 2026-07-14** — product admin (FILE_08). `Product` gained `isFeatured`,
+      soft-delete fields (`deleted`/`deletedAt`/`deletedBy` — one hide mechanism, no separate
+      archive); customer/owner-shared `ProductsBloc` streams (`watchProductsByShop`/
+      `watchAllProducts`) now drop deleted docs client-side, same tradeoff as
+      `ShopRepositoryImpl`. Fixed a field-wipe bug found in `ProductFormPage`'s edit path (it
+      built a fresh `Product` without carrying `isFeatured`/`deleted*` forward — any owner or
+      console edit via the form would have silently cleared them). `firestore.rules` `/products`
+      gained `products.create`/`update`/`delete` staff branches alongside `ownsShop`. New
+      `AdminProductsRepository` (cursor-paginated `getProducts` — real `where` filters +
+      `orderBy(documentId)`, 25/page, mirrors `AdminUsersRemoteDataSource`; unpaginated
+      `getAllMatching` backs an Arabic-folded name search over the active filters, fold-applied
+      client-side per keystroke without re-fetching) + `console/products/` board page: shop/
+      category/stock/promo/deleted filters, row actions (edit reuses the owner
+      `ProductFormPage`, duplicate, soft delete/restore, founder-only type-to-confirm hard
+      delete), long-press multi-select → bulk price (±%/±fixed, round-half-up via the M12 idiom)
+      /stock/promo/featured/category via chunked `WriteBatch` (≤400) + one summary audit entry.
+      No Worker route needed (unlike shop-ownership transfer) — every product field is staff-
+      writable client-side once `products.*` rules pass. 30 i18n keys ×2, 3 new model tests
+      (187 total). Gates green (analyze 0, test 187, parity 448). Bulk WriteBatch + rules-deny
+      still need a live device smoke test — not run this session. **Next: FC9 (FILE_09) —
+      taxonomy + geo.**
 - [ ] **FC12–FC15 — Platform ops.** Settings/flags/maintenance+version gates · notification
       center (topics) · media library (R2) · impersonation + dev tools. (FILE_12–15)
 - [ ] **FC16–FC18 — Growth + close.** Promotions (coupons/banners/featured) · global search +

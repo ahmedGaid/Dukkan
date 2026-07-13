@@ -176,6 +176,9 @@ class _ProductFormPageState extends State<ProductFormPage> {
           collectionIds: collectionIds,
         );
       } else {
+        // Founder Console curation/soft-delete fields (FC8) aren't editable
+        // from this form — carry them through unchanged so a console or
+        // owner edit never silently clears them.
         await sl<UpdateProduct>()(Product(
           id: existing.id,
           shopId: existing.shopId,
@@ -188,10 +191,14 @@ class _ProductFormPageState extends State<ProductFormPage> {
           isPromo: _isPromo,
           imageUrl: imageUrl,
           collectionIds: collectionIds,
+          isFeatured: existing.isFeatured,
+          deleted: existing.deleted,
+          deletedAt: existing.deletedAt,
+          deletedBy: existing.deletedBy,
         ));
       }
       if (!mounted) return;
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(true);
     } catch (_) {
       if (!mounted) return;
       setState(() => _submitting = false);

@@ -51,6 +51,10 @@ class ProductRemoteDataSource {
       isPromo: product.isPromo,
       subcategoryId: product.subcategoryId,
       collectionIds: product.collectionIds,
+      isFeatured: product.isFeatured,
+      deleted: product.deleted,
+      deletedAt: product.deletedAt,
+      deletedBy: product.deletedBy,
     );
   }
 

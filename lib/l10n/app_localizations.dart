@@ -632,6 +632,18 @@ abstract class AppLocalizations {
   /// **'تأكيد'**
   String get actionConfirm;
 
+  /// No description provided for @actionEnable.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفعيل'**
+  String get actionEnable;
+
+  /// No description provided for @actionDisable.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء التفعيل'**
+  String get actionDisable;
+
   /// No description provided for @actionClear.
   ///
   /// In ar, this message translates to:
@@ -2611,6 +2623,168 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'دور على المالك الأول.'**
   String get shopCreateOwnerRequired;
+
+  /// No description provided for @consoleNavProducts.
+  ///
+  /// In ar, this message translates to:
+  /// **'المنتجات'**
+  String get consoleNavProducts;
+
+  /// No description provided for @productsBoardSearchLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'دور بالاسم'**
+  String get productsBoardSearchLabel;
+
+  /// No description provided for @productsBoardErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقدرناش نجيب قايمة المنتجات دلوقتي — جرّب تاني.'**
+  String get productsBoardErrorBody;
+
+  /// No description provided for @productsBoardEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش منتجات مطابقة'**
+  String get productsBoardEmptyTitle;
+
+  /// No description provided for @productsBoardEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب فلتر أو بحث تاني.'**
+  String get productsBoardEmptyBody;
+
+  /// No description provided for @productsBoardActionFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحركة دي معملتش — جرّب تاني.'**
+  String get productsBoardActionFailed;
+
+  /// No description provided for @productsBoardFilterShop.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدكان'**
+  String get productsBoardFilterShop;
+
+  /// No description provided for @productsBoardDeletedOnly.
+  ///
+  /// In ar, this message translates to:
+  /// **'متشال'**
+  String get productsBoardDeletedOnly;
+
+  /// No description provided for @productsBoardDuplicate.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسخ'**
+  String get productsBoardDuplicate;
+
+  /// No description provided for @productsBoardSoftDelete.
+  ///
+  /// In ar, this message translates to:
+  /// **'شيل'**
+  String get productsBoardSoftDelete;
+
+  /// No description provided for @productsBoardRestore.
+  ///
+  /// In ar, this message translates to:
+  /// **'رجّع'**
+  String get productsBoardRestore;
+
+  /// No description provided for @productsBoardHardDelete.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف نهائي'**
+  String get productsBoardHardDelete;
+
+  /// No description provided for @productsBoardConfirmSoftDelete.
+  ///
+  /// In ar, this message translates to:
+  /// **'تشيل المنتج ده؟ ممكن ترجّعه تاني بعدين.'**
+  String get productsBoardConfirmSoftDelete;
+
+  /// No description provided for @productsBoardHardDeleteWarning.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحركة دي هتمسح \"{name}\" نهائي — مش هترجع تاني. اكتب اسم المنتج علشان تأكد.'**
+  String productsBoardHardDeleteWarning(Object name);
+
+  /// No description provided for @productsBoardTypeNameLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم المنتج'**
+  String get productsBoardTypeNameLabel;
+
+  /// No description provided for @productsBoardSelectedCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} متحدد'**
+  String productsBoardSelectedCount(Object count);
+
+  /// No description provided for @productsBoardBulkAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'حركة جماعية'**
+  String get productsBoardBulkAction;
+
+  /// No description provided for @productsBoardBulkPrice.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير السعر'**
+  String get productsBoardBulkPrice;
+
+  /// No description provided for @productsBoardBulkStock.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديد حالة المخزون'**
+  String get productsBoardBulkStock;
+
+  /// No description provided for @productsBoardBulkPromo.
+  ///
+  /// In ar, this message translates to:
+  /// **'علامة العرض'**
+  String get productsBoardBulkPromo;
+
+  /// No description provided for @productsBoardBulkCategory.
+  ///
+  /// In ar, this message translates to:
+  /// **'نقل القسم'**
+  String get productsBoardBulkCategory;
+
+  /// No description provided for @productsBoardBulkPricePercent.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسبة مئوية'**
+  String get productsBoardBulkPricePercent;
+
+  /// No description provided for @productsBoardBulkPriceFixed.
+  ///
+  /// In ar, this message translates to:
+  /// **'مبلغ ثابت'**
+  String get productsBoardBulkPriceFixed;
+
+  /// No description provided for @productsBoardBulkPriceIncrease.
+  ///
+  /// In ar, this message translates to:
+  /// **'زيادة'**
+  String get productsBoardBulkPriceIncrease;
+
+  /// No description provided for @productsBoardBulkPriceDecrease.
+  ///
+  /// In ar, this message translates to:
+  /// **'تخفيض'**
+  String get productsBoardBulkPriceDecrease;
+
+  /// No description provided for @productsBoardBulkPricePercentLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'النسبة'**
+  String get productsBoardBulkPricePercentLabel;
+
+  /// No description provided for @productsBoardBulkPriceFixedLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ (جنيه)'**
+  String get productsBoardBulkPriceFixedLabel;
 }
 
 class _AppLocalizationsDelegate

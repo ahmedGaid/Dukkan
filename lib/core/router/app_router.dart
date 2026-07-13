@@ -13,6 +13,7 @@ import '../../presentation/console/audit/pages/audit_log_page.dart';
 import '../../presentation/console/dashboard/pages/dashboard_page.dart';
 import '../../presentation/console/shell/console_sections.dart';
 import '../../presentation/console/shell/console_shell.dart';
+import '../../presentation/console/products/pages/products_board_page.dart';
 import '../../presentation/console/shops/pages/create_shop_page.dart';
 import '../../presentation/console/shops/pages/shop_detail_page.dart';
 import '../../presentation/console/shops/pages/shops_board_page.dart';
@@ -174,6 +175,14 @@ class AppRouter {
             path: '/console/shops/:id',
             builder: (context, state) =>
                 ShopDetailPage(seed: state.extra as Shop?),
+          ),
+          // Product management (FILE_08). Gated by `products.update` in the
+          // console menu + Firestore rules. No detail route — row/bulk
+          // actions live inline on the board (see `ProductsBoardPage`), and
+          // edit reuses the existing owner `/catalog/product-form` route.
+          GoRoute(
+            path: '/console/products',
+            builder: (context, state) => const ProductsBoardPage(),
           ),
         ],
       ),

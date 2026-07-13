@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dukkan/data/product/models/product_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -72,5 +73,53 @@ void main() {
     final roundTripped = ProductModel.fromJson(product.toJson());
 
     expect(roundTripped.collectionIds, ['offers']);
+  });
+
+  test('fromFirestore parses a pre-FC8 product as not-featured, not-deleted', () {
+    final product = ProductModel.fromFirestore('p1', baseFirestoreData);
+
+    expect(product.isFeatured, isFalse);
+    expect(product.deleted, isFalse);
+    expect(product.deletedAt, isNull);
+    expect(product.deletedBy, isNull);
+  });
+
+  test('fromFirestore/toFirestore round-trips every FC8 field', () {
+    final deletedAt = DateTime.utc(2026, 7, 14);
+    final product = ProductModel.fromFirestore('p1', {
+      ...baseFirestoreData,
+      'isFeatured': true,
+      'deleted': true,
+      'deletedAt': Timestamp.fromDate(deletedAt),
+      'deletedBy': 'staff1',
+    });
+
+    expect(product.isFeatured, isTrue);
+    expect(product.deleted, isTrue);
+    expect(product.deletedAt?.toUtc(), deletedAt);
+    expect(product.deletedBy, 'staff1');
+
+    final fs = product.toFirestore();
+    expect(fs['isFeatured'], true);
+    expect(fs['deleted'], true);
+    expect(fs['deletedAt'], isA<Timestamp>());
+
+    final roundTripped = ProductModel.fromFirestore('p1', fs);
+    expect(roundTripped, product);
+  });
+
+  test('toJson/fromJson round-trips FC8 fields', () {
+    final product = ProductModel.fromFirestore('p1', {
+      ...baseFirestoreData,
+      'isFeatured': true,
+      'deleted': true,
+      'deletedBy': 'staff1',
+    });
+
+    final roundTripped = ProductModel.fromJson(product.toJson());
+
+    expect(roundTripped.isFeatured, isTrue);
+    expect(roundTripped.deleted, isTrue);
+    expect(roundTripped.deletedBy, 'staff1');
   });
 }
