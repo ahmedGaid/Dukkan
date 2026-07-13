@@ -8,11 +8,11 @@ import '../../presentation/auth/pages/signup_page.dart';
 import '../../presentation/cart/pages/cart_page.dart';
 import '../../presentation/cart/pages/checkout_page.dart';
 import '../../presentation/cart/pages/order_placed_page.dart';
+import '../../presentation/console/audit/pages/audit_log_page.dart';
 import '../../presentation/console/dashboard/pages/dashboard_page.dart';
+import '../../presentation/console/shell/console_sections.dart';
 import '../../presentation/console/shell/console_shell.dart';
 import '../../presentation/finance/pages/finance_page.dart';
-import '../../presentation/widgets/common/empty_state.dart';
-import '../../l10n/app_localizations.dart';
 import '../../domain/admin/entities/admin_profile.dart';
 import '../../domain/admin/entities/permissions.dart';
 import '../../domain/auth/entities/user_role.dart';
@@ -132,18 +132,12 @@ class AppRouter {
             path: '/console',
             builder: (context, state) => const DashboardPage(),
           ),
-          // Placeholder until FILE_04 builds the audit vertical — keeps the
-          // menu's audit item from routing nowhere.
+          // Immutable audit trail viewer (FILE_04). Gated by `auditlogs.read`
+          // in the console menu + Firestore rules; the shell provides the app
+          // bar/title, this route just supplies the body.
           GoRoute(
             path: '/console/audit',
-            builder: (context, state) {
-              final l10n = AppLocalizations.of(context)!;
-              return EmptyState(
-                icon: Icons.receipt_long_outlined,
-                title: l10n.consoleNavAudit,
-                message: l10n.consoleComingSoon,
-              );
-            },
+            builder: (context, state) => const AuditLogPage(),
           ),
         ],
       ),
@@ -180,11 +174,18 @@ class AppRouter {
           return '/home';
         }
         // Founder Console — any active staff member may enter the shell; each
-        // section is gated again inside (UI), and every write by Firestore
-        // rules + the Worker. A non-staff account is bounced home.
+        // section is gated again by Firestore rules + the Worker on write. A
+        // non-staff account is bounced home; a staff member deep-linking to a
+        // section they lack the permission for is bounced to the dashboard
+        // (the menu already hides it — the URL is guarded too).
         if (location.startsWith('/console')) {
           final AdminProfile? admin = _authBloc.state.adminProfile;
           if (admin == null || !admin.isActive) return '/home';
+          final section = consoleSectionForLocation(location);
+          if (section?.requiredPerm != null &&
+              !admin.can(section!.requiredPerm!)) {
+            return '/console';
+          }
         }
         if (location != '/' && !_authPages.contains(location)) return null;
         final user = _authBloc.state.user;

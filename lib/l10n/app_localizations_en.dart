@@ -877,4 +877,98 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get roleSupport => 'Support';
+
+  @override
+  String get auditFilterAction => 'Action';
+
+  @override
+  String get auditFilterType => 'Type';
+
+  @override
+  String get auditFilterTargetId => 'Target ID';
+
+  @override
+  String get auditFilterAll => 'All';
+
+  @override
+  String get auditFilterDateRange => 'Date range';
+
+  @override
+  String get auditFilterClear => 'Clear filters';
+
+  @override
+  String get auditReported => 'Reported';
+
+  @override
+  String get auditLoadMore => 'Load more';
+
+  @override
+  String get auditEmptyTitle => 'No activity yet';
+
+  @override
+  String get auditEmptyBody => 'Actions across the platform will show up here.';
+
+  @override
+  String get auditErrorBody =>
+      'We couldn\'t load the log right now — try again.';
+
+  @override
+  String get auditDetailTarget => 'Target';
+
+  @override
+  String get auditDetailActor => 'Performed by';
+
+  @override
+  String get auditDetailWhen => 'When';
+
+  @override
+  String get auditDetailReason => 'Reason';
+
+  @override
+  String get auditDetailIp => 'IP address';
+
+  @override
+  String get auditDetailChanges => 'Changes';
+
+  @override
+  String get auditDetailField => 'Field';
+
+  @override
+  String get auditDetailBefore => 'Before';
+
+  @override
+  String get auditDetailAfter => 'After';
+
+  @override
+  String get auditDetailNoChanges => 'No field changes recorded.';
+
+  @override
+  String get auditTimeJustNow => 'Just now';
+
+  @override
+  String auditTimeMinutesAgo(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '${countString}m ago';
+  }
+
+  @override
+  String auditTimeHoursAgo(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '${countString}h ago';
+  }
+
+  @override
+  String auditTimeDaysAgo(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '${countString}d ago';
+  }
 }

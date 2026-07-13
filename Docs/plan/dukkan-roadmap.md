@@ -437,7 +437,22 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       `_ConsoleRow` in settings (active-staff only). Registry seeds dashboard + audit; audit routes
       to an EmptyState placeholder until FC4. 10 i18n keys ×2 + lexicon rows (Console→لوحة التحكم,
       Founder→المؤسس). No rules/Worker change. Gates green (analyze 0, test 138, parity 273).
-      **Next: FC4 (FILE_04) — audit log vertical.**
+      **FC4 DONE (code) 2026-07-13** — audit log vertical (FILE_04). `firestore.rules`
+      `/auditLogs` block (`read: hasPerm('auditlogs.read')`, `write: false` — Worker-only,
+      immutable) + 4 `auditLogs` composite indexes (targetType/actorUid/action/targetId ×
+      createdAt desc). `lib/{domain,data}/audit/` — `AuditEntry`/`AuditFilter`/`AuditPage`/
+      `AuditActions`, `AuditRepository`+`GetAuditEntries`, `AuditEntryModel.fromFirestore`
+      (fail-soft, ISO createdAt), `AuditRemoteDataSource` (filter→query, value-cursor pagination
+      by createdAt — no `DocumentSnapshot` in domain, page 30), no-cache repo (mirrors Finance).
+      `lib/presentation/console/audit/` — `AuditLogBloc` (load/filter/loadMore) + page: filter bar
+      (action/type/targetId/date-range + clear), designed loading/empty/error states, paginated
+      list (auto + Load-more + pull-refresh), row (target icon, action, actor, relative time,
+      «مُبلَّغ» chip when reported), detail sheet (kv + before/after diff table). Router placeholder
+      → `AuditLogPage`; **router guard now enforces per-section `requiredPerm`** (deep-link to a
+      section a staff member lacks bounces to `/console`) via new pure `consoleSectionForLocation`.
+      27 i18n keys ×2 (first ICU placeholders in the project: relative-time counts) + lexicon row
+      (Activity/audit log→سجل العمليات). Gates green (analyze 0, test 151, parity 298). **Rules +
+      indexes UNDEPLOYED (user).** **Next: FC5 (FILE_05) — live dashboard.**
 - [ ] **FC6–FC11 — Management verticals.** Users (Auth ops via Worker) · shops (lifecycle,
       transfer) · products (bulk ops) · taxonomy+geo (console-editable) · orders
       (force-status, reassign, notes) · drivers (activation!). (FILE_06–11)

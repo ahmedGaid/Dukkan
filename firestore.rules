@@ -291,6 +291,16 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Immutable audit trail (Founder Console session 4). Immutable by
+    // construction: ONLY the Worker writes (its service account bypasses rules),
+    // so clients — including staff — can never create/update/delete an entry.
+    // A `reported: true` entry was client-reported (best-effort) via
+    // `POST /admin/audit`; `reported: false` means the op ran server-side.
+    match /auditLogs/{entryId} {
+      allow read: if hasPerm('auditlogs.read');
+      allow write: if false;
+    }
+
     // Deny anything without an explicit rule above.
     match /{document=**} {
       allow read, write: if false;

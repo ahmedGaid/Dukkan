@@ -10,6 +10,8 @@ import '../../data/admin/repositories/admin_repository_impl.dart';
 import '../../data/areas/datasources/areas_local_datasource.dart';
 import '../../data/areas/datasources/areas_remote_datasource.dart';
 import '../../data/areas/repositories/areas_repository_impl.dart';
+import '../../data/audit/datasources/audit_remote_datasource.dart';
+import '../../data/audit/repositories/audit_repository_impl.dart';
 import '../../data/auth/datasources/auth_remote_datasource.dart';
 import '../../data/auth/repositories/auth_repository_impl.dart';
 import '../../data/collections/datasources/collections_remote_datasource.dart';
@@ -42,6 +44,8 @@ import '../../domain/admin/usecases/get_admin_profile.dart';
 import '../../domain/admin/usecases/reset_admin_profile.dart';
 import '../../domain/areas/repositories/areas_repository.dart';
 import '../../domain/areas/usecases/get_areas.dart';
+import '../../domain/audit/repositories/audit_repository.dart';
+import '../../domain/audit/usecases/get_audit_entries.dart';
 import '../../domain/auth/repositories/auth_repository.dart';
 import '../../domain/auth/usecases/get_user_by_id.dart';
 import '../../domain/auth/usecases/log_in.dart';
@@ -101,6 +105,7 @@ import '../../domain/taxonomy/usecases/get_taxonomy.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/cart/bloc/cart_bloc.dart';
 import '../../presentation/catalog/bloc/collections_bloc.dart';
+import '../../presentation/console/audit/bloc/audit_log_bloc.dart';
 import '../../presentation/driver/bloc/deliveries_bloc.dart';
 import '../../presentation/favorites/bloc/favorites_bloc.dart';
 import '../../presentation/favorites/bloc/favorites_page_bloc.dart';
@@ -317,6 +322,18 @@ Future<void> initDependencies() async {
 
   // Finance — bloc (page-scoped: one load per settings-gated page open).
   sl.registerFactory(() => FinanceBloc(getFinanceSummary: sl()));
+
+  // Audit log — data (Founder Console session 4; immutable Worker-written
+  // trail, read-only + cursor-paginated for the console viewer, no cache —
+  // a stale security log is worse than a network wait, mirrors Finance).
+  sl.registerLazySingleton(() => AuditRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<AuditRepository>(
+    () => AuditRepositoryImpl(sl()),
+  );
+  sl.registerLazySingleton(() => GetAuditEntries(sl()));
+
+  // Audit log — bloc (page-scoped: one viewer per /console/audit open).
+  sl.registerFactory(() => AuditLogBloc(getAuditEntries: sl()));
 
   // Order — data
   sl.registerLazySingleton(

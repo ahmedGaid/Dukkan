@@ -49,3 +49,21 @@ List<ConsoleSection> visibleConsoleSections(AdminProfile? admin) {
       .where((s) => s.requiredPerm == null || admin.can(s.requiredPerm!))
       .toList(growable: false);
 }
+
+/// The console section a [location] belongs to — an exact route match, else the
+/// deepest section whose route prefixes it (nested pages land in later
+/// sessions). Null when nothing matches. The router guard uses this to enforce
+/// each section's [ConsoleSection.requiredPerm] on a direct/deep-link
+/// navigation (the menu already hides sections a staff member cannot use, but
+/// the URL must be guarded too — UI is never the only gate).
+ConsoleSection? consoleSectionForLocation(String location) {
+  ConsoleSection? best;
+  for (final s in consoleSections) {
+    if (s.route == location) return s;
+    if (location.startsWith('${s.route}/') &&
+        (best == null || s.route.length > best.route.length)) {
+      best = s;
+    }
+  }
+  return best;
+}

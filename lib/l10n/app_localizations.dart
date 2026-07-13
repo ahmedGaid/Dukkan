@@ -1735,6 +1735,156 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'دعم'**
   String get roleSupport;
+
+  /// No description provided for @auditFilterAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'العملية'**
+  String get auditFilterAction;
+
+  /// No description provided for @auditFilterType.
+  ///
+  /// In ar, this message translates to:
+  /// **'النوع'**
+  String get auditFilterType;
+
+  /// No description provided for @auditFilterTargetId.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرّف العنصر'**
+  String get auditFilterTargetId;
+
+  /// No description provided for @auditFilterAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكل'**
+  String get auditFilterAll;
+
+  /// No description provided for @auditFilterDateRange.
+  ///
+  /// In ar, this message translates to:
+  /// **'الفترة'**
+  String get auditFilterDateRange;
+
+  /// No description provided for @auditFilterClear.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسح الفلاتر'**
+  String get auditFilterClear;
+
+  /// No description provided for @auditReported.
+  ///
+  /// In ar, this message translates to:
+  /// **'مُبلَّغ'**
+  String get auditReported;
+
+  /// No description provided for @auditLoadMore.
+  ///
+  /// In ar, this message translates to:
+  /// **'حمّل المزيد'**
+  String get auditLoadMore;
+
+  /// No description provided for @auditEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش عمليات'**
+  String get auditEmptyTitle;
+
+  /// No description provided for @auditEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أي عملية بتحصل في المنصة هتظهر هنا.'**
+  String get auditEmptyBody;
+
+  /// No description provided for @auditErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقدرناش نجيب السجل دلوقتي — جرّب تاني'**
+  String get auditErrorBody;
+
+  /// No description provided for @auditDetailTarget.
+  ///
+  /// In ar, this message translates to:
+  /// **'العنصر'**
+  String get auditDetailTarget;
+
+  /// No description provided for @auditDetailActor.
+  ///
+  /// In ar, this message translates to:
+  /// **'نفّذها'**
+  String get auditDetailActor;
+
+  /// No description provided for @auditDetailWhen.
+  ///
+  /// In ar, this message translates to:
+  /// **'التوقيت'**
+  String get auditDetailWhen;
+
+  /// No description provided for @auditDetailReason.
+  ///
+  /// In ar, this message translates to:
+  /// **'السبب'**
+  String get auditDetailReason;
+
+  /// No description provided for @auditDetailIp.
+  ///
+  /// In ar, this message translates to:
+  /// **'عنوان الـ IP'**
+  String get auditDetailIp;
+
+  /// No description provided for @auditDetailChanges.
+  ///
+  /// In ar, this message translates to:
+  /// **'التغييرات'**
+  String get auditDetailChanges;
+
+  /// No description provided for @auditDetailField.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحقل'**
+  String get auditDetailField;
+
+  /// No description provided for @auditDetailBefore.
+  ///
+  /// In ar, this message translates to:
+  /// **'قبل'**
+  String get auditDetailBefore;
+
+  /// No description provided for @auditDetailAfter.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعد'**
+  String get auditDetailAfter;
+
+  /// No description provided for @auditDetailNoChanges.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش تغييرات متسجّلة.'**
+  String get auditDetailNoChanges;
+
+  /// No description provided for @auditTimeJustNow.
+  ///
+  /// In ar, this message translates to:
+  /// **'دلوقتي'**
+  String get auditTimeJustNow;
+
+  /// No description provided for @auditTimeMinutesAgo.
+  ///
+  /// In ar, this message translates to:
+  /// **'من {count} د'**
+  String auditTimeMinutesAgo(int count);
+
+  /// No description provided for @auditTimeHoursAgo.
+  ///
+  /// In ar, this message translates to:
+  /// **'من {count} س'**
+  String auditTimeHoursAgo(int count);
+
+  /// No description provided for @auditTimeDaysAgo.
+  ///
+  /// In ar, this message translates to:
+  /// **'من {count} ي'**
+  String auditTimeDaysAgo(int count);
 }
 
 class _AppLocalizationsDelegate

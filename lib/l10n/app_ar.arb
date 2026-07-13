@@ -311,5 +311,40 @@
   "roleFounder": "المؤسس",
   "roleAdmin": "مشرف عام",
   "roleModerator": "مشرف",
-  "roleSupport": "دعم"
+  "roleSupport": "دعم",
+
+  "auditFilterAction": "العملية",
+  "auditFilterType": "النوع",
+  "auditFilterTargetId": "معرّف العنصر",
+  "auditFilterAll": "الكل",
+  "auditFilterDateRange": "الفترة",
+  "auditFilterClear": "مسح الفلاتر",
+  "auditReported": "مُبلَّغ",
+  "auditLoadMore": "حمّل المزيد",
+  "auditEmptyTitle": "لسه مفيش عمليات",
+  "auditEmptyBody": "أي عملية بتحصل في المنصة هتظهر هنا.",
+  "auditErrorBody": "مقدرناش نجيب السجل دلوقتي — جرّب تاني",
+  "auditDetailTarget": "العنصر",
+  "auditDetailActor": "نفّذها",
+  "auditDetailWhen": "التوقيت",
+  "auditDetailReason": "السبب",
+  "auditDetailIp": "عنوان الـ IP",
+  "auditDetailChanges": "التغييرات",
+  "auditDetailField": "الحقل",
+  "auditDetailBefore": "قبل",
+  "auditDetailAfter": "بعد",
+  "auditDetailNoChanges": "مفيش تغييرات متسجّلة.",
+  "auditTimeJustNow": "دلوقتي",
+  "auditTimeMinutesAgo": "من {count} د",
+  "@auditTimeMinutesAgo": {
+    "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
+  },
+  "auditTimeHoursAgo": "من {count} س",
+  "@auditTimeHoursAgo": {
+    "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
+  },
+  "auditTimeDaysAgo": "من {count} ي",
+  "@auditTimeDaysAgo": {
+    "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
+  }
 }

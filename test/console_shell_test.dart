@@ -57,4 +57,39 @@ void main() {
       expect(sections.length, consoleSections.length);
     });
   });
+
+  group('consoleSectionForLocation (router guard resolves the perm)', () {
+    test('exact route resolves its section', () {
+      expect(consoleSectionForLocation('/console')?.route, '/console');
+      expect(
+        consoleSectionForLocation('/console/audit')?.requiredPerm,
+        Permissions.auditlogsRead,
+      );
+    });
+
+    test('a nested path resolves to the deepest matching section', () {
+      expect(
+        consoleSectionForLocation('/console/audit/e42')?.route,
+        '/console/audit',
+      );
+    });
+
+    test('an unknown console subpath falls back to the dashboard section '
+        '(null perm ⇒ the guard never bounces it)', () {
+      final s = consoleSectionForLocation('/console/unknown');
+      expect(s?.route, '/console');
+      expect(s?.requiredPerm, isNull);
+    });
+
+    test('the guard would bounce audit for staff lacking auditlogs.read', () {
+      // Mirrors the router `_redirect` check: section.requiredPerm present and
+      // not granted ⇒ bounce. Dashboard (null perm) is never bounced.
+      final staff = _admin(); // no perms
+      final audit = consoleSectionForLocation('/console/audit')!;
+      final dashboard = consoleSectionForLocation('/console')!;
+      expect(audit.requiredPerm != null && !staff.can(audit.requiredPerm!),
+          isTrue);
+      expect(dashboard.requiredPerm, isNull);
+    });
+  });
 }

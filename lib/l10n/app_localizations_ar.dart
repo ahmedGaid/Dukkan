@@ -851,4 +851,97 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get roleSupport => 'دعم';
+
+  @override
+  String get auditFilterAction => 'العملية';
+
+  @override
+  String get auditFilterType => 'النوع';
+
+  @override
+  String get auditFilterTargetId => 'معرّف العنصر';
+
+  @override
+  String get auditFilterAll => 'الكل';
+
+  @override
+  String get auditFilterDateRange => 'الفترة';
+
+  @override
+  String get auditFilterClear => 'مسح الفلاتر';
+
+  @override
+  String get auditReported => 'مُبلَّغ';
+
+  @override
+  String get auditLoadMore => 'حمّل المزيد';
+
+  @override
+  String get auditEmptyTitle => 'لسه مفيش عمليات';
+
+  @override
+  String get auditEmptyBody => 'أي عملية بتحصل في المنصة هتظهر هنا.';
+
+  @override
+  String get auditErrorBody => 'مقدرناش نجيب السجل دلوقتي — جرّب تاني';
+
+  @override
+  String get auditDetailTarget => 'العنصر';
+
+  @override
+  String get auditDetailActor => 'نفّذها';
+
+  @override
+  String get auditDetailWhen => 'التوقيت';
+
+  @override
+  String get auditDetailReason => 'السبب';
+
+  @override
+  String get auditDetailIp => 'عنوان الـ IP';
+
+  @override
+  String get auditDetailChanges => 'التغييرات';
+
+  @override
+  String get auditDetailField => 'الحقل';
+
+  @override
+  String get auditDetailBefore => 'قبل';
+
+  @override
+  String get auditDetailAfter => 'بعد';
+
+  @override
+  String get auditDetailNoChanges => 'مفيش تغييرات متسجّلة.';
+
+  @override
+  String get auditTimeJustNow => 'دلوقتي';
+
+  @override
+  String auditTimeMinutesAgo(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'من $countString د';
+  }
+
+  @override
+  String auditTimeHoursAgo(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'من $countString س';
+  }
+
+  @override
+  String auditTimeDaysAgo(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'من $countString ي';
+  }
 }

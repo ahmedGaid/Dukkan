@@ -88,6 +88,7 @@ Rules:
 | Courier online/offline switch | أونلاين / أوفلاين | متاح / غير متاح |
 | Finance (founder-only summary) | المالية | الحسابات، التقارير المالية |
 | Permission (staff capability) | صلاحية | إذن، تصريح |
+| Activity / audit log (console) | سجل العمليات | سجل التدقيق، اللوج |
 | Console (founder back office) | لوحة التحكم | لوحة الإدارة، الأدمن |
 | Founder (top staff role) | المؤسس | الأدمن، المالك |
 
