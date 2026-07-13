@@ -309,6 +309,7 @@ String _sectionLabel(AppLocalizations l10n, String key) => switch (key) {
       'consoleNavDashboard' => l10n.consoleNavDashboard,
       'consoleNavAudit' => l10n.consoleNavAudit,
       'consoleNavUsers' => l10n.consoleNavUsers,
+      'consoleNavShops' => l10n.consoleNavShops,
       _ => key,
     };
 

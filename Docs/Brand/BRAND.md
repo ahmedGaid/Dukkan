@@ -91,6 +91,9 @@ Rules:
 | Activity / audit log (console) | سجل العمليات | سجل التدقيق، اللوج |
 | Console (founder back office) | لوحة التحكم | لوحة الإدارة، الأدمن |
 | Founder (top staff role) | المؤسس | الأدمن، المالك |
+| Shop status: under review (console) | تحت المراجعة | قيد المراجعة (محجوز لحالة الطلب) |
+| Shop curation: verified | مُوثّق | متأكد منه |
+| Shop curation: featured | مميّز | مُروّج له |
 
 - Human statuses ("جارٍ تجهيز طلبك"), blame-free errors ("حصلت مشكلة — جرّب تاني").
 - RTL is the default layout. LTR (English) must read identically well.

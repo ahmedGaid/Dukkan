@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/di/injector.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../domain/product/entities/product.dart';
 import '../../../domain/shop/entities/shop.dart';
@@ -137,6 +139,10 @@ class _CatalogContent extends StatelessWidget {
                   AppSpacing.xl,
                 ),
                 children: [
+                  if (state.shop?.status == 'pending') ...[
+                    _PendingReviewBanner(),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
                   if (state.shop != null) ShopHeader(shop: state.shop!),
                   const SizedBox(height: AppSpacing.lg),
                   if (state.visibleProducts.isEmpty)
@@ -155,6 +161,47 @@ class _CatalogContent extends StatelessWidget {
             ),
         };
       },
+    );
+  }
+}
+
+/// Shown at the top of the catalog manager while the shop's [Shop.status] is
+/// `pending` (FC7 onboarding change) — the owner can still browse this page,
+/// they just aren't visible to customers yet (Founder Console approval gate).
+class _PendingReviewBanner extends StatelessWidget {
+  const _PendingReviewBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final text = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.12),
+        borderRadius: AppRadius.mdAll,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.hourglass_top_outlined, color: AppColors.warning),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.catalogPendingBannerTitle,
+                  style:
+                      text.titleSmall?.copyWith(color: AppColors.warning, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(l10n.catalogPendingBannerBody, style: text.bodySmall),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

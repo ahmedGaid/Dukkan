@@ -2365,6 +2365,252 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'النشاط'**
   String get userDetailAuditTitle;
+
+  /// No description provided for @catalogPendingBannerTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحت المراجعة'**
+  String get catalogPendingBannerTitle;
+
+  /// No description provided for @catalogPendingBannerBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'دكانك لسه مش ظاهر للعملاء — الفريق بيراجعه دلوقتي.'**
+  String get catalogPendingBannerBody;
+
+  /// No description provided for @consoleNavShops.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدكاكين'**
+  String get consoleNavShops;
+
+  /// No description provided for @shopsBoardSearchLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'دور بالاسم'**
+  String get shopsBoardSearchLabel;
+
+  /// No description provided for @shopsBoardCreateAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'دكان جديد'**
+  String get shopsBoardCreateAction;
+
+  /// No description provided for @shopsBoardErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نجيب قائمة الدكاكين — جرب تاني.'**
+  String get shopsBoardErrorBody;
+
+  /// No description provided for @shopsBoardEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش دكاكين مطابقة'**
+  String get shopsBoardEmptyTitle;
+
+  /// No description provided for @shopsBoardEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرب فلتر تاني أو دور بكلمة مختلفة.'**
+  String get shopsBoardEmptyBody;
+
+  /// No description provided for @shopsBoardOwnerLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك: {ownerUid}'**
+  String shopsBoardOwnerLabel(Object ownerUid);
+
+  /// No description provided for @shopsFilterAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكل'**
+  String get shopsFilterAll;
+
+  /// No description provided for @shopsStatusPending.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحت المراجعة'**
+  String get shopsStatusPending;
+
+  /// No description provided for @shopsStatusActive.
+  ///
+  /// In ar, this message translates to:
+  /// **'نشط'**
+  String get shopsStatusActive;
+
+  /// No description provided for @shopsStatusSuspended.
+  ///
+  /// In ar, this message translates to:
+  /// **'موقوف'**
+  String get shopsStatusSuspended;
+
+  /// No description provided for @shopsStatusDeleted.
+  ///
+  /// In ar, this message translates to:
+  /// **'محذوف'**
+  String get shopsStatusDeleted;
+
+  /// No description provided for @shopsFeaturedBadge.
+  ///
+  /// In ar, this message translates to:
+  /// **'مميّز'**
+  String get shopsFeaturedBadge;
+
+  /// No description provided for @shopsVerifiedBadge.
+  ///
+  /// In ar, this message translates to:
+  /// **'مُوثّق'**
+  String get shopsVerifiedBadge;
+
+  /// No description provided for @shopDetailMissingSeed.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح الصفحة دي من قائمة الدكاكين — لسه مفيش حاجة تتعرض.'**
+  String get shopDetailMissingSeed;
+
+  /// No description provided for @shopDetailStatusTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالة'**
+  String get shopDetailStatusTitle;
+
+  /// No description provided for @shopDetailApprove.
+  ///
+  /// In ar, this message translates to:
+  /// **'موافقة'**
+  String get shopDetailApprove;
+
+  /// No description provided for @shopDetailConfirmApprove.
+  ///
+  /// In ar, this message translates to:
+  /// **'توافق على الدكان ده؟ هيبقى ظاهر للعملاء.'**
+  String get shopDetailConfirmApprove;
+
+  /// No description provided for @shopDetailReject.
+  ///
+  /// In ar, this message translates to:
+  /// **'رفض'**
+  String get shopDetailReject;
+
+  /// No description provided for @shopDetailRejectReasonLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'السبب (بيتسجل في سجل النشاط)'**
+  String get shopDetailRejectReasonLabel;
+
+  /// No description provided for @shopDetailSuspend.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيقاف'**
+  String get shopDetailSuspend;
+
+  /// No description provided for @shopDetailConfirmSuspend.
+  ///
+  /// In ar, this message translates to:
+  /// **'توقف الدكان ده؟ هيختفي من عند العملاء فورًا.'**
+  String get shopDetailConfirmSuspend;
+
+  /// No description provided for @shopDetailUnsuspend.
+  ///
+  /// In ar, this message translates to:
+  /// **'رجّعه تاني'**
+  String get shopDetailUnsuspend;
+
+  /// No description provided for @shopDetailFieldsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'البيانات'**
+  String get shopDetailFieldsTitle;
+
+  /// No description provided for @shopDetailHoursNoteLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظة مواعيد العمل (اختياري)'**
+  String get shopDetailHoursNoteLabel;
+
+  /// No description provided for @shopDetailTransferTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'نقل الملكية'**
+  String get shopDetailTransferTitle;
+
+  /// No description provided for @shopDetailTransferHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'بينقل الدكان لمالك تاني. لازم يكون عنده حساب مالك أصلاً.'**
+  String get shopDetailTransferHint;
+
+  /// No description provided for @shopDetailNewOwnerUidLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرّف المستخدم للمالك الجديد'**
+  String get shopDetailNewOwnerUidLabel;
+
+  /// No description provided for @shopDetailTransferAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'نقل'**
+  String get shopDetailTransferAction;
+
+  /// No description provided for @shopDetailConfirmTransfer.
+  ///
+  /// In ar, this message translates to:
+  /// **'تنقل الدكان ده للمستخدم {newOwnerUid}؟ الخطوة دي مش هترجع من هنا.'**
+  String shopDetailConfirmTransfer(Object newOwnerUid);
+
+  /// No description provided for @shopTransferOldOwnerHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك القديم لسه دوره مالك من غير دكان — عدّل حسابه من إدارة المستخدمين لو محتاج.'**
+  String get shopTransferOldOwnerHint;
+
+  /// No description provided for @shopDetailDangerTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'منطقة خطر'**
+  String get shopDetailDangerTitle;
+
+  /// No description provided for @shopDetailConfirmSoftDelete.
+  ///
+  /// In ar, this message translates to:
+  /// **'تشيل الدكان ده؟ ممكن ترجّعه تاني بعدين.'**
+  String get shopDetailConfirmSoftDelete;
+
+  /// No description provided for @shopDetailShortcutsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختصارات'**
+  String get shopDetailShortcutsTitle;
+
+  /// No description provided for @shopCreateOwnerTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك'**
+  String get shopCreateOwnerTitle;
+
+  /// No description provided for @shopCreateOwnerEmailLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيميل المالك'**
+  String get shopCreateOwnerEmailLabel;
+
+  /// No description provided for @shopCreateOwnerNotFound.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش مستخدم بالإيميل ده.'**
+  String get shopCreateOwnerNotFound;
+
+  /// No description provided for @shopCreateOwnerNotOwnerRole.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحساب ده مش حساب مالك.'**
+  String get shopCreateOwnerNotOwnerRole;
+
+  /// No description provided for @shopCreateOwnerRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'دور على المالك الأول.'**
+  String get shopCreateOwnerRequired;
 }
 
 class _AppLocalizationsDelegate

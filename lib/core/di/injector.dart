@@ -6,8 +6,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/admin/datasources/admin_api_datasource.dart';
 import '../../data/admin/datasources/admin_remote_datasource.dart';
+import '../../data/admin/datasources/admin_shops_remote_datasource.dart';
 import '../../data/admin/datasources/admin_users_remote_datasource.dart';
 import '../../data/admin/repositories/admin_repository_impl.dart';
+import '../../data/admin/repositories/admin_shops_repository_impl.dart';
 import '../../data/admin/repositories/admin_user_actions_impl.dart';
 import '../../data/admin/repositories/admin_users_repository_impl.dart';
 import '../../data/areas/datasources/areas_local_datasource.dart';
@@ -45,11 +47,15 @@ import '../../data/taxonomy/datasources/taxonomy_local_datasource.dart';
 import '../../data/taxonomy/datasources/taxonomy_remote_datasource.dart';
 import '../../data/taxonomy/repositories/taxonomy_repository_impl.dart';
 import '../../domain/admin/repositories/admin_repository.dart';
+import '../../domain/admin/repositories/admin_shops_repository.dart';
 import '../../domain/admin/repositories/admin_user_actions.dart';
 import '../../domain/admin/repositories/admin_users_repository.dart';
 import '../../domain/admin/usecases/change_user_email.dart';
+import '../../domain/admin/usecases/create_shop_as_staff.dart';
 import '../../domain/admin/usecases/create_user.dart';
 import '../../domain/admin/usecases/get_admin_profile.dart';
+import '../../domain/admin/usecases/get_all_shops.dart';
+import '../../domain/admin/usecases/get_shop_by_id.dart';
 import '../../domain/admin/usecases/get_staff_profile_for_uid.dart';
 import '../../domain/admin/usecases/get_user_by_email.dart';
 import '../../domain/admin/usecases/get_user_by_phone.dart';
@@ -57,11 +63,18 @@ import '../../domain/admin/usecases/get_users.dart';
 import '../../domain/admin/usecases/lookup_user_auth.dart';
 import '../../domain/admin/usecases/remove_admin.dart';
 import '../../domain/admin/usecases/reset_admin_profile.dart';
+import '../../domain/admin/usecases/restore_shop.dart';
 import '../../domain/admin/usecases/restore_user.dart';
 import '../../domain/admin/usecases/set_admin.dart';
+import '../../domain/admin/usecases/set_shop_featured.dart';
+import '../../domain/admin/usecases/set_shop_status.dart';
+import '../../domain/admin/usecases/set_shop_verified.dart';
 import '../../domain/admin/usecases/set_user_disabled.dart';
 import '../../domain/admin/usecases/set_user_persona_role.dart';
+import '../../domain/admin/usecases/soft_delete_shop.dart';
 import '../../domain/admin/usecases/soft_delete_user.dart';
+import '../../domain/admin/usecases/transfer_shop_ownership.dart';
+import '../../domain/admin/usecases/update_shop_details.dart';
 import '../../domain/areas/repositories/areas_repository.dart';
 import '../../domain/areas/usecases/get_areas.dart';
 import '../../domain/audit/repositories/audit_repository.dart';
@@ -115,6 +128,7 @@ import '../../domain/product/usecases/get_product.dart';
 import '../../domain/product/usecases/update_product.dart';
 import '../../domain/product/usecases/watch_all_products.dart';
 import '../../domain/product/usecases/watch_products_by_shop.dart';
+import '../../domain/shop/entities/shop.dart';
 import '../../domain/shop/repositories/shop_repository.dart';
 import '../../domain/shop/usecases/create_shop.dart';
 import '../../domain/shop/usecases/get_shop_by_owner.dart';
@@ -130,6 +144,8 @@ import '../../presentation/catalog/bloc/collections_bloc.dart';
 import '../../domain/admin/entities/managed_user.dart';
 import '../../presentation/console/audit/bloc/audit_log_bloc.dart';
 import '../../presentation/console/dashboard/bloc/dashboard_bloc.dart';
+import '../../presentation/console/shops/bloc/shop_detail_bloc.dart';
+import '../../presentation/console/shops/bloc/shops_board_bloc.dart';
 import '../../presentation/console/users/bloc/user_detail_bloc.dart';
 import '../../presentation/console/users/bloc/users_bloc.dart';
 import '../../presentation/driver/bloc/deliveries_bloc.dart';
@@ -213,6 +229,45 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => GetUsers(sl()));
   sl.registerLazySingleton(() => GetUserByEmail(sl()));
   sl.registerLazySingleton(() => GetUserByPhone(sl()));
+
+  // Shop management (Founder Console session 7). AdminShopsRepository reads
+  // are direct + unfiltered (shops read is public — no permission gate to
+  // route through, unlike AdminUsersRepository); every write except
+  // transferOwnership is also direct (gated by `shops.update` rules) —
+  // transferOwnership alone is Worker-routed.
+  sl.registerLazySingleton(() => AdminShopsRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<AdminShopsRepository>(
+    () => AdminShopsRepositoryImpl(sl(), sl()),
+  );
+  sl.registerLazySingleton(() => GetAllShops(sl()));
+  sl.registerLazySingleton(() => GetShopById(sl()));
+  sl.registerLazySingleton(() => SetShopStatus(sl()));
+  sl.registerLazySingleton(() => SetShopFeatured(sl()));
+  sl.registerLazySingleton(() => SetShopVerified(sl()));
+  sl.registerLazySingleton(() => UpdateShopDetails(sl()));
+  sl.registerLazySingleton(() => SoftDeleteShop(sl()));
+  sl.registerLazySingleton(() => RestoreShop(sl()));
+  sl.registerLazySingleton(() => CreateShopAsStaff(sl()));
+  sl.registerLazySingleton(() => TransferShopOwnership(sl()));
+
+  // Shop management — bloc (page-scoped: board loads its own snapshot per
+  // open; detail is seeded with the tapped Shop + the signed-in staff uid,
+  // used for `deletedBy` on a self-reported soft delete).
+  sl.registerFactory(() => ShopsBoardBloc(getAllShops: sl()));
+  sl.registerFactoryParam<ShopDetailBloc, Shop, String>(
+    (seed, actorUid) => ShopDetailBloc(
+      seed: seed,
+      actorUid: actorUid,
+      getShopById: sl(),
+      setShopStatus: sl(),
+      setShopFeatured: sl(),
+      setShopVerified: sl(),
+      updateShopDetails: sl(),
+      softDeleteShop: sl(),
+      restoreShop: sl(),
+      transferShopOwnership: sl(),
+    ),
+  );
 
   // Auth — bloc (app lifetime; createDriverProfile only fires for a courier
   // signup, see AuthBloc._onSignUpRequested; getAdminProfile enriches the

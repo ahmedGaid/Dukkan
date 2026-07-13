@@ -1211,4 +1211,138 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get userDetailAuditTitle => 'النشاط';
+
+  @override
+  String get catalogPendingBannerTitle => 'تحت المراجعة';
+
+  @override
+  String get catalogPendingBannerBody =>
+      'دكانك لسه مش ظاهر للعملاء — الفريق بيراجعه دلوقتي.';
+
+  @override
+  String get consoleNavShops => 'الدكاكين';
+
+  @override
+  String get shopsBoardSearchLabel => 'دور بالاسم';
+
+  @override
+  String get shopsBoardCreateAction => 'دكان جديد';
+
+  @override
+  String get shopsBoardErrorBody => 'معرفناش نجيب قائمة الدكاكين — جرب تاني.';
+
+  @override
+  String get shopsBoardEmptyTitle => 'مفيش دكاكين مطابقة';
+
+  @override
+  String get shopsBoardEmptyBody => 'جرب فلتر تاني أو دور بكلمة مختلفة.';
+
+  @override
+  String shopsBoardOwnerLabel(Object ownerUid) {
+    return 'المالك: $ownerUid';
+  }
+
+  @override
+  String get shopsFilterAll => 'الكل';
+
+  @override
+  String get shopsStatusPending => 'تحت المراجعة';
+
+  @override
+  String get shopsStatusActive => 'نشط';
+
+  @override
+  String get shopsStatusSuspended => 'موقوف';
+
+  @override
+  String get shopsStatusDeleted => 'محذوف';
+
+  @override
+  String get shopsFeaturedBadge => 'مميّز';
+
+  @override
+  String get shopsVerifiedBadge => 'مُوثّق';
+
+  @override
+  String get shopDetailMissingSeed =>
+      'افتح الصفحة دي من قائمة الدكاكين — لسه مفيش حاجة تتعرض.';
+
+  @override
+  String get shopDetailStatusTitle => 'الحالة';
+
+  @override
+  String get shopDetailApprove => 'موافقة';
+
+  @override
+  String get shopDetailConfirmApprove =>
+      'توافق على الدكان ده؟ هيبقى ظاهر للعملاء.';
+
+  @override
+  String get shopDetailReject => 'رفض';
+
+  @override
+  String get shopDetailRejectReasonLabel => 'السبب (بيتسجل في سجل النشاط)';
+
+  @override
+  String get shopDetailSuspend => 'إيقاف';
+
+  @override
+  String get shopDetailConfirmSuspend =>
+      'توقف الدكان ده؟ هيختفي من عند العملاء فورًا.';
+
+  @override
+  String get shopDetailUnsuspend => 'رجّعه تاني';
+
+  @override
+  String get shopDetailFieldsTitle => 'البيانات';
+
+  @override
+  String get shopDetailHoursNoteLabel => 'ملاحظة مواعيد العمل (اختياري)';
+
+  @override
+  String get shopDetailTransferTitle => 'نقل الملكية';
+
+  @override
+  String get shopDetailTransferHint =>
+      'بينقل الدكان لمالك تاني. لازم يكون عنده حساب مالك أصلاً.';
+
+  @override
+  String get shopDetailNewOwnerUidLabel => 'معرّف المستخدم للمالك الجديد';
+
+  @override
+  String get shopDetailTransferAction => 'نقل';
+
+  @override
+  String shopDetailConfirmTransfer(Object newOwnerUid) {
+    return 'تنقل الدكان ده للمستخدم $newOwnerUid؟ الخطوة دي مش هترجع من هنا.';
+  }
+
+  @override
+  String get shopTransferOldOwnerHint =>
+      'المالك القديم لسه دوره مالك من غير دكان — عدّل حسابه من إدارة المستخدمين لو محتاج.';
+
+  @override
+  String get shopDetailDangerTitle => 'منطقة خطر';
+
+  @override
+  String get shopDetailConfirmSoftDelete =>
+      'تشيل الدكان ده؟ ممكن ترجّعه تاني بعدين.';
+
+  @override
+  String get shopDetailShortcutsTitle => 'اختصارات';
+
+  @override
+  String get shopCreateOwnerTitle => 'المالك';
+
+  @override
+  String get shopCreateOwnerEmailLabel => 'إيميل المالك';
+
+  @override
+  String get shopCreateOwnerNotFound => 'مفيش مستخدم بالإيميل ده.';
+
+  @override
+  String get shopCreateOwnerNotOwnerRole => 'الحساب ده مش حساب مالك.';
+
+  @override
+  String get shopCreateOwnerRequired => 'دور على المالك الأول.';
 }

@@ -59,8 +59,11 @@ service cloud.firestore {
     match /shops/{shopId} {
       allow read: if true;
 
-      allow create: if isSignedIn()
-        && request.resource.data.ownerUid == request.auth.uid;
+      allow create: if (isSignedIn()
+          && request.resource.data.ownerUid == request.auth.uid)
+        // Founder Console creates a shop for a named owner (FC7) — no
+        // self-ownerUid requirement, since the caller isn't the owner.
+        || hasPerm('shops.update');
 
       // A rating bump (P3, RateOrder) touches only ratingSum/ratingCount, by
       // exactly one 1-5 star vote — any signed-in customer can do this (not
@@ -76,15 +79,21 @@ service cloud.firestore {
       allow update: if (isSignedIn()
           && resource.data.ownerUid == request.auth.uid
           && request.resource.data.ownerUid == resource.data.ownerUid)
-        || isValidRatingBump();
+        || isValidRatingBump()
+        // Founder Console (FC7): status/flags/edits, never ownerUid — an
+        // ownership change is the Worker's job only
+        // (`/admin/shops/transfer`), which bypasses rules entirely.
+        || (hasPerm('shops.update')
+          && request.resource.data.ownerUid == resource.data.ownerUid);
 
       allow delete: if false;
 
       // Owner-curated collections (M6). Read is any signed-in user (customers
       // see them on the shop page); writes are the shop's own owner only —
-      // same check as the parent `/shops/{shopId}` update rule. Deleting a
-      // collection does NOT touch products; stale `collectionIds` entries on
-      // product docs are ignored at render time.
+      // same check as the parent `/shops/{shopId}` update rule. Console staff
+      // (FC7) get the same write access as the owner, gated by `shops.update`.
+      // Deleting a collection does NOT touch products; stale `collectionIds`
+      // entries on product docs are ignored at render time.
       match /collections/{collectionId} {
         function ownsThisShop() {
           return isSignedIn() &&
@@ -93,7 +102,7 @@ service cloud.firestore {
         }
 
         allow read: if isSignedIn();
-        allow create, update, delete: if ownsThisShop();
+        allow create, update, delete: if ownsThisShop() || hasPerm('shops.update');
       }
     }
 

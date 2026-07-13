@@ -472,6 +472,56 @@ async function handleAdminsRemove(request, env, cors, auth) {
   return json({ ok: true }, 200, cors);
 }
 
+// ---------------------------------------------------------------------------
+// Session 7 (FILE_07) — shop ownership transfer. Every other shop mutation
+// (status/feature/verify/edit/soft-delete) is Firestore-direct under the
+// `shops.update` rules branch; only an `ownerUid` change is Worker-routed —
+// the rules explicitly forbid a client from ever touching that field.
+// ---------------------------------------------------------------------------
+
+/**
+ * `/admin/shops/transfer` — reassigns a shop to a different owner. The new
+ * owner must already have a `/users` doc with `role: 'owner'` (else 400); the
+ * old owner's persona role is left untouched (a founder/admin handles that
+ * manually via user management, Session 6 — noted in the response so the
+ * console can show a hint).
+ */
+async function handleShopsTransfer(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { shopId, newOwnerUid } = body ?? {};
+  if (!isValidStr(shopId, true) || !isValidStr(newOwnerUid, true)) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  const newOwner = await firestoreGetFields(env, accessToken, `users/${newOwnerUid}`);
+  if (!newOwner || newOwner.role !== 'owner') {
+    return json({ error: 'invalid_new_owner' }, 400, cors);
+  }
+
+  const before = await firestoreGetFields(env, accessToken, `shops/${shopId}`);
+  if (!before) return json({ error: 'not_found' }, 404, cors);
+  const oldOwnerUid = before.ownerUid ?? null;
+
+  await firestorePatchFields(env, accessToken, `shops/${shopId}`, { ownerUid: newOwnerUid });
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'shop.transfer',
+    targetType: 'shop',
+    targetId: shopId,
+    before: { ownerUid: oldOwnerUid },
+    after: { ownerUid: newOwnerUid },
+  });
+
+  let oldOwnerStillOwnerRole = false;
+  if (oldOwnerUid) {
+    const oldOwner = await firestoreGetFields(env, accessToken, `users/${oldOwnerUid}`);
+    oldOwnerStillOwnerRole = oldOwner?.role === 'owner';
+  }
+
+  return json({ ok: true, oldOwnerUid, oldOwnerStillOwnerRole }, 200, cors);
+}
+
 /**
  * Dispatch table for `/admin/*`. `perm: null` still requires an ACTIVE staff
  * doc (any staff), a string requires that permission (or `'*'`). Later
@@ -491,6 +541,7 @@ export async function handleAdmin(request, env, cors) {
     '/admin/users/lookup': { perm: 'users.read', fn: handleLookup },
     '/admin/admins/set': { perm: 'admins.manage', fn: handleAdminsSet },
     '/admin/admins/remove': { perm: 'admins.manage', fn: handleAdminsRemove },
+    '/admin/shops/transfer': { perm: 'shops.transfer', fn: handleShopsTransfer },
   };
   const route = routes[path];
   if (!route) return json({ error: 'not_found' }, 404, cors);

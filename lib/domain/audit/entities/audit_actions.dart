@@ -26,6 +26,8 @@ class AuditActions {
     'shop.feature',
     'shop.verify',
     'shop.edit',
+    'shop.softDelete',
+    'shop.restore',
     // Products (session 08)
     'product.edit',
     'product.softDelete',

@@ -75,6 +75,17 @@ class ShopHeader extends StatelessWidget {
                   ShopRatingBadge(shop: shop),
                 ],
               ),
+              if (shop.hoursNote != null && shop.hoursNote!.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  shop.hoursNote!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: text.bodySmall?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

@@ -40,15 +40,6 @@ class ShopRemoteDataSource {
 
   Future<ShopModel> createShop(ShopModel shop) async {
     final doc = await _shops.add(shop.toFirestore());
-    return ShopModel(
-      id: doc.id,
-      ownerUid: shop.ownerUid,
-      name: shop.name,
-      nameAr: shop.nameAr,
-      logoUrl: shop.logoUrl,
-      address: shop.address,
-      isOpen: shop.isOpen,
-      categories: shop.categories,
-    );
+    return ShopModel.fromFirestore(doc.id, shop.toFirestore());
   }
 }

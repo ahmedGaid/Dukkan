@@ -18,12 +18,21 @@ class ShopRepositoryImpl implements ShopRepository {
     if (await _networkInfo.isConnected) {
       await for (final shops in _remote.watchShops()) {
         await _local.cacheShops(shops);
-        yield shops;
+        yield _visibleToCustomers(shops);
       }
     } else {
-      yield await _local.getCachedShops();
+      yield _visibleToCustomers(await _local.getCachedShops());
     }
   }
+
+  /// Every customer-facing shop list (home, search, favorites) drops
+  /// non-active and soft-deleted shops. Firestore can't express "status is
+  /// missing OR active" in one query, and the shop count is small, so this
+  /// filters client-side rather than adding a second query. The owner's own
+  /// shop view and the Founder Console read the raw, unfiltered docs instead
+  /// (a separate repository for console — see `AdminShopsRepository`).
+  List<Shop> _visibleToCustomers(List<Shop> shops) =>
+      shops.where((s) => s.status == 'active' && !s.deleted).toList();
 
   @override
   Stream<Shop> watchShop(String shopId) async* {
@@ -75,6 +84,10 @@ class ShopRepositoryImpl implements ShopRepository {
       address: address,
       isOpen: isOpen,
       categories: categories,
+      // Onboarding always lands pending — the Founder Console approves it
+      // (FC7). Console-created shops go through AdminShopsRepository instead,
+      // which can set a different initial status.
+      status: 'pending',
     ));
   }
 }

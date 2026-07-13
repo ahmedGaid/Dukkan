@@ -1238,4 +1238,140 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get userDetailAuditTitle => 'Activity';
+
+  @override
+  String get catalogPendingBannerTitle => 'Under review';
+
+  @override
+  String get catalogPendingBannerBody =>
+      'Your shop isn\'t visible to customers yet — the team is reviewing it.';
+
+  @override
+  String get consoleNavShops => 'Shops';
+
+  @override
+  String get shopsBoardSearchLabel => 'Search by name';
+
+  @override
+  String get shopsBoardCreateAction => 'New shop';
+
+  @override
+  String get shopsBoardErrorBody =>
+      'We can\'t load the shop list right now — try again.';
+
+  @override
+  String get shopsBoardEmptyTitle => 'No shops match';
+
+  @override
+  String get shopsBoardEmptyBody => 'Try a different filter or search.';
+
+  @override
+  String shopsBoardOwnerLabel(Object ownerUid) {
+    return 'Owner: $ownerUid';
+  }
+
+  @override
+  String get shopsFilterAll => 'All';
+
+  @override
+  String get shopsStatusPending => 'Under review';
+
+  @override
+  String get shopsStatusActive => 'Active';
+
+  @override
+  String get shopsStatusSuspended => 'Suspended';
+
+  @override
+  String get shopsStatusDeleted => 'Deleted';
+
+  @override
+  String get shopsFeaturedBadge => 'Featured';
+
+  @override
+  String get shopsVerifiedBadge => 'Verified';
+
+  @override
+  String get shopDetailMissingSeed =>
+      'Open this page from the shop list — there\'s nothing to show yet.';
+
+  @override
+  String get shopDetailStatusTitle => 'Status';
+
+  @override
+  String get shopDetailApprove => 'Approve';
+
+  @override
+  String get shopDetailConfirmApprove =>
+      'Approve this shop? It becomes visible to customers.';
+
+  @override
+  String get shopDetailReject => 'Reject';
+
+  @override
+  String get shopDetailRejectReasonLabel => 'Reason (shown in the audit log)';
+
+  @override
+  String get shopDetailSuspend => 'Suspend';
+
+  @override
+  String get shopDetailConfirmSuspend =>
+      'Suspend this shop? It disappears from customer surfaces immediately.';
+
+  @override
+  String get shopDetailUnsuspend => 'Reactivate';
+
+  @override
+  String get shopDetailFieldsTitle => 'Details';
+
+  @override
+  String get shopDetailHoursNoteLabel => 'Working hours note (optional)';
+
+  @override
+  String get shopDetailTransferTitle => 'Transfer ownership';
+
+  @override
+  String get shopDetailTransferHint =>
+      'Moves this shop to a different owner. The new owner must already have an owner account.';
+
+  @override
+  String get shopDetailNewOwnerUidLabel => 'New owner\'s user ID';
+
+  @override
+  String get shopDetailTransferAction => 'Transfer';
+
+  @override
+  String shopDetailConfirmTransfer(Object newOwnerUid) {
+    return 'Transfer this shop to user $newOwnerUid? This can\'t be undone from here.';
+  }
+
+  @override
+  String get shopTransferOldOwnerHint =>
+      'The previous owner still has the owner role with no shop — update their account in user management if needed.';
+
+  @override
+  String get shopDetailDangerTitle => 'Danger zone';
+
+  @override
+  String get shopDetailConfirmSoftDelete =>
+      'Remove this shop? It can be restored later.';
+
+  @override
+  String get shopDetailShortcutsTitle => 'Shortcuts';
+
+  @override
+  String get shopCreateOwnerTitle => 'Owner';
+
+  @override
+  String get shopCreateOwnerEmailLabel => 'Owner\'s email';
+
+  @override
+  String get shopCreateOwnerNotFound => 'No user with that email.';
+
+  @override
+  String get shopCreateOwnerNotOwnerRole =>
+      'That account isn\'t an owner account.';
+
+  @override
+  String get shopCreateOwnerRequired => 'Find the owner first.';
 }

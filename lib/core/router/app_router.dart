@@ -13,6 +13,9 @@ import '../../presentation/console/audit/pages/audit_log_page.dart';
 import '../../presentation/console/dashboard/pages/dashboard_page.dart';
 import '../../presentation/console/shell/console_sections.dart';
 import '../../presentation/console/shell/console_shell.dart';
+import '../../presentation/console/shops/pages/create_shop_page.dart';
+import '../../presentation/console/shops/pages/shop_detail_page.dart';
+import '../../presentation/console/shops/pages/shops_board_page.dart';
 import '../../presentation/console/users/pages/user_detail_page.dart';
 import '../../presentation/console/users/pages/users_list_page.dart';
 import '../../presentation/finance/pages/finance_page.dart';
@@ -21,6 +24,7 @@ import '../../domain/admin/entities/permissions.dart';
 import '../../domain/auth/entities/user_role.dart';
 import '../../domain/order/entities/order.dart';
 import '../../domain/product/entities/product.dart';
+import '../../domain/shop/entities/shop.dart';
 import '../../domain/shop/usecases/get_shop_by_owner.dart';
 import '../../presentation/home/pages/home_page.dart';
 import '../../presentation/shell/courier_home_shell.dart';
@@ -153,6 +157,23 @@ class AppRouter {
             path: '/console/users/:uid',
             builder: (context, state) =>
                 UserDetailPage(seed: state.extra as ManagedUser?),
+          ),
+          // Shop management (FILE_07). Gated by `shops.update` in the console
+          // menu + Firestore rules. `/new` is a static route so it never
+          // matches the `:id` param route below it (go_router prefers a
+          // literal segment match over a param match).
+          GoRoute(
+            path: '/console/shops',
+            builder: (context, state) => const ShopsBoardPage(),
+          ),
+          GoRoute(
+            path: '/console/shops/new',
+            builder: (context, state) => const CreateShopPage(),
+          ),
+          GoRoute(
+            path: '/console/shops/:id',
+            builder: (context, state) =>
+                ShopDetailPage(seed: state.extra as Shop?),
           ),
         ],
       ),
