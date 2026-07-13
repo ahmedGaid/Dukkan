@@ -944,4 +944,63 @@ class AppLocalizationsAr extends AppLocalizations {
 
     return 'من $countString ي';
   }
+
+  @override
+  String get dashboardOrdersToday => 'طلبات النهارده';
+
+  @override
+  String get dashboardRevenueToday => 'إيراد النهارده';
+
+  @override
+  String get dashboardCommissionToday => 'عمولة النهارده';
+
+  @override
+  String get dashboardOrdersWaiting => 'طلبات مستنية';
+
+  @override
+  String get dashboardTotalUsers => 'المستخدمين';
+
+  @override
+  String get dashboardTotalShops => 'الدكاكين';
+
+  @override
+  String get dashboardTotalProducts => 'المنتجات';
+
+  @override
+  String get dashboardDriversOnline => 'مناديب أونلاين';
+
+  @override
+  String get dashboardPendingShops => 'دكاكين مستنية موافقة';
+
+  @override
+  String get dashboardChartTitle => 'طلبات آخر ٧ أيام';
+
+  @override
+  String get dashboardActivityTitle => 'آخر العمليات';
+
+  @override
+  String get dashboardViewAll => 'شوف الكل';
+
+  @override
+  String get dashboardActivityEmpty => 'لسه مفيش عمليات جديدة.';
+
+  @override
+  String get dashboardQuickActionsTitle => 'إجراءات سريعة';
+
+  @override
+  String get dashboardQuickAudit => 'افتح سجل العمليات';
+
+  @override
+  String get dashboardExternalTitle => 'أدوات خارجية';
+
+  @override
+  String get dashboardCrashlyticsTitle => 'Crashlytics';
+
+  @override
+  String get dashboardCrashlyticsNote =>
+      'تقارير الأعطال بتتفتح في Firebase Console.';
+
+  @override
+  String get dashboardErrorBody =>
+      'مقدرناش نجيب أرقام اللوحة دلوقتي — جرّب تاني';
 }

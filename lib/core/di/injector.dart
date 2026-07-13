@@ -12,6 +12,8 @@ import '../../data/areas/datasources/areas_remote_datasource.dart';
 import '../../data/areas/repositories/areas_repository_impl.dart';
 import '../../data/audit/datasources/audit_remote_datasource.dart';
 import '../../data/audit/repositories/audit_repository_impl.dart';
+import '../../data/dashboard/datasources/dashboard_remote_datasource.dart';
+import '../../data/dashboard/repositories/dashboard_repository_impl.dart';
 import '../../data/auth/datasources/auth_remote_datasource.dart';
 import '../../data/auth/repositories/auth_repository_impl.dart';
 import '../../data/collections/datasources/collections_remote_datasource.dart';
@@ -46,6 +48,8 @@ import '../../domain/areas/repositories/areas_repository.dart';
 import '../../domain/areas/usecases/get_areas.dart';
 import '../../domain/audit/repositories/audit_repository.dart';
 import '../../domain/audit/usecases/get_audit_entries.dart';
+import '../../domain/dashboard/repositories/dashboard_repository.dart';
+import '../../domain/dashboard/usecases/get_dashboard_summary.dart';
 import '../../domain/auth/repositories/auth_repository.dart';
 import '../../domain/auth/usecases/get_user_by_id.dart';
 import '../../domain/auth/usecases/log_in.dart';
@@ -106,6 +110,7 @@ import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/cart/bloc/cart_bloc.dart';
 import '../../presentation/catalog/bloc/collections_bloc.dart';
 import '../../presentation/console/audit/bloc/audit_log_bloc.dart';
+import '../../presentation/console/dashboard/bloc/dashboard_bloc.dart';
 import '../../presentation/driver/bloc/deliveries_bloc.dart';
 import '../../presentation/favorites/bloc/favorites_bloc.dart';
 import '../../presentation/favorites/bloc/favorites_page_bloc.dart';
@@ -334,6 +339,21 @@ Future<void> initDependencies() async {
 
   // Audit log — bloc (page-scoped: one viewer per /console/audit open).
   sl.registerFactory(() => AuditLogBloc(getAuditEntries: sl()));
+
+  // Dashboard — data (Founder Console session 5; live cross-collection
+  // aggregate snapshot, no cache — mirrors Finance).
+  sl.registerLazySingleton(() => DashboardRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<DashboardRepository>(
+    () => DashboardRepositoryImpl(sl()),
+  );
+  sl.registerLazySingleton(() => GetDashboardSummary(sl()));
+
+  // Dashboard — bloc (page-scoped: one live view per /console open; reuses the
+  // audit repo for the recent-activity strip. Read permissions arrive on the
+  // start event from the page's AuthBloc — no AuthBloc dependency here).
+  sl.registerFactory(
+    () => DashboardBloc(getDashboardSummary: sl(), getAuditEntries: sl()),
+  );
 
   // Order — data
   sl.registerLazySingleton(

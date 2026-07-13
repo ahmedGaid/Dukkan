@@ -452,7 +452,26 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       section a staff member lacks bounces to `/console`) via new pure `consoleSectionForLocation`.
       27 i18n keys ×2 (first ICU placeholders in the project: relative-time counts) + lexicon row
       (Activity/audit log→سجل العمليات). Gates green (analyze 0, test 151, parity 298). **Rules +
-      indexes UNDEPLOYED (user).** **Next: FC5 (FILE_05) — live dashboard.**
+      indexes UNDEPLOYED (user).**
+      **FC5 DONE (code) 2026-07-13** — live dashboard (FILE_05), fills the FC3 `/console`
+      EmptyState placeholder. `lib/{domain,data}/dashboard/` — `DashboardSummary`
+      (+`DailyOrderCount`), `DashboardRepository`+`GetDashboardSummary`, `DashboardRemoteDataSource`
+      (one parallel `Future.wait` of `count()`/`sum()` aggregates over orders/shops/products/
+      drivers/users — no doc downloads; auth-only read rules keep aggregation legal), pure
+      DST-safe `day_window.dart` (local-midnight windows), no-cache repo (mirrors Finance). Nine
+      stat tiles: orders/revenue/commission today, orders waiting, users, shops, products, drivers
+      online, pending shops. `DashboardBloc` (page-scoped, 60s silent auto-refresh + pull-refresh,
+      single-emit) — **permission-gated**: viewer perms arrive on the start event from the page's
+      AuthBloc; `users.read` gates the users count (else tile shows «—»), `auditlogs.read` gates the
+      recent-activity strip (moderator/support lack it → hidden, no permission-denied). Page:
+      responsive 2/4-col grid, `MiniBarChart` CustomPaint 7-day bars (no new dep, weekday initials,
+      today accent), recent-activity card (last 10 audit entries via FC4 repo, tap→`/console/audit`),
+      audit quick-action chip, external-tools Crashlytics row (selectable URL, no url_launcher).
+      Shared `console/widgets/stat_tile.dart` extracted from FinancePage's tile (both now reuse it).
+      **+1 composite index** `orders: status + createdAt` (delivered-today sums). 19 i18n keys ×2 +
+      lexicon (Shops→الدكاكين, Drivers→مناديب). Gates green (analyze 0, test 161, parity 317).
+      **New index UNDEPLOYED (user).** Device E2E owed (RBAC unseeded on device). **Next: FC6
+      (FILE_06) — user management.**
 - [ ] **FC6–FC11 — Management verticals.** Users (Auth ops via Worker) · shops (lifecycle,
       transfer) · products (bulk ops) · taxonomy+geo (console-editable) · orders
       (force-status, reassign, notes) · drivers (activation!). (FILE_06–11)

@@ -5,9 +5,8 @@ import '../../../core/di/injector.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../domain/finance/entities/finance_summary.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../widgets/common/app_card.dart';
+import '../../console/widgets/stat_tile.dart';
 import '../../widgets/common/empty_state.dart';
-import '../../widgets/common/price_tag.dart';
 import '../../widgets/common/skeletons.dart';
 import '../bloc/finance_bloc.dart';
 
@@ -106,32 +105,32 @@ class _FinanceLoaded extends StatelessWidget {
           crossAxisSpacing: AppSpacing.sm,
           childAspectRatio: 1.3,
           children: [
-            _FinanceTile(
+            StatTile(
               icon: Icons.receipt_long_outlined,
               label: l10n.financeTotalOrders,
               valueText: '${summary.totalOrders}',
             ),
-            _FinanceTile(
+            StatTile(
               icon: Icons.check_circle_outline,
               label: l10n.financeDeliveredOrders,
               valueText: '${summary.deliveredOrders}',
             ),
-            _FinanceTile(
+            StatTile(
               icon: Icons.cancel_outlined,
               label: l10n.financeCancelledOrders,
               valueText: '${summary.cancelledOrders}',
             ),
-            _FinanceTile(
+            StatTile(
               icon: Icons.pie_chart_outline,
               label: l10n.financeTotalCommission,
               valueMinor: summary.commissionMinor,
             ),
-            _FinanceTile(
+            StatTile(
               icon: Icons.local_shipping_outlined,
               label: l10n.financeDeliveryRevenue,
               valueMinor: summary.deliveryRevenueMinor,
             ),
-            _FinanceTile(
+            StatTile(
               icon: Icons.account_balance_outlined,
               label: l10n.financeTotalPlatformRevenue,
               valueMinor: summary.platformRevenueMinor,
@@ -139,58 +138,6 @@ class _FinanceLoaded extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-}
-
-/// One tile — either a plain count ([valueText]) or a money amount
-/// ([valueMinor], rendered via [PriceTag] but recoloured to onSurface so
-/// the whole page stays monochrome).
-class _FinanceTile extends StatelessWidget {
-  const _FinanceTile({
-    required this.icon,
-    required this.label,
-    this.valueText,
-    this.valueMinor,
-  }) : assert(
-          (valueText == null) != (valueMinor == null),
-          'exactly one of valueText/valueMinor must be set',
-        );
-
-  final IconData icon;
-  final String label;
-  final String? valueText;
-  final int? valueMinor;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
-    final valueStyle =
-        text.titleLarge?.copyWith(color: scheme.onSurface, fontWeight: FontWeight.w700);
-
-    return AppCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Icon(icon, color: scheme.onSurface.withValues(alpha: 0.6)),
-          const Spacer(),
-          Text(
-            label,
-            style: text.bodySmall?.copyWith(
-              color: scheme.onSurface.withValues(alpha: 0.6),
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          valueMinor != null
-              ? PriceTag(valueMinor!, style: valueStyle)
-              : Text(valueText!, style: valueStyle),
-        ],
-      ),
     );
   }
 }

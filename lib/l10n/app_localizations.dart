@@ -1885,6 +1885,120 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'من {count} ي'**
   String auditTimeDaysAgo(int count);
+
+  /// No description provided for @dashboardOrdersToday.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبات النهارده'**
+  String get dashboardOrdersToday;
+
+  /// No description provided for @dashboardRevenueToday.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيراد النهارده'**
+  String get dashboardRevenueToday;
+
+  /// No description provided for @dashboardCommissionToday.
+  ///
+  /// In ar, this message translates to:
+  /// **'عمولة النهارده'**
+  String get dashboardCommissionToday;
+
+  /// No description provided for @dashboardOrdersWaiting.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبات مستنية'**
+  String get dashboardOrdersWaiting;
+
+  /// No description provided for @dashboardTotalUsers.
+  ///
+  /// In ar, this message translates to:
+  /// **'المستخدمين'**
+  String get dashboardTotalUsers;
+
+  /// No description provided for @dashboardTotalShops.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدكاكين'**
+  String get dashboardTotalShops;
+
+  /// No description provided for @dashboardTotalProducts.
+  ///
+  /// In ar, this message translates to:
+  /// **'المنتجات'**
+  String get dashboardTotalProducts;
+
+  /// No description provided for @dashboardDriversOnline.
+  ///
+  /// In ar, this message translates to:
+  /// **'مناديب أونلاين'**
+  String get dashboardDriversOnline;
+
+  /// No description provided for @dashboardPendingShops.
+  ///
+  /// In ar, this message translates to:
+  /// **'دكاكين مستنية موافقة'**
+  String get dashboardPendingShops;
+
+  /// No description provided for @dashboardChartTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبات آخر ٧ أيام'**
+  String get dashboardChartTitle;
+
+  /// No description provided for @dashboardActivityTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر العمليات'**
+  String get dashboardActivityTitle;
+
+  /// No description provided for @dashboardViewAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'شوف الكل'**
+  String get dashboardViewAll;
+
+  /// No description provided for @dashboardActivityEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش عمليات جديدة.'**
+  String get dashboardActivityEmpty;
+
+  /// No description provided for @dashboardQuickActionsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجراءات سريعة'**
+  String get dashboardQuickActionsTitle;
+
+  /// No description provided for @dashboardQuickAudit.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح سجل العمليات'**
+  String get dashboardQuickAudit;
+
+  /// No description provided for @dashboardExternalTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدوات خارجية'**
+  String get dashboardExternalTitle;
+
+  /// No description provided for @dashboardCrashlyticsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'Crashlytics'**
+  String get dashboardCrashlyticsTitle;
+
+  /// No description provided for @dashboardCrashlyticsNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقارير الأعطال بتتفتح في Firebase Console.'**
+  String get dashboardCrashlyticsNote;
+
+  /// No description provided for @dashboardErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقدرناش نجيب أرقام اللوحة دلوقتي — جرّب تاني'**
+  String get dashboardErrorBody;
 }
 
 class _AppLocalizationsDelegate

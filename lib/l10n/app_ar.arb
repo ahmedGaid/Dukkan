@@ -346,5 +346,25 @@
   "auditTimeDaysAgo": "من {count} ي",
   "@auditTimeDaysAgo": {
     "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
-  }
+  },
+
+  "dashboardOrdersToday": "طلبات النهارده",
+  "dashboardRevenueToday": "إيراد النهارده",
+  "dashboardCommissionToday": "عمولة النهارده",
+  "dashboardOrdersWaiting": "طلبات مستنية",
+  "dashboardTotalUsers": "المستخدمين",
+  "dashboardTotalShops": "الدكاكين",
+  "dashboardTotalProducts": "المنتجات",
+  "dashboardDriversOnline": "مناديب أونلاين",
+  "dashboardPendingShops": "دكاكين مستنية موافقة",
+  "dashboardChartTitle": "طلبات آخر ٧ أيام",
+  "dashboardActivityTitle": "آخر العمليات",
+  "dashboardViewAll": "شوف الكل",
+  "dashboardActivityEmpty": "لسه مفيش عمليات جديدة.",
+  "dashboardQuickActionsTitle": "إجراءات سريعة",
+  "dashboardQuickAudit": "افتح سجل العمليات",
+  "dashboardExternalTitle": "أدوات خارجية",
+  "dashboardCrashlyticsTitle": "Crashlytics",
+  "dashboardCrashlyticsNote": "تقارير الأعطال بتتفتح في Firebase Console.",
+  "dashboardErrorBody": "مقدرناش نجيب أرقام اللوحة دلوقتي — جرّب تاني"
 }

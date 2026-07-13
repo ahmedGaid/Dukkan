@@ -971,4 +971,63 @@ class AppLocalizationsEn extends AppLocalizations {
 
     return '${countString}d ago';
   }
+
+  @override
+  String get dashboardOrdersToday => 'Orders today';
+
+  @override
+  String get dashboardRevenueToday => 'Revenue today';
+
+  @override
+  String get dashboardCommissionToday => 'Commission today';
+
+  @override
+  String get dashboardOrdersWaiting => 'Orders waiting';
+
+  @override
+  String get dashboardTotalUsers => 'Users';
+
+  @override
+  String get dashboardTotalShops => 'Shops';
+
+  @override
+  String get dashboardTotalProducts => 'Products';
+
+  @override
+  String get dashboardDriversOnline => 'Drivers online';
+
+  @override
+  String get dashboardPendingShops => 'Shops pending approval';
+
+  @override
+  String get dashboardChartTitle => 'Orders — last 7 days';
+
+  @override
+  String get dashboardActivityTitle => 'Recent activity';
+
+  @override
+  String get dashboardViewAll => 'View all';
+
+  @override
+  String get dashboardActivityEmpty => 'No recent activity yet.';
+
+  @override
+  String get dashboardQuickActionsTitle => 'Quick actions';
+
+  @override
+  String get dashboardQuickAudit => 'Open activity log';
+
+  @override
+  String get dashboardExternalTitle => 'External tools';
+
+  @override
+  String get dashboardCrashlyticsTitle => 'Crashlytics';
+
+  @override
+  String get dashboardCrashlyticsNote =>
+      'Crash reports open in the Firebase console.';
+
+  @override
+  String get dashboardErrorBody =>
+      'We can\'t load the dashboard right now — try again.';
 }

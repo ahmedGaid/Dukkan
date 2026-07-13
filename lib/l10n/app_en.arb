@@ -328,5 +328,25 @@
   "auditTimeJustNow": "Just now",
   "auditTimeMinutesAgo": "{count}m ago",
   "auditTimeHoursAgo": "{count}h ago",
-  "auditTimeDaysAgo": "{count}d ago"
+  "auditTimeDaysAgo": "{count}d ago",
+
+  "dashboardOrdersToday": "Orders today",
+  "dashboardRevenueToday": "Revenue today",
+  "dashboardCommissionToday": "Commission today",
+  "dashboardOrdersWaiting": "Orders waiting",
+  "dashboardTotalUsers": "Users",
+  "dashboardTotalShops": "Shops",
+  "dashboardTotalProducts": "Products",
+  "dashboardDriversOnline": "Drivers online",
+  "dashboardPendingShops": "Shops pending approval",
+  "dashboardChartTitle": "Orders — last 7 days",
+  "dashboardActivityTitle": "Recent activity",
+  "dashboardViewAll": "View all",
+  "dashboardActivityEmpty": "No recent activity yet.",
+  "dashboardQuickActionsTitle": "Quick actions",
+  "dashboardQuickAudit": "Open activity log",
+  "dashboardExternalTitle": "External tools",
+  "dashboardCrashlyticsTitle": "Crashlytics",
+  "dashboardCrashlyticsNote": "Crash reports open in the Firebase console.",
+  "dashboardErrorBody": "We can't load the dashboard right now — try again."
 }
