@@ -626,6 +626,12 @@ abstract class AppLocalizations {
   /// **'إلغاء'**
   String get actionCancel;
 
+  /// No description provided for @actionConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد'**
+  String get actionConfirm;
+
   /// No description provided for @actionClear.
   ///
   /// In ar, this message translates to:
@@ -1694,6 +1700,12 @@ abstract class AppLocalizations {
   /// **'سجل العمليات'**
   String get consoleNavAudit;
 
+  /// No description provided for @consoleNavUsers.
+  ///
+  /// In ar, this message translates to:
+  /// **'المستخدمين'**
+  String get consoleNavUsers;
+
   /// No description provided for @consoleDashboardSubtitle.
   ///
   /// In ar, this message translates to:
@@ -1999,6 +2011,360 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'مقدرناش نجيب أرقام اللوحة دلوقتي — جرّب تاني'**
   String get dashboardErrorBody;
+
+  /// No description provided for @usersErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقدرناش نجيب قائمة المستخدمين دلوقتي — جرّب تاني'**
+  String get usersErrorBody;
+
+  /// No description provided for @usersEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش مستخدمين'**
+  String get usersEmptyTitle;
+
+  /// No description provided for @usersEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب بحث أو فلتر تاني.'**
+  String get usersEmptyBody;
+
+  /// No description provided for @usersSearchLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'بحث'**
+  String get usersSearchLabel;
+
+  /// No description provided for @usersSearchHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيميل أو رقم بالظبط، أو اسم في الصفحة دي'**
+  String get usersSearchHint;
+
+  /// No description provided for @usersFilterRole.
+  ///
+  /// In ar, this message translates to:
+  /// **'النوع'**
+  String get usersFilterRole;
+
+  /// No description provided for @usersFilterStatus.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالة'**
+  String get usersFilterStatus;
+
+  /// No description provided for @usersRoleCustomer.
+  ///
+  /// In ar, this message translates to:
+  /// **'عميل'**
+  String get usersRoleCustomer;
+
+  /// No description provided for @usersRoleOwner.
+  ///
+  /// In ar, this message translates to:
+  /// **'صاحب دكان'**
+  String get usersRoleOwner;
+
+  /// No description provided for @usersRoleCourier.
+  ///
+  /// In ar, this message translates to:
+  /// **'مندوب'**
+  String get usersRoleCourier;
+
+  /// No description provided for @usersStatusActive.
+  ///
+  /// In ar, this message translates to:
+  /// **'نشط'**
+  String get usersStatusActive;
+
+  /// No description provided for @usersStatusSuspended.
+  ///
+  /// In ar, this message translates to:
+  /// **'موقوف'**
+  String get usersStatusSuspended;
+
+  /// No description provided for @usersStatusBanned.
+  ///
+  /// In ar, this message translates to:
+  /// **'محظور'**
+  String get usersStatusBanned;
+
+  /// No description provided for @usersDeletedLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'متمسح'**
+  String get usersDeletedLabel;
+
+  /// No description provided for @usersSelectedCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} متحدد'**
+  String usersSelectedCount(int count);
+
+  /// No description provided for @usersBulkSuspend.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيقاف مؤقت'**
+  String get usersBulkSuspend;
+
+  /// No description provided for @usersBulkUnsuspend.
+  ///
+  /// In ar, this message translates to:
+  /// **'رجّعه نشط'**
+  String get usersBulkUnsuspend;
+
+  /// No description provided for @usersBulkConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجراء جماعي'**
+  String get usersBulkConfirmTitle;
+
+  /// No description provided for @usersBulkConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'{action} للمستخدمين المحددين؟'**
+  String usersBulkConfirmBody(Object action);
+
+  /// No description provided for @usersBulkSummary.
+  ///
+  /// In ar, this message translates to:
+  /// **'{done}/{total} تم'**
+  String usersBulkSummary(int done, int total);
+
+  /// No description provided for @userDetailMissingSeed.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح الصفحة دي من قائمة المستخدمين — مفيش حاجة تتعرض هنا لسه.'**
+  String get userDetailMissingSeed;
+
+  /// No description provided for @userDetailBackToList.
+  ///
+  /// In ar, this message translates to:
+  /// **'رجوع للمستخدمين'**
+  String get userDetailBackToList;
+
+  /// No description provided for @userDetailActionOk.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم'**
+  String get userDetailActionOk;
+
+  /// No description provided for @userDetailActionFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحاجة دي متنفذتش — جرّب تاني'**
+  String get userDetailActionFailed;
+
+  /// No description provided for @userDetailProfileTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الملف الشخصي'**
+  String get userDetailProfileTitle;
+
+  /// No description provided for @userDetailEmail.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإيميل'**
+  String get userDetailEmail;
+
+  /// No description provided for @userDetailPhone.
+  ///
+  /// In ar, this message translates to:
+  /// **'الموبايل'**
+  String get userDetailPhone;
+
+  /// No description provided for @userDetailMemberSince.
+  ///
+  /// In ar, this message translates to:
+  /// **'عضو من'**
+  String get userDetailMemberSince;
+
+  /// No description provided for @userDetailUnknown.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش معروف'**
+  String get userDetailUnknown;
+
+  /// No description provided for @userDetailActionsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجراءات'**
+  String get userDetailActionsTitle;
+
+  /// No description provided for @userDetailBan.
+  ///
+  /// In ar, this message translates to:
+  /// **'حظر'**
+  String get userDetailBan;
+
+  /// No description provided for @userDetailConfirmSuspend.
+  ///
+  /// In ar, this message translates to:
+  /// **'توقف الحساب ده مؤقتًا؟ مش هيقدر يسجل دخول لحد ما ترجّعه.'**
+  String get userDetailConfirmSuspend;
+
+  /// No description provided for @userDetailConfirmBan.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحظر الحساب ده؟ ده أشد من الإيقاف المؤقت.'**
+  String get userDetailConfirmBan;
+
+  /// No description provided for @userDetailConfirmPasswordReset.
+  ///
+  /// In ar, this message translates to:
+  /// **'تبعت إيميل استرجاع كلمة السر للحساب ده؟'**
+  String get userDetailConfirmPasswordReset;
+
+  /// No description provided for @userDetailSendPasswordReset.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابعت استرجاع كلمة السر'**
+  String get userDetailSendPasswordReset;
+
+  /// No description provided for @userDetailChangeEmail.
+  ///
+  /// In ar, this message translates to:
+  /// **'غيّر الإيميل'**
+  String get userDetailChangeEmail;
+
+  /// No description provided for @userDetailSetPersonaRole.
+  ///
+  /// In ar, this message translates to:
+  /// **'غيّر نوع الحساب'**
+  String get userDetailSetPersonaRole;
+
+  /// No description provided for @userDetailConfirmSoftDelete.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعطّل الحساب ده؟ ده قابل للاسترجاع تاني.'**
+  String get userDetailConfirmSoftDelete;
+
+  /// No description provided for @userDetailSoftDelete.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعطيل'**
+  String get userDetailSoftDelete;
+
+  /// No description provided for @userDetailRestore.
+  ///
+  /// In ar, this message translates to:
+  /// **'استرجاع'**
+  String get userDetailRestore;
+
+  /// No description provided for @userDetailAuthTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدخول'**
+  String get userDetailAuthTitle;
+
+  /// No description provided for @userDetailEmailVerified.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإيميل متأكد'**
+  String get userDetailEmailVerified;
+
+  /// No description provided for @userDetailAuthDisabled.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدخول متعطل'**
+  String get userDetailAuthDisabled;
+
+  /// No description provided for @userDetailYes.
+  ///
+  /// In ar, this message translates to:
+  /// **'أيوه'**
+  String get userDetailYes;
+
+  /// No description provided for @userDetailNo.
+  ///
+  /// In ar, this message translates to:
+  /// **'لأ'**
+  String get userDetailNo;
+
+  /// No description provided for @userDetailLastLogin.
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر دخول'**
+  String get userDetailLastLogin;
+
+  /// No description provided for @userDetailStaffTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الفريق الإداري'**
+  String get userDetailStaffTitle;
+
+  /// No description provided for @userDetailNotStaff.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش من فريق العمل.'**
+  String get userDetailNotStaff;
+
+  /// No description provided for @userDetailStaffRole.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدرجة الإدارية'**
+  String get userDetailStaffRole;
+
+  /// No description provided for @userDetailStaffPermissions.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصلاحيات'**
+  String get userDetailStaffPermissions;
+
+  /// No description provided for @userDetailMakeStaff.
+  ///
+  /// In ar, this message translates to:
+  /// **'ضمّه للفريق'**
+  String get userDetailMakeStaff;
+
+  /// No description provided for @userDetailEditStaff.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل صلاحياته'**
+  String get userDetailEditStaff;
+
+  /// No description provided for @userDetailRemoveStaff.
+  ///
+  /// In ar, this message translates to:
+  /// **'شيله من الفريق'**
+  String get userDetailRemoveStaff;
+
+  /// No description provided for @userDetailExtraPermissionsHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'صلاحيات إضافية، فوق صلاحيات الدرجة نفسها:'**
+  String get userDetailExtraPermissionsHint;
+
+  /// No description provided for @userDetailShopsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدكان'**
+  String get userDetailShopsTitle;
+
+  /// No description provided for @userDetailNoShop.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش دكان ليه.'**
+  String get userDetailNoShop;
+
+  /// No description provided for @userDetailOrdersTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات'**
+  String get userDetailOrdersTitle;
+
+  /// No description provided for @userDetailNoOrders.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش طلبات.'**
+  String get userDetailNoOrders;
+
+  /// No description provided for @userDetailAuditTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'النشاط'**
+  String get userDetailAuditTitle;
 }
 
 class _AppLocalizationsDelegate

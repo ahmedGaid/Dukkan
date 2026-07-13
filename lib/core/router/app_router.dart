@@ -8,10 +8,13 @@ import '../../presentation/auth/pages/signup_page.dart';
 import '../../presentation/cart/pages/cart_page.dart';
 import '../../presentation/cart/pages/checkout_page.dart';
 import '../../presentation/cart/pages/order_placed_page.dart';
+import '../../domain/admin/entities/managed_user.dart';
 import '../../presentation/console/audit/pages/audit_log_page.dart';
 import '../../presentation/console/dashboard/pages/dashboard_page.dart';
 import '../../presentation/console/shell/console_sections.dart';
 import '../../presentation/console/shell/console_shell.dart';
+import '../../presentation/console/users/pages/user_detail_page.dart';
+import '../../presentation/console/users/pages/users_list_page.dart';
 import '../../presentation/finance/pages/finance_page.dart';
 import '../../domain/admin/entities/admin_profile.dart';
 import '../../domain/admin/entities/permissions.dart';
@@ -138,6 +141,18 @@ class AppRouter {
           GoRoute(
             path: '/console/audit',
             builder: (context, state) => const AuditLogPage(),
+          ),
+          // User management (FILE_06). Gated by `users.read` in the console
+          // menu + Firestore rules. The detail route is always reached via
+          // the list row's `extra: ManagedUser` — see `UserDetailPage`.
+          GoRoute(
+            path: '/console/users',
+            builder: (context, state) => const UsersListPage(),
+          ),
+          GoRoute(
+            path: '/console/users/:uid',
+            builder: (context, state) =>
+                UserDetailPage(seed: state.extra as ManagedUser?),
           ),
         ],
       ),

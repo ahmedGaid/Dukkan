@@ -40,9 +40,15 @@ service cloud.firestore {
         && request.resource.data.name is string
         && request.resource.data.email is string;
 
-      // Profile edits allowed, but the role is fixed once chosen at signup.
-      allow update: if isSelf(userId)
-        && request.resource.data.role == resource.data.role;
+      // Profile edits allowed, but the role is fixed once chosen at signup —
+      // OR staff with `users.update` may touch a narrow admin-op field set
+      // (Founder Console session 6). Role/email changes stay Worker-only
+      // (identity-linked; the Worker also updates Firebase Auth in step).
+      allow update: if (isSelf(userId)
+          && request.resource.data.role == resource.data.role)
+        || (hasPerm('users.update')
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['name', 'phone', 'status', 'deleted', 'deletedAt', 'deletedBy']));
 
       allow delete: if false;
     }

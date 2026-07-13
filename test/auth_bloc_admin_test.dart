@@ -32,6 +32,9 @@ class _FakeAdminRepository implements AdminRepository {
   Future<AdminProfile?> getAdminProfile(String uid) async => profile;
 
   @override
+  Future<AdminProfile?> getAdminProfileForUid(String uid) async => profile;
+
+  @override
   void reset() => resetCalls++;
 }
 

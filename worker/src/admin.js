@@ -18,6 +18,10 @@ import {
   getServiceAccountToken,
   firestoreGetFields,
   firestoreCreateDoc,
+  firestorePatchFields,
+  firestoreDeleteDoc,
+  identityToolkitCall,
+  fsTimestamp,
   json,
   bearer,
 } from './firebase.js';
@@ -150,6 +154,324 @@ async function handleClientAudit(request, env, cors, auth) {
   return json({ ok: true }, 200, cors);
 }
 
+// ---------------------------------------------------------------------------
+// Session 6 (FILE_06) — user management + staff (`/admins`) management.
+// Every mutation here is Worker-routed (never a direct client Firestore/Auth
+// write) so it can be permission-checked and audited in one place.
+// ---------------------------------------------------------------------------
+
+const PERSONA_ROLES = ['customer', 'owner', 'courier'];
+const USER_STATUSES = ['active', 'suspended', 'banned'];
+const STAFF_ROLE_RANK = { support: 40, moderator: 60, admin: 80, founder: 100 };
+
+async function readBody(request) {
+  try {
+    return await request.json();
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
+ * `/admin/users/set-disabled` — suspend/ban/reactivate a user account: flips
+ * Firebase Auth `disableUser` (+ revokes existing sessions via `validSince`
+ * so a suspended user's current token stops working immediately) and patches
+ * `/users/{uid}.status`.
+ */
+async function handleSetDisabled(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { uid, status } = body ?? {};
+  if (!isValidStr(uid, true) || !USER_STATUSES.includes(status)) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  const before = await firestoreGetFields(env, accessToken, `users/${uid}`);
+  const disableUser = status !== 'active';
+  try {
+    await identityToolkitCall(env, accessToken, 'update', {
+      localId: uid,
+      disableUser,
+      validSince: String(Math.floor(Date.now() / 1000)),
+    });
+    await firestorePatchFields(env, accessToken, `users/${uid}`, { status });
+  } catch (e) {
+    console.error('[admin] set-disabled failed', e);
+    return json({ error: 'auth_op_failed' }, 502, cors);
+  }
+
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: status === 'active' ? 'user.enable' : 'user.disable',
+    targetType: 'user',
+    targetId: uid,
+    before: { status: before?.status ?? 'active' },
+    after: { status },
+  });
+  return json({ ok: true }, 200, cors);
+}
+
+/**
+ * `/admin/users/set-persona-role` — changes the app-facing persona
+ * (customer/owner/courier) ONLY. Staff tiers live on `/admins` and are never
+ * reachable through this endpoint.
+ */
+async function handleSetPersonaRole(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { uid, role } = body ?? {};
+  if (!isValidStr(uid, true) || !PERSONA_ROLES.includes(role)) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  const before = await firestoreGetFields(env, accessToken, `users/${uid}`);
+  await firestorePatchFields(env, accessToken, `users/${uid}`, { role });
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'user.setRole',
+    targetType: 'user',
+    targetId: uid,
+    before: { role: before?.role ?? null },
+    after: { role },
+  });
+  return json({ ok: true }, 200, cors);
+}
+
+/** `/admin/users/change-email` — updates both the Auth account and the denormalized `/users` doc field. */
+async function handleChangeEmail(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { uid, email } = body ?? {};
+  if (!isValidStr(uid, true) || !isValidStr(email, true) || !email.includes('@')) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  const before = await firestoreGetFields(env, accessToken, `users/${uid}`);
+  try {
+    await identityToolkitCall(env, accessToken, 'update', { localId: uid, email });
+  } catch (e) {
+    console.error('[admin] change-email failed', e);
+    return json({ error: 'auth_op_failed' }, 502, cors);
+  }
+  await firestorePatchFields(env, accessToken, `users/${uid}`, { email });
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'user.changeEmail',
+    targetType: 'user',
+    targetId: uid,
+    before: { email: before?.email ?? null },
+    after: { email },
+  });
+  return json({ ok: true }, 200, cors);
+}
+
+/** `/admin/users/soft-delete` — reversible: flags the doc and disables sign-in, never deletes data. */
+async function handleSoftDelete(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { uid } = body ?? {};
+  if (!isValidStr(uid, true)) return json({ error: 'bad_request' }, 400, cors);
+
+  try {
+    await identityToolkitCall(env, accessToken, 'update', { localId: uid, disableUser: true });
+  } catch (e) {
+    console.error('[admin] soft-delete auth op failed', e);
+    return json({ error: 'auth_op_failed' }, 502, cors);
+  }
+  await firestorePatchFields(env, accessToken, `users/${uid}`, {
+    deleted: true,
+    deletedAt: fsTimestamp(new Date().toISOString()),
+    deletedBy: actorUid,
+  });
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'user.softDelete',
+    targetType: 'user',
+    targetId: uid,
+    before: { deleted: false },
+    after: { deleted: true },
+  });
+  return json({ ok: true }, 200, cors);
+}
+
+/** `/admin/users/restore` — undoes `soft-delete`. */
+async function handleRestore(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { uid } = body ?? {};
+  if (!isValidStr(uid, true)) return json({ error: 'bad_request' }, 400, cors);
+
+  try {
+    await identityToolkitCall(env, accessToken, 'update', { localId: uid, disableUser: false });
+  } catch (e) {
+    console.error('[admin] restore auth op failed', e);
+    return json({ error: 'auth_op_failed' }, 502, cors);
+  }
+  await firestorePatchFields(env, accessToken, `users/${uid}`, {
+    deleted: false,
+    deletedAt: null,
+    deletedBy: null,
+  });
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'user.restore',
+    targetType: 'user',
+    targetId: uid,
+    before: { deleted: true },
+    after: { deleted: false },
+  });
+  return json({ ok: true }, 200, cors);
+}
+
+/** `/admin/users/create` — staff-initiated account creation (email+password), same persona whitelist as signup. */
+async function handleCreateUser(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { name, email, password, role } = body ?? {};
+  if (
+    !isValidStr(name, true) ||
+    !isValidStr(email, true) ||
+    !isValidStr(password, true) ||
+    password.length < 6 ||
+    !PERSONA_ROLES.includes(role)
+  ) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  let localId;
+  try {
+    const signUp = await identityToolkitCall(env, accessToken, 'signUp', { email, password });
+    localId = signUp.localId;
+  } catch (e) {
+    console.error('[admin] create-user signUp failed', e);
+    return json({ error: 'auth_op_failed' }, 502, cors);
+  }
+
+  await firestoreCreateDoc(
+    env,
+    accessToken,
+    'users',
+    { name, email, role, createdAt: fsTimestamp(new Date().toISOString()) },
+    localId,
+  );
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'user.create',
+    targetType: 'user',
+    targetId: localId,
+    before: null,
+    after: { name, email, role },
+  });
+  return json({ ok: true, uid: localId }, 200, cors);
+}
+
+/**
+ * `/admin/users/lookup` — Auth-side facts the `/users` doc doesn't carry
+ * (verified/disabled flags, login history) for the user detail page.
+ */
+async function handleLookup(request, env, cors, auth) {
+  const { accessToken } = auth;
+  const body = await readBody(request);
+  const { uid } = body ?? {};
+  if (!isValidStr(uid, true)) return json({ error: 'bad_request' }, 400, cors);
+
+  let result;
+  try {
+    result = await identityToolkitCall(env, accessToken, 'lookup', { localId: [uid] });
+  } catch (e) {
+    console.error('[admin] lookup failed', e);
+    return json({ error: 'auth_op_failed' }, 502, cors);
+  }
+  const record = (result.users ?? [])[0];
+  if (!record) return json({ error: 'not_found' }, 404, cors);
+
+  return json(
+    {
+      email: record.email ?? null,
+      emailVerified: record.emailVerified ?? false,
+      disabled: record.disabled ?? false,
+      lastLoginAt: record.lastLoginAt ?? null, // epoch ms string, Identity Toolkit convention
+      createdAt: record.createdAt ?? null, // epoch ms string
+    },
+    200,
+    cors,
+  );
+}
+
+/**
+ * `/admin/admins/set` — creates or updates a staff member's `/admins/{uid}`
+ * doc: reads the role's permission set from `/roles/{role}`, denormalizes
+ * `permissions = role.permissions ∪ extraPermissions`, and stamps `rank` from
+ * the role. Rank-guarded: the caller must outrank BOTH the target's current
+ * rank and the rank they are being promoted/demoted to — this is what stops
+ * an admin from touching (or ever creating another) founder.
+ */
+async function handleAdminsSet(request, env, cors, auth) {
+  const { uid: actorUid, admin: callerAdmin, accessToken } = auth;
+  const body = await readBody(request);
+  const { uid, role, extraPermissions } = body ?? {};
+  const extras = Array.isArray(extraPermissions) ? extraPermissions : [];
+  if (
+    !isValidStr(uid, true) ||
+    !Object.prototype.hasOwnProperty.call(STAFF_ROLE_RANK, role) ||
+    !extras.every((p) => typeof p === 'string')
+  ) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  const roleDoc = await firestoreGetFields(env, accessToken, `roles/${role}`);
+  if (!roleDoc) return json({ error: 'unknown_role' }, 400, cors);
+  const newRank = Number(roleDoc.rank ?? STAFF_ROLE_RANK[role]);
+
+  const before = await firestoreGetFields(env, accessToken, `admins/${uid}`);
+  const currentRank = Number(before?.rank ?? 0);
+  const callerRank = Number(callerAdmin.rank ?? 0);
+  if (callerRank <= currentRank || callerRank <= newRank) {
+    return json({ error: 'forbidden' }, 403, cors);
+  }
+
+  const rolePerms = Array.isArray(roleDoc.permissions) ? roleDoc.permissions : [];
+  const permissions = [...new Set([...rolePerms, ...extras])];
+  const after = { role, permissions, isActive: true, rank: newRank };
+
+  await firestorePatchFields(env, accessToken, `admins/${uid}`, after);
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'admin.set',
+    targetType: 'admin',
+    targetId: uid,
+    before,
+    after,
+  });
+  return json({ ok: true }, 200, cors);
+}
+
+/** `/admin/admins/remove` — revokes staff status (same rank guard as `admins/set`). */
+async function handleAdminsRemove(request, env, cors, auth) {
+  const { uid: actorUid, admin: callerAdmin, accessToken } = auth;
+  const body = await readBody(request);
+  const { uid } = body ?? {};
+  if (!isValidStr(uid, true)) return json({ error: 'bad_request' }, 400, cors);
+
+  const before = await firestoreGetFields(env, accessToken, `admins/${uid}`);
+  if (!before) return json({ ok: true }, 200, cors); // already gone — idempotent
+
+  const currentRank = Number(before.rank ?? 0);
+  const callerRank = Number(callerAdmin.rank ?? 0);
+  if (callerRank <= currentRank) return json({ error: 'forbidden' }, 403, cors);
+
+  await firestoreDeleteDoc(env, accessToken, `admins/${uid}`);
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'admin.remove',
+    targetType: 'admin',
+    targetId: uid,
+    before,
+    after: null,
+  });
+  return json({ ok: true }, 200, cors);
+}
+
 /**
  * Dispatch table for `/admin/*`. `perm: null` still requires an ACTIVE staff
  * doc (any staff), a string requires that permission (or `'*'`). Later
@@ -160,6 +482,15 @@ export async function handleAdmin(request, env, cors) {
   const routes = {
     '/admin/ping': { perm: 'system.tools', fn: handlePing },
     '/admin/audit': { perm: null, fn: handleClientAudit }, // any ACTIVE staff
+    '/admin/users/set-disabled': { perm: 'users.update', fn: handleSetDisabled },
+    '/admin/users/set-persona-role': { perm: 'users.update', fn: handleSetPersonaRole },
+    '/admin/users/change-email': { perm: 'users.update', fn: handleChangeEmail },
+    '/admin/users/soft-delete': { perm: 'users.delete', fn: handleSoftDelete },
+    '/admin/users/restore': { perm: 'users.delete', fn: handleRestore },
+    '/admin/users/create': { perm: 'users.create', fn: handleCreateUser },
+    '/admin/users/lookup': { perm: 'users.read', fn: handleLookup },
+    '/admin/admins/set': { perm: 'admins.manage', fn: handleAdminsSet },
+    '/admin/admins/remove': { perm: 'admins.manage', fn: handleAdminsRemove },
   };
   const route = routes[path];
   if (!route) return json({ error: 'not_found' }, 404, cors);

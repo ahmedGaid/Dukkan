@@ -10,14 +10,16 @@ class AuditActions {
 
   /// Dotted operation codes, grouped by area in the order sessions land them.
   static const knownActions = <String>[
-    // Users (session 06)
+    // Users + staff (session 06)
     'user.disable',
     'user.enable',
-    'user.role',
-    'user.emailChange',
-    'user.passwordReset',
+    'user.setRole',
+    'user.changeEmail',
     'user.softDelete',
     'user.restore',
+    'user.create',
+    'admin.set',
+    'admin.remove',
     // Shops (session 07)
     'shop.status',
     'shop.transfer',

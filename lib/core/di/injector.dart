@@ -6,7 +6,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/admin/datasources/admin_api_datasource.dart';
 import '../../data/admin/datasources/admin_remote_datasource.dart';
+import '../../data/admin/datasources/admin_users_remote_datasource.dart';
 import '../../data/admin/repositories/admin_repository_impl.dart';
+import '../../data/admin/repositories/admin_user_actions_impl.dart';
+import '../../data/admin/repositories/admin_users_repository_impl.dart';
 import '../../data/areas/datasources/areas_local_datasource.dart';
 import '../../data/areas/datasources/areas_remote_datasource.dart';
 import '../../data/areas/repositories/areas_repository_impl.dart';
@@ -42,8 +45,23 @@ import '../../data/taxonomy/datasources/taxonomy_local_datasource.dart';
 import '../../data/taxonomy/datasources/taxonomy_remote_datasource.dart';
 import '../../data/taxonomy/repositories/taxonomy_repository_impl.dart';
 import '../../domain/admin/repositories/admin_repository.dart';
+import '../../domain/admin/repositories/admin_user_actions.dart';
+import '../../domain/admin/repositories/admin_users_repository.dart';
+import '../../domain/admin/usecases/change_user_email.dart';
+import '../../domain/admin/usecases/create_user.dart';
 import '../../domain/admin/usecases/get_admin_profile.dart';
+import '../../domain/admin/usecases/get_staff_profile_for_uid.dart';
+import '../../domain/admin/usecases/get_user_by_email.dart';
+import '../../domain/admin/usecases/get_user_by_phone.dart';
+import '../../domain/admin/usecases/get_users.dart';
+import '../../domain/admin/usecases/lookup_user_auth.dart';
+import '../../domain/admin/usecases/remove_admin.dart';
 import '../../domain/admin/usecases/reset_admin_profile.dart';
+import '../../domain/admin/usecases/restore_user.dart';
+import '../../domain/admin/usecases/set_admin.dart';
+import '../../domain/admin/usecases/set_user_disabled.dart';
+import '../../domain/admin/usecases/set_user_persona_role.dart';
+import '../../domain/admin/usecases/soft_delete_user.dart';
 import '../../domain/areas/repositories/areas_repository.dart';
 import '../../domain/areas/usecases/get_areas.dart';
 import '../../domain/audit/repositories/audit_repository.dart';
@@ -109,8 +127,11 @@ import '../../domain/taxonomy/usecases/get_taxonomy.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/cart/bloc/cart_bloc.dart';
 import '../../presentation/catalog/bloc/collections_bloc.dart';
+import '../../domain/admin/entities/managed_user.dart';
 import '../../presentation/console/audit/bloc/audit_log_bloc.dart';
 import '../../presentation/console/dashboard/bloc/dashboard_bloc.dart';
+import '../../presentation/console/users/bloc/user_detail_bloc.dart';
+import '../../presentation/console/users/bloc/users_bloc.dart';
 import '../../presentation/driver/bloc/deliveries_bloc.dart';
 import '../../presentation/favorites/bloc/favorites_bloc.dart';
 import '../../presentation/favorites/bloc/favorites_page_bloc.dart';
@@ -168,11 +189,30 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => AdminRemoteDataSource(firestore: sl()));
   sl.registerLazySingleton<AdminRepository>(() => AdminRepositoryImpl(sl()));
   sl.registerLazySingleton(() => GetAdminProfile(sl()));
+  sl.registerLazySingleton(() => GetStaffProfileForUid(sl()));
   sl.registerLazySingleton(() => ResetAdminProfile(sl()));
   // Worker `/admin/*` client (privileged back-office ops + best-effort audit
-  // reporting). Uses the Firebase ID token as bearer — repos wire it in from
-  // Session 6 on; registered here so the plumbing lands with the API.
+  // reporting). Uses the Firebase ID token as bearer.
   sl.registerLazySingleton(() => AdminApiDataSource(auth: sl()));
+
+  // User + staff management (Founder Console session 6). AdminUserActions is
+  // Worker-routed (every mutation); AdminUsersRepository is a direct,
+  // no-cache Firestore read (rules allow `users.read`).
+  sl.registerLazySingleton<AdminUserActions>(() => AdminUserActionsImpl(sl()));
+  sl.registerLazySingleton(() => AdminUsersRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<AdminUsersRepository>(() => AdminUsersRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => SetUserDisabled(sl()));
+  sl.registerLazySingleton(() => SetUserPersonaRole(sl()));
+  sl.registerLazySingleton(() => ChangeUserEmail(sl()));
+  sl.registerLazySingleton(() => SoftDeleteUser(sl()));
+  sl.registerLazySingleton(() => RestoreUser(sl()));
+  sl.registerLazySingleton(() => CreateUser(sl()));
+  sl.registerLazySingleton(() => LookupUserAuth(sl()));
+  sl.registerLazySingleton(() => SetAdmin(sl()));
+  sl.registerLazySingleton(() => RemoveAdmin(sl()));
+  sl.registerLazySingleton(() => GetUsers(sl()));
+  sl.registerLazySingleton(() => GetUserByEmail(sl()));
+  sl.registerLazySingleton(() => GetUserByPhone(sl()));
 
   // Auth — bloc (app lifetime; createDriverProfile only fires for a courier
   // signup, see AuthBloc._onSignUpRequested; getAdminProfile enriches the
@@ -339,6 +379,33 @@ Future<void> initDependencies() async {
 
   // Audit log — bloc (page-scoped: one viewer per /console/audit open).
   sl.registerFactory(() => AuditLogBloc(getAuditEntries: sl()));
+
+  // Users — bloc (page-scoped: one viewer per /console/users open).
+  sl.registerFactory(() => UsersBloc(
+        getUsers: sl(),
+        getUserByEmail: sl(),
+        getUserByPhone: sl(),
+        setUserDisabled: sl(),
+      ));
+
+  // User detail — bloc (page-scoped, one per /console/users/:uid open; needs
+  // the tapped row's `ManagedUser` as a seed — there is no get-by-uid read).
+  sl.registerFactoryParam<UserDetailBloc, ManagedUser, void>(
+    (seed, _) => UserDetailBloc(
+      seed: seed,
+      lookupUserAuth: sl(),
+      getStaffProfileForUid: sl(),
+      getUserByEmail: sl(),
+      setUserDisabled: sl(),
+      setUserPersonaRole: sl(),
+      changeUserEmail: sl(),
+      softDeleteUser: sl(),
+      restoreUser: sl(),
+      sendPasswordReset: sl(),
+      setAdmin: sl(),
+      removeAdmin: sl(),
+    ),
+  );
 
   // Dashboard — data (Founder Console session 5; live cross-collection
   // aggregate snapshot, no cache — mirrors Finance).

@@ -37,6 +37,12 @@ const consoleSections = <ConsoleSection>[
     labelKey: 'consoleNavAudit',
     requiredPerm: Permissions.auditlogsRead,
   ),
+  ConsoleSection(
+    route: '/console/users',
+    icon: Icons.people_outline,
+    labelKey: 'consoleNavUsers',
+    requiredPerm: Permissions.usersRead,
+  ),
 ];
 
 /// The sections a given staff member may see, in order. Empty for a non-staff

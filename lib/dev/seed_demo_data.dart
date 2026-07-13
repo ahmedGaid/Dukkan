@@ -101,13 +101,15 @@ Future<void> main() async {
         courier['email'] as String,
         courier['password'] as String,
       );
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
-        'name': courier['name'],
-        'email': courier['email'],
-        'role': 'courier',
-        'phone': courier['phone'],
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      await _retryAuthSettle(
+        () => FirebaseFirestore.instance.collection('users').doc(uid).set({
+          'name': courier['name'],
+          'email': courier['email'],
+          'role': 'courier',
+          'phone': courier['phone'],
+          'createdAt': FieldValue.serverTimestamp(),
+        }),
+      );
       courierUids.add(uid);
       log.writeln('Courier ${courier['email']} -> $uid');
     }
@@ -146,14 +148,6 @@ Future<void> main() async {
   _SeedApp.log.value = log.toString();
 }
 
-/// Signs in (or creates) the account and returns its uid. Waits for
-/// Firestore's own credentials stream to pick up the new auth state before
-/// returning — firing a `.set()` right after `signInWithEmailAndPassword()`
-/// can race Firestore's internal auth listener (it restarts its gRPC stream
-/// asynchronously on auth changes), landing the write on stale/no
-/// credentials and failing `PERMISSION_DENIED` even though the rule would
-/// otherwise allow it. A fixed delay is the simplest fix for this dev-only
-/// script; production code should never need this pattern.
 Future<String> _signInOrCreate(String email, String password) async {
   final auth = FirebaseAuth.instance;
   UserCredential cred;
@@ -169,9 +163,29 @@ Future<String> _signInOrCreate(String email, String password) async {
       password: password,
     );
   }
-  await cred.user!.getIdToken(true);
-  await Future.delayed(const Duration(milliseconds: 800));
   return cred.user!.uid;
+}
+
+/// Retries the first Firestore write after switching identities. Firestore
+/// restarts its own gRPC credentials stream asynchronously in reaction to an
+/// auth change — a write fired right after `signInWithEmailAndPassword()`
+/// can land on the OLD (or no) credentials and fail `permission-denied` even
+/// though the rule would allow it once the stream catches up. A fixed delay
+/// proved unreliable on-device (still failed past 2s), so retry with
+/// backoff instead: only `permission-denied` is retried (a real rule
+/// rejection would also be `permission-denied`, but at this call site — the
+/// very first write of a freshly-authenticated identity in a dev seed
+/// script — a rule mismatch would need fixing anyway, so retrying it a few
+/// times before surfacing is harmless).
+Future<T> _retryAuthSettle<T>(Future<T> Function() action) async {
+  for (var attempt = 0; ; attempt++) {
+    try {
+      return await action();
+    } on FirebaseException catch (e) {
+      if (e.code != 'permission-denied' || attempt >= 5) rethrow;
+      await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+    }
+  }
 }
 
 Future<void> _seed(
@@ -183,32 +197,37 @@ Future<void> _seed(
 
   // The owner's own /users profile — so logging in as the seed owner lands on
   // the owner UI (order desk) instead of falling back to a customer.
-  await firestore.collection('users').doc(ownerUid).set({
-    'name': 'Owner',
-    'email': _seedEmail,
-    'role': 'owner',
-    'phone': '01000000000',
-    'createdAt': FieldValue.serverTimestamp(),
-  });
+  await _retryAuthSettle(
+    () => firestore.collection('users').doc(ownerUid).set({
+      'name': 'Owner',
+      'email': _seedEmail,
+      'role': 'owner',
+      'phone': '01000000000',
+      'createdAt': FieldValue.serverTimestamp(),
+    }),
+  );
 
-  // Shops must land in their own commit BEFORE products: the /products create
-  // rule does a get() on the parent shop to verify ownership, and rules never
-  // see other writes from the same atomic batch — so a single combined batch
-  // would fail permission-denied on every product.
-  final shopBatch = firestore.batch();
+  // Shops must land BEFORE products: the /products create rule does a get()
+  // on the parent shop to verify ownership. Individual `.set()` calls, not a
+  // WriteBatch — a WriteBatch.commit() right after switching accounts
+  // consistently hit permission-denied on-device even with matching
+  // ownerUid and correct rules (a lower-level auth-channel quirk in this
+  // Firestore SDK version with batched writes specifically); plain `.set()`
+  // never showed the same failure, so sequential writes sidestep it.
   for (final shop in _demoShops(ownerUid)) {
-    shopBatch.set(firestore.collection('shops').doc(shop['id'] as String), shop);
-  }
-  await shopBatch.commit();
-
-  final productBatch = firestore.batch();
-  for (final product in _demoProducts()) {
-    productBatch.set(
-      firestore.collection('products').doc(product['id'] as String),
-      product,
+    await _retryAuthSettle(
+      () => firestore.collection('shops').doc(shop['id'] as String).set(shop),
     );
   }
-  await productBatch.commit();
+
+  for (final product in _demoProducts()) {
+    await _retryAuthSettle(
+      () => firestore
+          .collection('products')
+          .doc(product['id'] as String)
+          .set(product),
+    );
+  }
 
   await _seedShopCollections(firestore);
   await _seedTaxonomy(firestore);
@@ -230,23 +249,21 @@ Future<void> _seed(
 /// collections for the demo; a few of its products carry matching
 /// `collectionIds` (see `_demoProducts`).
 Future<void> _seedShopCollections(FirebaseFirestore firestore) async {
-  final batch = firestore.batch();
   for (final collection in _shopCollections) {
-    batch.set(
-      firestore
+    await _retryAuthSettle(
+      () => firestore
           .collection('shops')
           .doc('shop_demo_1')
           .collection('collections')
-          .doc(collection['id'] as String),
-      {
+          .doc(collection['id'] as String)
+          .set({
         'nameAr': collection['nameAr'],
         'nameEn': collection['nameEn'],
         'sort': collection['sort'],
         'createdAt': FieldValue.serverTimestamp(),
-      },
+      }),
     );
   }
-  await batch.commit();
 }
 
 final _shopCollections = <Map<String, dynamic>>[
@@ -259,11 +276,13 @@ final _shopCollections = <Map<String, dynamic>>[
 /// same relax-then-restore trick as `_seedTaxonomy`. 5% commission, 30 EGP
 /// delivery fee with 25 EGP going to the driver (5 EGP platform share).
 Future<void> _seedPlatformConfig(FirebaseFirestore firestore) async {
-  await firestore.collection('config').doc('platform').set({
-    'commissionBps': 500,
-    'deliveryFeeMinor': 3000,
-    'driverDeliveryShareMinor': 2500,
-  });
+  await _retryAuthSettle(
+    () => firestore.collection('config').doc('platform').set({
+      'commissionBps': 500,
+      'deliveryFeeMinor': 3000,
+      'driverDeliveryShareMinor': 2500,
+    }),
+  );
 }
 
 /// `/roles` + `/admins` (Founder Console session 1) — the four role permission
@@ -275,34 +294,27 @@ Future<void> _seedPlatformConfig(FirebaseFirestore firestore) async {
 /// phase — the writes only work because the rules are relaxed, not because the
 /// owner is staff.
 Future<void> _seedRbac(FirebaseFirestore firestore) async {
-  final batch = firestore.batch();
+  final roles = <String, Map<String, Object>>{
+    'founder': {'permissions': [Permissions.all], 'rank': 100},
+    'admin': {'permissions': _adminPermissions, 'rank': 80},
+    'moderator': {'permissions': _moderatorPermissions, 'rank': 60},
+    'support': {'permissions': _supportPermissions, 'rank': 40},
+  };
+  for (final entry in roles.entries) {
+    await _retryAuthSettle(
+      () => firestore.collection('roles').doc(entry.key).set(entry.value),
+    );
+  }
 
-  batch.set(firestore.collection('roles').doc('founder'), {
-    'permissions': [Permissions.all],
-    'rank': 100,
-  });
-  batch.set(firestore.collection('roles').doc('admin'), {
-    'permissions': _adminPermissions,
-    'rank': 80,
-  });
-  batch.set(firestore.collection('roles').doc('moderator'), {
-    'permissions': _moderatorPermissions,
-    'rank': 60,
-  });
-  batch.set(firestore.collection('roles').doc('support'), {
-    'permissions': _supportPermissions,
-    'rank': 40,
-  });
-
-  batch.set(firestore.collection('admins').doc(AppConfig.founderUid), {
-    'role': 'founder',
-    'permissions': [Permissions.all],
-    'isActive': true,
-    'rank': 100,
-    'createdAt': FieldValue.serverTimestamp(),
-  });
-
-  await batch.commit();
+  await _retryAuthSettle(
+    () => firestore.collection('admins').doc(AppConfig.founderUid).set({
+      'role': 'founder',
+      'permissions': [Permissions.all],
+      'isActive': true,
+      'rank': 100,
+      'createdAt': FieldValue.serverTimestamp(),
+    }),
+  );
 }
 
 // admin = everything except the three founder-reserved powers (managing other
@@ -357,19 +369,19 @@ const _supportPermissions = <String>[
 /// `Product.category` (see `_demoShops`/`_demoProducts` below), so existing
 /// home-chip filtering keeps matching without a translation table.
 Future<void> _seedTaxonomy(FirebaseFirestore firestore) async {
-  final batch = firestore.batch();
   for (final category in _taxonomy) {
-    batch.set(
-      firestore.collection('categories').doc(category['id'] as String),
-      {
+    await _retryAuthSettle(
+      () => firestore
+          .collection('categories')
+          .doc(category['id'] as String)
+          .set({
         'nameAr': category['nameAr'],
         'nameEn': category['nameEn'],
         'sort': category['sort'],
         'subcategories': category['subcategories'],
-      },
+      }),
     );
   }
-  await batch.commit();
 }
 
 /// `/areas` (M8) — fixed, seed-managed delivery districts; `firestore.rules`
@@ -377,18 +389,15 @@ Future<void> _seedTaxonomy(FirebaseFirestore firestore) async {
 /// restore trick as `_seedTaxonomy`. Ismailia / Abu Atwa districts — matches
 /// where the 3 real seeded shops (`shop_demo_5/6/7`) actually sit.
 Future<void> _seedAreas(FirebaseFirestore firestore) async {
-  final batch = firestore.batch();
   for (final area in _areas) {
-    batch.set(
-      firestore.collection('areas').doc(area['id'] as String),
-      {
+    await _retryAuthSettle(
+      () => firestore.collection('areas').doc(area['id'] as String).set({
         'nameAr': area['nameAr'],
         'nameEn': area['nameEn'],
         'sort': area['sort'],
-      },
+      }),
     );
   }
-  await batch.commit();
 }
 
 final _areas = <Map<String, dynamic>>[
@@ -421,12 +430,10 @@ Future<void> _seedDrivers(
   FirebaseFirestore firestore,
   List<String> courierUids,
 ) async {
-  final batch = firestore.batch();
   for (var i = 0; i < _couriers.length; i++) {
     final courier = _couriers[i];
-    batch.set(
-      firestore.collection('drivers').doc(courierUids[i]),
-      {
+    await _retryAuthSettle(
+      () => firestore.collection('drivers').doc(courierUids[i]).set({
         'name': courier['name'],
         'phone': courier['phone'],
         'areaIds': courier['areaIds'],
@@ -435,10 +442,9 @@ Future<void> _seedDrivers(
         'isOnline': courier['isOnline'],
         'isSuspended': courier['isSuspended'],
         'createdAt': FieldValue.serverTimestamp(),
-      },
+      }),
     );
   }
-  await batch.commit();
 }
 
 Map<String, dynamic> _subcat(String id, String nameAr, String nameEn) =>
@@ -562,19 +568,23 @@ Future<void> _seedCustomer(
   final firestore = FirebaseFirestore.instance;
   final favorites = _favoritesByCustomer[index];
 
-  await firestore.collection('users').doc(customerUid).set({
-    'name': customer['name'],
-    'email': customer['email'],
-    'role': 'customer',
-    'phone': customer['phone'],
-    'favoriteShopIds': favorites[0],
-    'favoriteProductIds': favorites[1],
-    'createdAt': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
+  await _retryAuthSettle(
+    () => firestore.collection('users').doc(customerUid).set({
+      'name': customer['name'],
+      'email': customer['email'],
+      'role': 'customer',
+      'phone': customer['phone'],
+      'favoriteShopIds': favorites[0],
+      'favoriteProductIds': favorites[1],
+      'createdAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true)),
+  );
 
   final orders = _demoOrders(customerUid, index, ownerUid, courier1Uid);
   for (final order in orders) {
-    await firestore.collection('orders').doc(order['id'] as String).set(order);
+    await _retryAuthSettle(
+      () => firestore.collection('orders').doc(order['id'] as String).set(order),
+    );
   }
 
   log.writeln('Customer ${customer['email']}: profile + '

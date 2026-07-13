@@ -90,6 +90,9 @@ class _NoopAdminRepository implements AdminRepository {
   Future<AdminProfile?> getAdminProfile(String uid) async => null;
 
   @override
+  Future<AdminProfile?> getAdminProfileForUid(String uid) async => null;
+
+  @override
   void reset() {}
 }
 

@@ -135,9 +135,24 @@ export function fromFirestoreFields(fields) {
   return out;
 }
 
+/**
+ * Wraps an ISO-8601 string so `toValue` emits a Firestore `timestampValue`
+ * instead of a plain string — used when the Worker creates a doc a client
+ * would normally stamp with `FieldValue.serverTimestamp()` (e.g. a Worker-
+ * created `/users` doc from Session 6's `users/create`), so both origins
+ * produce the same Firestore type and nothing downstream trips over a
+ * string-vs-Timestamp mismatch.
+ */
+export function fsTimestamp(iso) {
+  return { __fsTimestamp: iso };
+}
+
 /** Wraps one plain JS value as a Firestore typed value. */
 function toValue(v) {
   if (v === null) return { nullValue: null };
+  if (v && typeof v === 'object' && '__fsTimestamp' in v) {
+    return { timestampValue: v.__fsTimestamp };
+  }
   if (typeof v === 'string') return { stringValue: v };
   if (typeof v === 'boolean') return { booleanValue: v };
   if (typeof v === 'number') {
@@ -227,6 +242,43 @@ export async function firestoreCommit(env, accessToken, writes) {
   });
   if (!res.ok) throw new Error(`firestore_commit_${res.status}: ${await res.text()}`);
   return res.json();
+}
+
+/** DELETE …/documents/{path} — deletes one doc. Idempotent (404 is not an error). */
+export async function firestoreDeleteDoc(env, accessToken, path) {
+  const res = await fetch(`${FS_BASE(env)}/${path}`, {
+    method: 'DELETE',
+    headers: { authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok && res.status !== 404) {
+    throw new Error(`firestore_delete_${res.status}: ${await res.text()}`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Identity Toolkit (Firebase Auth admin ops) — service-account authed
+// ---------------------------------------------------------------------------
+
+const IT_BASE = (env) =>
+  `https://identitytoolkit.googleapis.com/v1/projects/${env.PROJECT_ID}/accounts`;
+
+/**
+ * Calls one Identity Toolkit `accounts:{method}` RPC (`lookup`, `update`,
+ * `signUp`, `delete`, …) authenticated as the service account — the REST
+ * equivalent of the Admin SDK's user-management calls, which Workers can't
+ * run directly. Throws with the raw error body on any non-2xx.
+ */
+export async function identityToolkitCall(env, accessToken, method, body) {
+  const res = await fetch(`${IT_BASE(env)}:${method}`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${accessToken}`, 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(`identity_toolkit_${method}_${res.status}: ${JSON.stringify(data)}`);
+  }
+  return data;
 }
 
 // ---------------------------------------------------------------------------

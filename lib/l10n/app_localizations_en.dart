@@ -282,6 +282,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionCancel => 'Cancel';
 
   @override
+  String get actionConfirm => 'Confirm';
+
+  @override
   String get actionClear => 'Clear';
 
   @override
@@ -857,6 +860,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get consoleNavAudit => 'Activity log';
 
   @override
+  String get consoleNavUsers => 'Users';
+
+  @override
   String get consoleDashboardSubtitle =>
       'Your platform overview will appear here soon.';
 
@@ -1030,4 +1036,206 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get dashboardErrorBody =>
       'We can\'t load the dashboard right now — try again.';
+
+  @override
+  String get usersErrorBody =>
+      'We can\'t load the user list right now — try again.';
+
+  @override
+  String get usersEmptyTitle => 'No users found';
+
+  @override
+  String get usersEmptyBody => 'Try a different search or filter.';
+
+  @override
+  String get usersSearchLabel => 'Search';
+
+  @override
+  String get usersSearchHint => 'Exact email or phone, else name on this page';
+
+  @override
+  String get usersFilterRole => 'Role';
+
+  @override
+  String get usersFilterStatus => 'Status';
+
+  @override
+  String get usersRoleCustomer => 'Customer';
+
+  @override
+  String get usersRoleOwner => 'Owner';
+
+  @override
+  String get usersRoleCourier => 'Courier';
+
+  @override
+  String get usersStatusActive => 'Active';
+
+  @override
+  String get usersStatusSuspended => 'Suspended';
+
+  @override
+  String get usersStatusBanned => 'Banned';
+
+  @override
+  String get usersDeletedLabel => 'Deleted';
+
+  @override
+  String usersSelectedCount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString selected';
+  }
+
+  @override
+  String get usersBulkSuspend => 'Suspend';
+
+  @override
+  String get usersBulkUnsuspend => 'Reactivate';
+
+  @override
+  String get usersBulkConfirmTitle => 'Bulk action';
+
+  @override
+  String usersBulkConfirmBody(Object action) {
+    return '$action the selected users?';
+  }
+
+  @override
+  String usersBulkSummary(int done, int total) {
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$doneString/$totalString done';
+  }
+
+  @override
+  String get userDetailMissingSeed =>
+      'Open this page from the user list — there\'s nothing to show yet.';
+
+  @override
+  String get userDetailBackToList => 'Back to users';
+
+  @override
+  String get userDetailActionOk => 'Done';
+
+  @override
+  String get userDetailActionFailed => 'That didn\'t work — try again.';
+
+  @override
+  String get userDetailProfileTitle => 'Profile';
+
+  @override
+  String get userDetailEmail => 'Email';
+
+  @override
+  String get userDetailPhone => 'Phone';
+
+  @override
+  String get userDetailMemberSince => 'Member since';
+
+  @override
+  String get userDetailUnknown => 'Unknown';
+
+  @override
+  String get userDetailActionsTitle => 'Actions';
+
+  @override
+  String get userDetailBan => 'Ban';
+
+  @override
+  String get userDetailConfirmSuspend =>
+      'Suspend this account? They won\'t be able to sign in until reactivated.';
+
+  @override
+  String get userDetailConfirmBan =>
+      'Ban this account? This is more severe than a suspension.';
+
+  @override
+  String get userDetailConfirmPasswordReset =>
+      'Send a password reset email to this account?';
+
+  @override
+  String get userDetailSendPasswordReset => 'Send password reset';
+
+  @override
+  String get userDetailChangeEmail => 'Change email';
+
+  @override
+  String get userDetailSetPersonaRole => 'Change persona role';
+
+  @override
+  String get userDetailConfirmSoftDelete =>
+      'Deactivate this account? This is reversible — you can restore it later.';
+
+  @override
+  String get userDetailSoftDelete => 'Deactivate';
+
+  @override
+  String get userDetailRestore => 'Restore';
+
+  @override
+  String get userDetailAuthTitle => 'Sign-in';
+
+  @override
+  String get userDetailEmailVerified => 'Email verified';
+
+  @override
+  String get userDetailAuthDisabled => 'Sign-in disabled';
+
+  @override
+  String get userDetailYes => 'Yes';
+
+  @override
+  String get userDetailNo => 'No';
+
+  @override
+  String get userDetailLastLogin => 'Last login';
+
+  @override
+  String get userDetailStaffTitle => 'Staff';
+
+  @override
+  String get userDetailNotStaff => 'Not a staff member.';
+
+  @override
+  String get userDetailStaffRole => 'Staff role';
+
+  @override
+  String get userDetailStaffPermissions => 'Permissions';
+
+  @override
+  String get userDetailMakeStaff => 'Make staff';
+
+  @override
+  String get userDetailEditStaff => 'Edit staff';
+
+  @override
+  String get userDetailRemoveStaff => 'Remove staff';
+
+  @override
+  String get userDetailExtraPermissionsHint =>
+      'Extra permissions, added on top of the role\'s own set:';
+
+  @override
+  String get userDetailShopsTitle => 'Shop';
+
+  @override
+  String get userDetailNoShop => 'No shop owned.';
+
+  @override
+  String get userDetailOrdersTitle => 'Orders';
+
+  @override
+  String get userDetailNoOrders => 'No orders yet.';
+
+  @override
+  String get userDetailAuditTitle => 'Activity';
 }

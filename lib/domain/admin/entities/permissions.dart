@@ -35,4 +35,15 @@ class Permissions {
   static const auditlogsRead = 'auditlogs.read';
   static const systemTools = 'system.tools';
   static const systemImpersonate = 'system.impersonate';
+
+  /// Every named permission (never [all], the wildcard) — the source list for
+  /// the console's per-admin "extra permissions" checklist (Session 6).
+  static const values = <String>[
+    usersRead, usersCreate, usersUpdate, usersDelete, adminsManage,
+    shopsUpdate, shopsTransfer, productsCreate, productsUpdate, productsDelete,
+    ordersRead, ordersUpdate, ordersForceStatus, ordersAssignDriver,
+    driversManage, taxonomyEdit, geoEdit, financeRead, settingsEdit,
+    notificationsSend, promosEdit, reportsExport, imagesDelete,
+    auditlogsRead, systemTools, systemImpersonate,
+  ];
 }

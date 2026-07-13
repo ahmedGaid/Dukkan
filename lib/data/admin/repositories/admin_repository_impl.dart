@@ -26,6 +26,9 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
+  Future<AdminProfile?> getAdminProfileForUid(String uid) => _remote.get(uid);
+
+  @override
   void reset() {
     _cachedUid = null;
     _cached = null;

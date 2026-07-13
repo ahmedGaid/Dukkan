@@ -281,6 +281,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get actionCancel => 'إلغاء';
 
   @override
+  String get actionConfirm => 'تأكيد';
+
+  @override
   String get actionClear => 'امسح';
 
   @override
@@ -832,6 +835,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get consoleNavAudit => 'سجل العمليات';
 
   @override
+  String get consoleNavUsers => 'المستخدمين';
+
+  @override
   String get consoleDashboardSubtitle => 'نظرة عامة على المنصة هتظهر هنا قريب.';
 
   @override
@@ -1003,4 +1009,206 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get dashboardErrorBody =>
       'مقدرناش نجيب أرقام اللوحة دلوقتي — جرّب تاني';
+
+  @override
+  String get usersErrorBody =>
+      'مقدرناش نجيب قائمة المستخدمين دلوقتي — جرّب تاني';
+
+  @override
+  String get usersEmptyTitle => 'مفيش مستخدمين';
+
+  @override
+  String get usersEmptyBody => 'جرّب بحث أو فلتر تاني.';
+
+  @override
+  String get usersSearchLabel => 'بحث';
+
+  @override
+  String get usersSearchHint => 'إيميل أو رقم بالظبط، أو اسم في الصفحة دي';
+
+  @override
+  String get usersFilterRole => 'النوع';
+
+  @override
+  String get usersFilterStatus => 'الحالة';
+
+  @override
+  String get usersRoleCustomer => 'عميل';
+
+  @override
+  String get usersRoleOwner => 'صاحب دكان';
+
+  @override
+  String get usersRoleCourier => 'مندوب';
+
+  @override
+  String get usersStatusActive => 'نشط';
+
+  @override
+  String get usersStatusSuspended => 'موقوف';
+
+  @override
+  String get usersStatusBanned => 'محظور';
+
+  @override
+  String get usersDeletedLabel => 'متمسح';
+
+  @override
+  String usersSelectedCount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString متحدد';
+  }
+
+  @override
+  String get usersBulkSuspend => 'إيقاف مؤقت';
+
+  @override
+  String get usersBulkUnsuspend => 'رجّعه نشط';
+
+  @override
+  String get usersBulkConfirmTitle => 'إجراء جماعي';
+
+  @override
+  String usersBulkConfirmBody(Object action) {
+    return '$action للمستخدمين المحددين؟';
+  }
+
+  @override
+  String usersBulkSummary(int done, int total) {
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$doneString/$totalString تم';
+  }
+
+  @override
+  String get userDetailMissingSeed =>
+      'افتح الصفحة دي من قائمة المستخدمين — مفيش حاجة تتعرض هنا لسه.';
+
+  @override
+  String get userDetailBackToList => 'رجوع للمستخدمين';
+
+  @override
+  String get userDetailActionOk => 'تم';
+
+  @override
+  String get userDetailActionFailed => 'الحاجة دي متنفذتش — جرّب تاني';
+
+  @override
+  String get userDetailProfileTitle => 'الملف الشخصي';
+
+  @override
+  String get userDetailEmail => 'الإيميل';
+
+  @override
+  String get userDetailPhone => 'الموبايل';
+
+  @override
+  String get userDetailMemberSince => 'عضو من';
+
+  @override
+  String get userDetailUnknown => 'مش معروف';
+
+  @override
+  String get userDetailActionsTitle => 'إجراءات';
+
+  @override
+  String get userDetailBan => 'حظر';
+
+  @override
+  String get userDetailConfirmSuspend =>
+      'توقف الحساب ده مؤقتًا؟ مش هيقدر يسجل دخول لحد ما ترجّعه.';
+
+  @override
+  String get userDetailConfirmBan =>
+      'تحظر الحساب ده؟ ده أشد من الإيقاف المؤقت.';
+
+  @override
+  String get userDetailConfirmPasswordReset =>
+      'تبعت إيميل استرجاع كلمة السر للحساب ده؟';
+
+  @override
+  String get userDetailSendPasswordReset => 'ابعت استرجاع كلمة السر';
+
+  @override
+  String get userDetailChangeEmail => 'غيّر الإيميل';
+
+  @override
+  String get userDetailSetPersonaRole => 'غيّر نوع الحساب';
+
+  @override
+  String get userDetailConfirmSoftDelete =>
+      'تعطّل الحساب ده؟ ده قابل للاسترجاع تاني.';
+
+  @override
+  String get userDetailSoftDelete => 'تعطيل';
+
+  @override
+  String get userDetailRestore => 'استرجاع';
+
+  @override
+  String get userDetailAuthTitle => 'الدخول';
+
+  @override
+  String get userDetailEmailVerified => 'الإيميل متأكد';
+
+  @override
+  String get userDetailAuthDisabled => 'الدخول متعطل';
+
+  @override
+  String get userDetailYes => 'أيوه';
+
+  @override
+  String get userDetailNo => 'لأ';
+
+  @override
+  String get userDetailLastLogin => 'آخر دخول';
+
+  @override
+  String get userDetailStaffTitle => 'الفريق الإداري';
+
+  @override
+  String get userDetailNotStaff => 'مش من فريق العمل.';
+
+  @override
+  String get userDetailStaffRole => 'الدرجة الإدارية';
+
+  @override
+  String get userDetailStaffPermissions => 'الصلاحيات';
+
+  @override
+  String get userDetailMakeStaff => 'ضمّه للفريق';
+
+  @override
+  String get userDetailEditStaff => 'تعديل صلاحياته';
+
+  @override
+  String get userDetailRemoveStaff => 'شيله من الفريق';
+
+  @override
+  String get userDetailExtraPermissionsHint =>
+      'صلاحيات إضافية، فوق صلاحيات الدرجة نفسها:';
+
+  @override
+  String get userDetailShopsTitle => 'الدكان';
+
+  @override
+  String get userDetailNoShop => 'مفيش دكان ليه.';
+
+  @override
+  String get userDetailOrdersTitle => 'الطلبات';
+
+  @override
+  String get userDetailNoOrders => 'لسه مفيش طلبات.';
+
+  @override
+  String get userDetailAuditTitle => 'النشاط';
 }

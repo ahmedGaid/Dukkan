@@ -470,11 +470,34 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       Shared `console/widgets/stat_tile.dart` extracted from FinancePage's tile (both now reuse it).
       **+1 composite index** `orders: status + createdAt` (delivered-today sums). 19 i18n keys ×2 +
       lexicon (Shops→الدكاكين, Drivers→مناديب). Gates green (analyze 0, test 161, parity 317).
-      **New index UNDEPLOYED (user).** Device E2E owed (RBAC unseeded on device). **Next: FC6
-      (FILE_06) — user management.**
-- [ ] **FC6–FC11 — Management verticals.** Users (Auth ops via Worker) · shops (lifecycle,
+      **Rules + indexes deployed 2026-07-13** (`firebase deploy --only firestore:rules,firestore:indexes`,
+      project `dukkan-93042`). Device E2E still owed (RBAC unseeded on device — reseed pending).
+- [~] **FC6–FC11 — Management verticals.** Users (Auth ops via Worker) · shops (lifecycle,
       transfer) · products (bulk ops) · taxonomy+geo (console-editable) · orders
       (force-status, reassign, notes) · drivers (activation!). (FILE_06–11)
+      **FC6 DONE (code) 2026-07-13** — user management (FILE_06). Worker `/admin/users/*`
+      (set-disabled w/ Auth `disableUser`+`validSince` session revoke, set-persona-role,
+      change-email, soft-delete/restore, create, lookup via Identity Toolkit REST) +
+      `/admin/admins/*` (set/remove, rank-guarded: caller must outrank both the target's
+      current AND new rank — blocks touching/creating a second founder). `firebase.js` gained
+      `identityToolkitCall`, `firestoreDeleteDoc`, `fsTimestamp` (Worker-created docs now stamp
+      a real Firestore Timestamp, matching client `serverTimestamp()` docs — no string/Timestamp
+      split). `firestore.rules` `/users` update gained a narrow `hasPerm('users.update')` branch
+      (name/phone/status/deleted* fields only; role/email stay Worker-only). `lib/domain/admin/` —
+      `ManagedUser`/`AuthLookup`/`UsersPage` entities, `AdminUserActions` (9 Worker-routed
+      mutations) + `AdminUsersRepository` (no-cache, paginated by `FieldPath.documentId` — never
+      `createdAt`, whose type can differ on legacy docs) with 11 thin usecases, plus
+      `GetStaffProfileForUid` (unmemoized — reads an arbitrary uid's `/admins` doc without
+      touching the signed-in session's single-slot cache). `lib/presentation/console/users/` —
+      `UsersBloc` (paginated list, role/status filters, exact email/phone search else page-local
+      name filter, multi-select bulk suspend/unsuspend) + `UserDetailBloc` (profile/auth/staff
+      panels, every mutation re-syncs via `getByEmail` since there's no get-by-uid) and their two
+      pages (`/console/users`, `/console/users/:uid` — reached only via the list row's `extra`
+      seed). Staff role/extra-permissions editor reuses `StaffRole`/`Permissions.values` (no new
+      `/roles` read). 61 i18n keys ×2 + lexicon (Suspend→إيقاف مؤقت, Ban→حظر, Restore→استرجاع) +
+      `actionConfirm`/`consoleNavUsers`. Added `users_bloc_test.dart` (9 cases),
+      `user_detail_bloc_test.dart` (6 cases), `managed_user_model_test.dart` (5 cases). Gates
+      green (analyze 0, test 181, parity 378). **Next: FC7 (FILE_07) — shop management.**
 - [ ] **FC12–FC15 — Platform ops.** Settings/flags/maintenance+version gates · notification
       center (topics) · media library (R2) · impersonation + dev tools. (FILE_12–15)
 - [ ] **FC16–FC18 — Growth + close.** Promotions (coupons/banners/featured) · global search +
