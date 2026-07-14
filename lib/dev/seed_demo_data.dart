@@ -11,12 +11,14 @@
 //
 // Idempotent: every id (shops/products/drivers-by-uid/orders) is fixed, so
 // re-running overwrites the same docs instead of duplicating them. Requires
-// `firestore.rules`'s /categories, /areas, /drivers, /config, /roles, /admins
-// `write: false` lines temporarily relaxed to `allow write: if isSignedIn();`
-// for the pass (then restored) — /shops, /products, /users, /orders,
-// /collections need no relax since their normal rules already permit the
-// owner/courier/customer writes this script does while signed in as each of
-// those accounts.
+// `firestore.rules`'s /drivers, /config, /roles, /admins `write: false` lines
+// AND /categories, /areas (`hasPerm('taxonomy.edit'|'geo.edit')` since FC9)
+// temporarily relaxed to `allow write: if isSignedIn();` for the pass (then
+// restored) — the seed owner account isn't staff, so the console-managed
+// gate blocks it same as the old hard `write: false` did. /shops, /products,
+// /users, /orders, /collections need no relax since their normal rules
+// already permit the owner/courier/customer writes this script does while
+// signed in as each of those accounts.
 //
 // Demo accounts (all created on first run, password same across each role):
 //   owner@dukkan.dev / owner123        — owns all 7 shops
@@ -361,10 +363,12 @@ const _supportPermissions = <String>[
   Permissions.ordersUpdate,
 ];
 
-/// `/categories` (M3) — fixed, seed-managed tree; `firestore.rules` denies
-/// all client writes to this collection (`allow write: if false`), so this
-/// step only succeeds if that line is temporarily relaxed to
-/// `allow write: if isSignedIn();` for the re-seed, then restored. Top-level
+/// `/categories` (M3, console-editable from FC9) — `firestore.rules` now
+/// gates writes on `hasPerm('taxonomy.edit')` instead of a hard
+/// `write: false`, but the seed owner account still isn't staff, so this
+/// step only succeeds if the rule is temporarily relaxed to
+/// `allow write: if isSignedIn();` for the re-seed, then restored (same
+/// requirement as before FC9, just a different line to relax). Top-level
 /// ids are the SAME Arabic strings already used as `Shop.categories` /
 /// `Product.category` (see `_demoShops`/`_demoProducts` below), so existing
 /// home-chip filtering keeps matching without a translation table.
@@ -384,10 +388,11 @@ Future<void> _seedTaxonomy(FirebaseFirestore firestore) async {
   }
 }
 
-/// `/areas` (M8) — fixed, seed-managed delivery districts; `firestore.rules`
-/// denies all client writes (`allow write: if false`), same relax-then-
-/// restore trick as `_seedTaxonomy`. Ismailia / Abu Atwa districts — matches
-/// where the 3 real seeded shops (`shop_demo_5/6/7`) actually sit.
+/// `/areas` (M8, console-editable from FC9) — `firestore.rules` now gates
+/// writes on `hasPerm('geo.edit')` instead of a hard `write: false`; same
+/// relax-then-restore trick as `_seedTaxonomy` since the seed owner isn't
+/// staff. Ismailia / Abu Atwa districts — matches where the 3 real seeded
+/// shops (`shop_demo_5/6/7`) actually sit.
 Future<void> _seedAreas(FirebaseFirestore firestore) async {
   for (final area in _areas) {
     await _retryAuthSettle(

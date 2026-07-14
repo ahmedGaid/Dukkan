@@ -11,12 +11,14 @@ import '../../presentation/cart/pages/order_placed_page.dart';
 import '../../domain/admin/entities/managed_user.dart';
 import '../../presentation/console/audit/pages/audit_log_page.dart';
 import '../../presentation/console/dashboard/pages/dashboard_page.dart';
+import '../../presentation/console/geo/pages/geo_board_page.dart';
 import '../../presentation/console/shell/console_sections.dart';
 import '../../presentation/console/shell/console_shell.dart';
 import '../../presentation/console/products/pages/products_board_page.dart';
 import '../../presentation/console/shops/pages/create_shop_page.dart';
 import '../../presentation/console/shops/pages/shop_detail_page.dart';
 import '../../presentation/console/shops/pages/shops_board_page.dart';
+import '../../presentation/console/taxonomy/pages/taxonomy_board_page.dart';
 import '../../presentation/console/users/pages/user_detail_page.dart';
 import '../../presentation/console/users/pages/users_list_page.dart';
 import '../../presentation/finance/pages/finance_page.dart';
@@ -183,6 +185,16 @@ class AppRouter {
           GoRoute(
             path: '/console/products',
             builder: (context, state) => const ProductsBoardPage(),
+          ),
+          // Taxonomy + geo management (FILE_09). Gated by `taxonomy.edit`/
+          // `geo.edit` in the console menu + Firestore rules.
+          GoRoute(
+            path: '/console/taxonomy',
+            builder: (context, state) => const TaxonomyBoardPage(),
+          ),
+          GoRoute(
+            path: '/console/geo',
+            builder: (context, state) => const GeoBoardPage(),
           ),
         ],
       ),

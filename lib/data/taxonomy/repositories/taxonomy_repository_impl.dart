@@ -16,8 +16,14 @@ class TaxonomyRepositoryImpl implements TaxonomyRepository {
     if (await _networkInfo.isConnected) {
       final categories = await _remote.getTaxonomy();
       await _local.cacheTaxonomy(categories);
-      return categories;
+      return _visible(categories);
     }
-    return _local.getCachedTaxonomy();
+    return _visible(await _local.getCachedTaxonomy());
   }
+
+  /// FC9: a retired category (`isVisible: false`) is hidden from every
+  /// consumer of this repository (home/product-form) — the console's
+  /// `AdminTaxonomyRepository` reads the unfiltered collection directly.
+  List<Category> _visible(List<Category> categories) =>
+      categories.where((c) => c.isVisible).toList(growable: false);
 }

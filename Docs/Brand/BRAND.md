@@ -94,6 +94,8 @@ Rules:
 | Shop status: under review (console) | تحت المراجعة | قيد المراجعة (محجوز لحالة الطلب) |
 | Shop curation: verified | مُوثّق | متأكد منه |
 | Shop curation: featured | مميّز | مُروّج له |
+| Governorate (console geo grouping) | المحافظة | الولاية، المنطقة الإدارية |
+| City (console geo grouping) | المدينة | البلد، الحي |
 
 - Human statuses ("جارٍ تجهيز طلبك"), blame-free errors ("حصلت مشكلة — جرّب تاني").
 - RTL is the default layout. LTR (English) must read identically well.

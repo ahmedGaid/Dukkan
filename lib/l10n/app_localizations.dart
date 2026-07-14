@@ -2785,6 +2785,204 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'المبلغ (جنيه)'**
   String get productsBoardBulkPriceFixedLabel;
+
+  /// No description provided for @consoleNavTaxonomy.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأقسام'**
+  String get consoleNavTaxonomy;
+
+  /// No description provided for @consoleNavGeo.
+  ///
+  /// In ar, this message translates to:
+  /// **'مناطق التوصيل'**
+  String get consoleNavGeo;
+
+  /// No description provided for @fieldCategoryNameAr.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم القسم (عربي)'**
+  String get fieldCategoryNameAr;
+
+  /// No description provided for @fieldCategoryNameEn.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم القسم (إنجليزي)'**
+  String get fieldCategoryNameEn;
+
+  /// No description provided for @fieldAreaNameAr.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم المنطقة (عربي)'**
+  String get fieldAreaNameAr;
+
+  /// No description provided for @fieldAreaNameEn.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم المنطقة (إنجليزي)'**
+  String get fieldAreaNameEn;
+
+  /// No description provided for @fieldGovernorate.
+  ///
+  /// In ar, this message translates to:
+  /// **'المحافظة'**
+  String get fieldGovernorate;
+
+  /// No description provided for @fieldDeliveryFeeOverrideOptional.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير رسوم التوصيل (اختياري)'**
+  String get fieldDeliveryFeeOverrideOptional;
+
+  /// No description provided for @validateAmountInvalid.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب مبلغ صحيح'**
+  String get validateAmountInvalid;
+
+  /// No description provided for @taxonomyBoardHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأقسام اللي بتظهر للعملاء وأصحاب الدكاكين. لو متردد، إخفاء أحسن من مسح.'**
+  String get taxonomyBoardHint;
+
+  /// No description provided for @taxonomyBoardAddAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'قسم جديد'**
+  String get taxonomyBoardAddAction;
+
+  /// No description provided for @taxonomyBoardErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نجيب الأقسام دلوقتي — جرّب تاني.'**
+  String get taxonomyBoardErrorBody;
+
+  /// No description provided for @taxonomyBoardEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش أقسام'**
+  String get taxonomyBoardEmptyTitle;
+
+  /// No description provided for @taxonomyBoardActionFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحركة دي معملتش — جرّب تاني.'**
+  String get taxonomyBoardActionFailed;
+
+  /// No description provided for @taxonomyBoardHide.
+  ///
+  /// In ar, this message translates to:
+  /// **'إخفاء'**
+  String get taxonomyBoardHide;
+
+  /// No description provided for @taxonomyBoardShow.
+  ///
+  /// In ar, this message translates to:
+  /// **'إظهار'**
+  String get taxonomyBoardShow;
+
+  /// No description provided for @taxonomyBoardEditTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل القسم'**
+  String get taxonomyBoardEditTitle;
+
+  /// No description provided for @taxonomyBoardIconLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأيقونة'**
+  String get taxonomyBoardIconLabel;
+
+  /// No description provided for @taxonomyBoardDeleteConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمسح القسم؟'**
+  String get taxonomyBoardDeleteConfirmTitle;
+
+  /// No description provided for @taxonomyBoardDeleteConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحركة دي مش هترجع.'**
+  String get taxonomyBoardDeleteConfirmBody;
+
+  /// No description provided for @taxonomyBoardDeleteConfirmBodyWithProducts.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} منتج لسه بيستخدم القسم ده — هيفضلوا ظاهرين، بس الحركة دي مش هترجع. تمسح برضو؟'**
+  String taxonomyBoardDeleteConfirmBodyWithProducts(Object count);
+
+  /// No description provided for @geoBoardHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'مناطق التوصيل اللي بتظهر في الشيك أوت. لو متردد، إيقاف أحسن من مسح.'**
+  String get geoBoardHint;
+
+  /// No description provided for @geoBoardAddAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'منطقة جديدة'**
+  String get geoBoardAddAction;
+
+  /// No description provided for @geoBoardErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نجيب المناطق دلوقتي — جرّب تاني.'**
+  String get geoBoardErrorBody;
+
+  /// No description provided for @geoBoardEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش مناطق'**
+  String get geoBoardEmptyTitle;
+
+  /// No description provided for @geoBoardActionFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحركة دي معملتش — جرّب تاني.'**
+  String get geoBoardActionFailed;
+
+  /// No description provided for @geoBoardEditTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل المنطقة'**
+  String get geoBoardEditTitle;
+
+  /// No description provided for @geoBoardFeeOverrideBadge.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير الرسوم: {fee}'**
+  String geoBoardFeeOverrideBadge(Object fee);
+
+  /// No description provided for @geoBoardDeactivateInsteadTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'توقف المنطقة بدل ما تتمسح؟'**
+  String get geoBoardDeactivateInsteadTitle;
+
+  /// No description provided for @geoBoardDeactivateInsteadBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} طلب بيستخدم المنطقة دي — مينفعش تتمسح، بس ممكن توقفها فتختفي من الشيك أوت.'**
+  String geoBoardDeactivateInsteadBody(Object count);
+
+  /// No description provided for @geoBoardDeactivateAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيقاف'**
+  String get geoBoardDeactivateAction;
+
+  /// No description provided for @geoBoardDeleteConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمسح المنطقة؟'**
+  String get geoBoardDeleteConfirmTitle;
+
+  /// No description provided for @geoBoardDeleteConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحركة دي مش هترجع.'**
+  String get geoBoardDeleteConfirmBody;
 }
 
 class _AppLocalizationsDelegate

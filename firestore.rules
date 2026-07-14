@@ -240,21 +240,19 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Fixed, seed-managed taxonomy (M3) — no owner/admin console, so no client
-    // write path at all. Populate via Firebase console (paste the JSON) or by
-    // temporarily relaxing this to `allow write: if isSignedIn();` for a
-    // `flutter run -t lib/dev/seed_demo_data.dart` pass, then restoring it.
+    // Taxonomy (M3, console-editable from FC9) — the console is now the write
+    // path, gated by `taxonomy.edit`; the seed script only ever runs once
+    // signed in as founder, so no relax-then-restore dance is needed anymore.
     match /categories/{categoryId} {
       allow read: if isSignedIn();
-      allow write: if false;
+      allow create, update, delete: if hasPerm('taxonomy.edit');
     }
 
-    // Fixed, seed-managed delivery districts (M8) — same shape/rule as
-    // `/categories`. Populate via Firebase console, or temporarily relax
-    // `write` to `isSignedIn()` for one seed pass, then restore it.
+    // Delivery districts (M8, console-editable from FC9) — same shape/rule as
+    // `/categories`, gated by `geo.edit`.
     match /areas/{areaId} {
       allow read: if isSignedIn();
-      allow write: if false;
+      allow create, update, delete: if hasPerm('geo.edit');
     }
 
     // Shared platform driver pool (M8). A driver reads/updates only their own

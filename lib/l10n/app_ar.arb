@@ -515,5 +515,42 @@
   "productsBoardBulkPriceIncrease": "زيادة",
   "productsBoardBulkPriceDecrease": "تخفيض",
   "productsBoardBulkPricePercentLabel": "النسبة",
-  "productsBoardBulkPriceFixedLabel": "المبلغ (جنيه)"
+  "productsBoardBulkPriceFixedLabel": "المبلغ (جنيه)",
+
+  "consoleNavTaxonomy": "الأقسام",
+  "consoleNavGeo": "مناطق التوصيل",
+
+  "fieldCategoryNameAr": "اسم القسم (عربي)",
+  "fieldCategoryNameEn": "اسم القسم (إنجليزي)",
+  "fieldAreaNameAr": "اسم المنطقة (عربي)",
+  "fieldAreaNameEn": "اسم المنطقة (إنجليزي)",
+  "fieldGovernorate": "المحافظة",
+  "fieldDeliveryFeeOverrideOptional": "تغيير رسوم التوصيل (اختياري)",
+  "validateAmountInvalid": "اكتب مبلغ صحيح",
+
+  "taxonomyBoardHint": "الأقسام اللي بتظهر للعملاء وأصحاب الدكاكين. لو متردد، إخفاء أحسن من مسح.",
+  "taxonomyBoardAddAction": "قسم جديد",
+  "taxonomyBoardErrorBody": "معرفناش نجيب الأقسام دلوقتي — جرّب تاني.",
+  "taxonomyBoardEmptyTitle": "لسه مفيش أقسام",
+  "taxonomyBoardActionFailed": "الحركة دي معملتش — جرّب تاني.",
+  "taxonomyBoardHide": "إخفاء",
+  "taxonomyBoardShow": "إظهار",
+  "taxonomyBoardEditTitle": "تعديل القسم",
+  "taxonomyBoardIconLabel": "الأيقونة",
+  "taxonomyBoardDeleteConfirmTitle": "تمسح القسم؟",
+  "taxonomyBoardDeleteConfirmBody": "الحركة دي مش هترجع.",
+  "taxonomyBoardDeleteConfirmBodyWithProducts": "{count} منتج لسه بيستخدم القسم ده — هيفضلوا ظاهرين، بس الحركة دي مش هترجع. تمسح برضو؟",
+
+  "geoBoardHint": "مناطق التوصيل اللي بتظهر في الشيك أوت. لو متردد، إيقاف أحسن من مسح.",
+  "geoBoardAddAction": "منطقة جديدة",
+  "geoBoardErrorBody": "معرفناش نجيب المناطق دلوقتي — جرّب تاني.",
+  "geoBoardEmptyTitle": "لسه مفيش مناطق",
+  "geoBoardActionFailed": "الحركة دي معملتش — جرّب تاني.",
+  "geoBoardEditTitle": "تعديل المنطقة",
+  "geoBoardFeeOverrideBadge": "تغيير الرسوم: {fee}",
+  "geoBoardDeactivateInsteadTitle": "توقف المنطقة بدل ما تتمسح؟",
+  "geoBoardDeactivateInsteadBody": "{count} طلب بيستخدم المنطقة دي — مينفعش تتمسح، بس ممكن توقفها فتختفي من الشيك أوت.",
+  "geoBoardDeactivateAction": "إيقاف",
+  "geoBoardDeleteConfirmTitle": "تمسح المنطقة؟",
+  "geoBoardDeleteConfirmBody": "الحركة دي مش هترجع."
 }

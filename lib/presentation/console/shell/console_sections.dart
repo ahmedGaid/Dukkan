@@ -55,6 +55,18 @@ const consoleSections = <ConsoleSection>[
     labelKey: 'consoleNavProducts',
     requiredPerm: Permissions.productsUpdate,
   ),
+  ConsoleSection(
+    route: '/console/taxonomy',
+    icon: Icons.category_outlined,
+    labelKey: 'consoleNavTaxonomy',
+    requiredPerm: Permissions.taxonomyEdit,
+  ),
+  ConsoleSection(
+    route: '/console/geo',
+    icon: Icons.map_outlined,
+    labelKey: 'consoleNavGeo',
+    requiredPerm: Permissions.geoEdit,
+  ),
 ];
 
 /// The sections a given staff member may see, in order. Empty for a non-staff

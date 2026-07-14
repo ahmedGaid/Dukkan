@@ -1438,4 +1438,112 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get productsBoardBulkPriceFixedLabel => 'المبلغ (جنيه)';
+
+  @override
+  String get consoleNavTaxonomy => 'الأقسام';
+
+  @override
+  String get consoleNavGeo => 'مناطق التوصيل';
+
+  @override
+  String get fieldCategoryNameAr => 'اسم القسم (عربي)';
+
+  @override
+  String get fieldCategoryNameEn => 'اسم القسم (إنجليزي)';
+
+  @override
+  String get fieldAreaNameAr => 'اسم المنطقة (عربي)';
+
+  @override
+  String get fieldAreaNameEn => 'اسم المنطقة (إنجليزي)';
+
+  @override
+  String get fieldGovernorate => 'المحافظة';
+
+  @override
+  String get fieldDeliveryFeeOverrideOptional => 'تغيير رسوم التوصيل (اختياري)';
+
+  @override
+  String get validateAmountInvalid => 'اكتب مبلغ صحيح';
+
+  @override
+  String get taxonomyBoardHint =>
+      'الأقسام اللي بتظهر للعملاء وأصحاب الدكاكين. لو متردد، إخفاء أحسن من مسح.';
+
+  @override
+  String get taxonomyBoardAddAction => 'قسم جديد';
+
+  @override
+  String get taxonomyBoardErrorBody =>
+      'معرفناش نجيب الأقسام دلوقتي — جرّب تاني.';
+
+  @override
+  String get taxonomyBoardEmptyTitle => 'لسه مفيش أقسام';
+
+  @override
+  String get taxonomyBoardActionFailed => 'الحركة دي معملتش — جرّب تاني.';
+
+  @override
+  String get taxonomyBoardHide => 'إخفاء';
+
+  @override
+  String get taxonomyBoardShow => 'إظهار';
+
+  @override
+  String get taxonomyBoardEditTitle => 'تعديل القسم';
+
+  @override
+  String get taxonomyBoardIconLabel => 'الأيقونة';
+
+  @override
+  String get taxonomyBoardDeleteConfirmTitle => 'تمسح القسم؟';
+
+  @override
+  String get taxonomyBoardDeleteConfirmBody => 'الحركة دي مش هترجع.';
+
+  @override
+  String taxonomyBoardDeleteConfirmBodyWithProducts(Object count) {
+    return '$count منتج لسه بيستخدم القسم ده — هيفضلوا ظاهرين، بس الحركة دي مش هترجع. تمسح برضو؟';
+  }
+
+  @override
+  String get geoBoardHint =>
+      'مناطق التوصيل اللي بتظهر في الشيك أوت. لو متردد، إيقاف أحسن من مسح.';
+
+  @override
+  String get geoBoardAddAction => 'منطقة جديدة';
+
+  @override
+  String get geoBoardErrorBody => 'معرفناش نجيب المناطق دلوقتي — جرّب تاني.';
+
+  @override
+  String get geoBoardEmptyTitle => 'لسه مفيش مناطق';
+
+  @override
+  String get geoBoardActionFailed => 'الحركة دي معملتش — جرّب تاني.';
+
+  @override
+  String get geoBoardEditTitle => 'تعديل المنطقة';
+
+  @override
+  String geoBoardFeeOverrideBadge(Object fee) {
+    return 'تغيير الرسوم: $fee';
+  }
+
+  @override
+  String get geoBoardDeactivateInsteadTitle => 'توقف المنطقة بدل ما تتمسح؟';
+
+  @override
+  String geoBoardDeactivateInsteadBody(Object count) {
+    return '$count طلب بيستخدم المنطقة دي — مينفعش تتمسح، بس ممكن توقفها فتختفي من الشيك أوت.';
+  }
+
+  @override
+  String get geoBoardDeactivateAction => 'إيقاف';
+
+  @override
+  String get geoBoardDeleteConfirmTitle => 'تمسح المنطقة؟';
+
+  @override
+  String get geoBoardDeleteConfirmBody => 'الحركة دي مش هترجع.';
 }

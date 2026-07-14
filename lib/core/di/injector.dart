@@ -6,12 +6,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/admin/datasources/admin_api_datasource.dart';
 import '../../data/admin/datasources/admin_remote_datasource.dart';
+import '../../data/admin/datasources/admin_geo_remote_datasource.dart';
 import '../../data/admin/datasources/admin_products_remote_datasource.dart';
 import '../../data/admin/datasources/admin_shops_remote_datasource.dart';
+import '../../data/admin/datasources/admin_taxonomy_remote_datasource.dart';
 import '../../data/admin/datasources/admin_users_remote_datasource.dart';
+import '../../data/admin/repositories/admin_geo_repository_impl.dart';
 import '../../data/admin/repositories/admin_products_repository_impl.dart';
 import '../../data/admin/repositories/admin_repository_impl.dart';
 import '../../data/admin/repositories/admin_shops_repository_impl.dart';
+import '../../data/admin/repositories/admin_taxonomy_repository_impl.dart';
 import '../../data/admin/repositories/admin_user_actions_impl.dart';
 import '../../data/admin/repositories/admin_users_repository_impl.dart';
 import '../../data/areas/datasources/areas_local_datasource.dart';
@@ -48,17 +52,27 @@ import '../../data/storage/repositories/storage_repository_impl.dart';
 import '../../data/taxonomy/datasources/taxonomy_local_datasource.dart';
 import '../../data/taxonomy/datasources/taxonomy_remote_datasource.dart';
 import '../../data/taxonomy/repositories/taxonomy_repository_impl.dart';
+import '../../domain/admin/repositories/admin_geo_repository.dart';
 import '../../domain/admin/repositories/admin_products_repository.dart';
 import '../../domain/admin/repositories/admin_repository.dart';
 import '../../domain/admin/repositories/admin_shops_repository.dart';
+import '../../domain/admin/repositories/admin_taxonomy_repository.dart';
 import '../../domain/admin/repositories/admin_user_actions.dart';
 import '../../domain/admin/repositories/admin_users_repository.dart';
 import '../../domain/admin/usecases/bulk_update_products.dart';
 import '../../domain/admin/usecases/change_user_email.dart';
+import '../../domain/admin/usecases/count_orders_in_area.dart';
+import '../../domain/admin/usecases/count_products_in_category.dart';
+import '../../domain/admin/usecases/create_area.dart';
+import '../../domain/admin/usecases/create_category.dart';
 import '../../domain/admin/usecases/create_shop_as_staff.dart';
 import '../../domain/admin/usecases/create_user.dart';
+import '../../domain/admin/usecases/delete_area.dart';
+import '../../domain/admin/usecases/delete_category.dart';
 import '../../domain/admin/usecases/duplicate_product.dart';
 import '../../domain/admin/usecases/get_admin_profile.dart';
+import '../../domain/admin/usecases/get_all_areas.dart';
+import '../../domain/admin/usecases/get_all_categories.dart';
 import '../../domain/admin/usecases/get_all_shops.dart';
 import '../../domain/admin/usecases/get_products.dart';
 import '../../domain/admin/usecases/get_shop_by_id.dart';
@@ -75,6 +89,8 @@ import '../../domain/admin/usecases/restore_shop.dart';
 import '../../domain/admin/usecases/restore_user.dart';
 import '../../domain/admin/usecases/search_products.dart';
 import '../../domain/admin/usecases/set_admin.dart';
+import '../../domain/admin/usecases/set_area_active.dart';
+import '../../domain/admin/usecases/set_category_visible.dart';
 import '../../domain/admin/usecases/set_shop_featured.dart';
 import '../../domain/admin/usecases/set_shop_status.dart';
 import '../../domain/admin/usecases/soft_delete_product.dart';
@@ -83,7 +99,10 @@ import '../../domain/admin/usecases/set_user_disabled.dart';
 import '../../domain/admin/usecases/set_user_persona_role.dart';
 import '../../domain/admin/usecases/soft_delete_shop.dart';
 import '../../domain/admin/usecases/soft_delete_user.dart';
+import '../../domain/admin/usecases/swap_category_sort.dart';
 import '../../domain/admin/usecases/transfer_shop_ownership.dart';
+import '../../domain/admin/usecases/update_area.dart';
+import '../../domain/admin/usecases/update_category.dart';
 import '../../domain/admin/usecases/update_shop_details.dart';
 import '../../domain/areas/repositories/areas_repository.dart';
 import '../../domain/areas/usecases/get_areas.dart';
@@ -154,9 +173,11 @@ import '../../presentation/catalog/bloc/collections_bloc.dart';
 import '../../domain/admin/entities/managed_user.dart';
 import '../../presentation/console/audit/bloc/audit_log_bloc.dart';
 import '../../presentation/console/dashboard/bloc/dashboard_bloc.dart';
+import '../../presentation/console/geo/bloc/geo_board_bloc.dart';
 import '../../presentation/console/products/bloc/products_board_bloc.dart';
 import '../../presentation/console/shops/bloc/shop_detail_bloc.dart';
 import '../../presentation/console/shops/bloc/shops_board_bloc.dart';
+import '../../presentation/console/taxonomy/bloc/taxonomy_board_bloc.dart';
 import '../../presentation/console/users/bloc/user_detail_bloc.dart';
 import '../../presentation/console/users/bloc/users_bloc.dart';
 import '../../presentation/driver/bloc/deliveries_bloc.dart';
@@ -306,6 +327,52 @@ Future<void> initDependencies() async {
         duplicateProduct: sl(),
         hardDeleteProduct: sl(),
         bulkUpdateProducts: sl(),
+      ));
+
+  // Taxonomy management (Founder Console session 9). AdminTaxonomyRepository
+  // reads/writes are all direct (gated by the `taxonomy.edit` rules branch).
+  sl.registerLazySingleton(() => AdminTaxonomyRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<AdminTaxonomyRepository>(
+    () => AdminTaxonomyRepositoryImpl(sl(), sl()),
+  );
+  sl.registerLazySingleton(() => GetAllCategories(sl()));
+  sl.registerLazySingleton(() => CreateCategory(sl()));
+  sl.registerLazySingleton(() => UpdateCategory(sl()));
+  sl.registerLazySingleton(() => SetCategoryVisible(sl()));
+  sl.registerLazySingleton(() => SwapCategorySort(sl()));
+  sl.registerLazySingleton(() => DeleteCategory(sl()));
+  sl.registerLazySingleton(() => CountProductsInCategory(sl()));
+
+  // Taxonomy management — bloc (page-scoped, same contract as ShopsBoardBloc).
+  sl.registerFactory(() => TaxonomyBoardBloc(
+        getAllCategories: sl(),
+        createCategory: sl(),
+        updateCategory: sl(),
+        setCategoryVisible: sl(),
+        swapCategorySort: sl(),
+        deleteCategory: sl(),
+      ));
+
+  // Geo management (Founder Console session 9). AdminGeoRepository
+  // reads/writes are all direct (gated by the `geo.edit` rules branch).
+  sl.registerLazySingleton(() => AdminGeoRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<AdminGeoRepository>(
+    () => AdminGeoRepositoryImpl(sl(), sl()),
+  );
+  sl.registerLazySingleton(() => GetAllAreas(sl()));
+  sl.registerLazySingleton(() => CreateArea(sl()));
+  sl.registerLazySingleton(() => UpdateArea(sl()));
+  sl.registerLazySingleton(() => SetAreaActive(sl()));
+  sl.registerLazySingleton(() => DeleteArea(sl()));
+  sl.registerLazySingleton(() => CountOrdersInArea(sl()));
+
+  // Geo management — bloc (page-scoped, same contract as TaxonomyBoardBloc).
+  sl.registerFactory(() => GeoBoardBloc(
+        getAllAreas: sl(),
+        createArea: sl(),
+        updateArea: sl(),
+        setAreaActive: sl(),
+        deleteArea: sl(),
       ));
 
   // Auth — bloc (app lifetime; createDriverProfile only fires for a courier
@@ -523,7 +590,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<OrderRepository>(() => OrderRepositoryImpl(sl()));
 
   // Order — use cases
-  sl.registerLazySingleton(() => PlaceOrder(sl(), sl()));
+  sl.registerLazySingleton(() => PlaceOrder(sl(), sl(), sl()));
   sl.registerLazySingleton(() => WatchCustomerOrders(sl()));
   sl.registerLazySingleton(() => WatchShopOrders(sl()));
   sl.registerLazySingleton(() => WatchOrder(sl()));

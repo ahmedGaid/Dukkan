@@ -16,8 +16,13 @@ class AreasRepositoryImpl implements AreasRepository {
     if (await _networkInfo.isConnected) {
       final areas = await _remote.getAreas();
       await _local.cacheAreas(areas);
-      return areas;
+      return _active(areas);
     }
-    return _local.getCachedAreas();
+    return _active(await _local.getCachedAreas());
   }
+
+  /// FC9: a deactivated area is hidden from checkout's picker — the
+  /// console's `AdminGeoRepository` reads the unfiltered collection directly.
+  List<Area> _active(List<Area> areas) =>
+      areas.where((a) => a.isActive).toList(growable: false);
 }

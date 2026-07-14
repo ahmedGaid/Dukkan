@@ -527,8 +527,41 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       No Worker route needed (unlike shop-ownership transfer) — every product field is staff-
       writable client-side once `products.*` rules pass. 30 i18n keys ×2, 3 new model tests
       (187 total). Gates green (analyze 0, test 187, parity 448). Bulk WriteBatch + rules-deny
-      still need a live device smoke test — not run this session. **Next: FC9 (FILE_09) —
-      taxonomy + geo.**
+      still need a live device smoke test — not run this session.
+      **FC9 DONE (code) 2026-07-14** — taxonomy + geo (FILE_09). `firestore.rules`
+      `/categories`/`/areas` switched from `write: false` to `hasPerm('taxonomy.edit'|
+      'geo.edit')` — console is now the write path (seed script still needs its usual
+      relax-then-restore pass since the seed owner account isn't staff). `Category`
+      gained `isVisible`/`iconName` (additive); `TaxonomyRepositoryImpl.getTaxonomy()`
+      now drops hidden categories for every existing consumer (only the product-form
+      dropdown actually reads it — home's `CategoryGrid` is shop-derived, not
+      taxonomy-sourced, a pre-existing divergence from the plan's literal wording, left
+      alone rather than rearchitected this session). `Area` gained `governorate`/`city`/
+      `isActive`/`deliveryFeeMinorOverride`; `AreasRepositoryImpl.getAreas()` drops
+      deactivated areas, so checkout's dropdown auto-excludes them with no page change
+      needed. `PlaceOrder` now resolves `deliveryFeeMinor` from the order's area
+      override (falls back to `PlatformConfig.deliveryFeeMinor` on no override/no
+      areaId/unknown id) — 4 new unit tests. New `AdminTaxonomyRepository`/
+      `AdminGeoRepository` (+impl+datasource, mirrors `AdminShopsRepository`'s
+      Firestore-direct/no-cache/best-effort-audit shape): category CRUD incl. sort-swap
+      reorder and a pre-delete product-count warning (real delete, never soft — a
+      retired category is just `isVisible:false`); area CRUD with a pre-delete
+      order-count check that forces "deactivate instead" when non-zero rather than
+      allowing the delete. `console/taxonomy` (list, up/down reorder, eye-toggle,
+      edit sheet with a curated ~20-icon picker grid, add/delete) and `console/geo`
+      (governorate→city grouped list, active switch, edit sheet with a tap-to-fill
+      suggestion-chip governorate/city helper instead of a full `Autocomplete` widget,
+      fee-override money field) — both no-cache, reload-whole-list-after-mutation blocs
+      (mirrors `ShopDetailBloc`). Deliberately did NOT add `sort`/`isVisible` to
+      `Subcategory` (no console UI consumes it this session — would've been dead
+      plumbing). `audit_actions.dart`'s placeholder `taxonomy.edit`/`geo.edit` codes
+      replaced with the granular `taxonomy.create/update/delete` + `area.create/update/
+      delete` set. 33 i18n keys ×2 + lexicon (Governorate→المحافظة; City confirmed
+      already covered by the existing `fieldCity`/`City→المدينة`). Gates green (analyze
+      0, test 192/192 — up from 187, +place_order_test.dart 4 cases, category/area model
+      tests extended; parity 481 — up from 448). Rules + reorder/delete/deactivate flows
+      need a live device smoke test — not run this session. **Next: FC10 (FILE_10) —
+      order admin.**
 - [ ] **FC12–FC15 — Platform ops.** Settings/flags/maintenance+version gates · notification
       center (topics) · media library (R2) · impersonation + dev tools. (FILE_12–15)
 - [ ] **FC16–FC18 — Growth + close.** Promotions (coupons/banners/featured) · global search +

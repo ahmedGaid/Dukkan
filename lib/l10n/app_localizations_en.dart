@@ -1468,4 +1468,115 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productsBoardBulkPriceFixedLabel => 'Amount (EGP)';
+
+  @override
+  String get consoleNavTaxonomy => 'Categories';
+
+  @override
+  String get consoleNavGeo => 'Delivery Areas';
+
+  @override
+  String get fieldCategoryNameAr => 'Category name (Arabic)';
+
+  @override
+  String get fieldCategoryNameEn => 'Category name (English)';
+
+  @override
+  String get fieldAreaNameAr => 'Area name (Arabic)';
+
+  @override
+  String get fieldAreaNameEn => 'Area name (English)';
+
+  @override
+  String get fieldGovernorate => 'Governorate';
+
+  @override
+  String get fieldDeliveryFeeOverrideOptional =>
+      'Delivery fee override (optional)';
+
+  @override
+  String get validateAmountInvalid => 'Enter a valid amount';
+
+  @override
+  String get taxonomyBoardHint =>
+      'Categories shown to customers and shop owners. Hide instead of delete when in doubt.';
+
+  @override
+  String get taxonomyBoardAddAction => 'Add category';
+
+  @override
+  String get taxonomyBoardErrorBody =>
+      'We can\'t load the categories right now — try again.';
+
+  @override
+  String get taxonomyBoardEmptyTitle => 'No categories yet';
+
+  @override
+  String get taxonomyBoardActionFailed =>
+      'That didn\'t go through — try again.';
+
+  @override
+  String get taxonomyBoardHide => 'Hide';
+
+  @override
+  String get taxonomyBoardShow => 'Show';
+
+  @override
+  String get taxonomyBoardEditTitle => 'Edit category';
+
+  @override
+  String get taxonomyBoardIconLabel => 'Icon';
+
+  @override
+  String get taxonomyBoardDeleteConfirmTitle => 'Delete category?';
+
+  @override
+  String get taxonomyBoardDeleteConfirmBody => 'This can\'t be undone.';
+
+  @override
+  String taxonomyBoardDeleteConfirmBodyWithProducts(Object count) {
+    return '$count products still use this category — they\'ll keep showing, but this can\'t be undone. Delete anyway?';
+  }
+
+  @override
+  String get geoBoardHint =>
+      'Delivery districts shown at checkout. Deactivate instead of delete when in doubt.';
+
+  @override
+  String get geoBoardAddAction => 'Add area';
+
+  @override
+  String get geoBoardErrorBody =>
+      'We can\'t load the areas right now — try again.';
+
+  @override
+  String get geoBoardEmptyTitle => 'No areas yet';
+
+  @override
+  String get geoBoardActionFailed => 'That didn\'t go through — try again.';
+
+  @override
+  String get geoBoardEditTitle => 'Edit area';
+
+  @override
+  String geoBoardFeeOverrideBadge(Object fee) {
+    return 'Fee override: $fee';
+  }
+
+  @override
+  String get geoBoardDeactivateInsteadTitle => 'Deactivate instead?';
+
+  @override
+  String geoBoardDeactivateInsteadBody(Object count) {
+    return '$count orders reference this area — it can\'t be deleted, but you can deactivate it so it stops showing at checkout.';
+  }
+
+  @override
+  String get geoBoardDeactivateAction => 'Deactivate';
+
+  @override
+  String get geoBoardDeleteConfirmTitle => 'Delete area?';
+
+  @override
+  String get geoBoardDeleteConfirmBody => 'This can\'t be undone.';
 }

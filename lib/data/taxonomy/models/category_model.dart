@@ -8,6 +8,8 @@ class CategoryModel extends Category {
     required super.nameEn,
     required super.sort,
     required super.subcategories,
+    super.isVisible,
+    super.iconName,
   });
 
   factory CategoryModel.fromFirestore(String id, Map<String, dynamic> data) {
@@ -19,6 +21,8 @@ class CategoryModel extends Category {
       nameEn: data['nameEn'] as String? ?? '',
       sort: (data['sort'] as num?)?.toInt() ?? 0,
       subcategories: rawSubcategories.map(_subcategoryFromMap).toList(),
+      isVisible: data['isVisible'] as bool? ?? true,
+      iconName: data['iconName'] as String?,
     );
   }
 
@@ -27,6 +31,8 @@ class CategoryModel extends Category {
         'nameEn': nameEn,
         'sort': sort,
         'subcategories': subcategories.map(_subcategoryToMap).toList(),
+        'isVisible': isVisible,
+        'iconName': iconName,
       };
 
   static Subcategory _subcategoryFromMap(Map<String, dynamic> map) =>
@@ -51,6 +57,8 @@ class CategoryModel extends Category {
       nameEn: json['nameEn'] as String,
       sort: json['sort'] as int,
       subcategories: rawSubcategories.map(_subcategoryFromMap).toList(),
+      isVisible: json['isVisible'] as bool? ?? true,
+      iconName: json['iconName'] as String?,
     );
   }
 

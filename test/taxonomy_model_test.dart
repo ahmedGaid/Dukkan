@@ -10,6 +10,8 @@ void main() {
       {'id': 'fruits', 'nameAr': 'فواكه', 'nameEn': 'Fruits'},
       {'id': 'vegetables', 'nameAr': 'خضروات', 'nameEn': 'Vegetables'},
     ],
+    'isVisible': false,
+    'iconName': 'produce',
   };
 
   test('fromFirestore parses the category and its embedded subcategories',
@@ -24,6 +26,8 @@ void main() {
     expect(category.subcategories.first.id, 'fruits');
     expect(category.subcategories.first.nameAr, 'فواكه');
     expect(category.subcategories.last.id, 'vegetables');
+    expect(category.isVisible, false);
+    expect(category.iconName, 'produce');
   });
 
   test('toJson/fromJson round-trips (the local cache path)', () {
@@ -36,6 +40,8 @@ void main() {
     expect(roundTripped.nameEn, category.nameEn);
     expect(roundTripped.sort, category.sort);
     expect(roundTripped.subcategories, category.subcategories);
+    expect(roundTripped.isVisible, category.isVisible);
+    expect(roundTripped.iconName, category.iconName);
   });
 
   test('a category with no subcategories parses to an empty list', () {
@@ -46,5 +52,16 @@ void main() {
     });
 
     expect(category.subcategories, isEmpty);
+  });
+
+  test('a pre-FC9 category with no isVisible/iconName defaults safely', () {
+    final category = CategoryModel.fromFirestore('id', {
+      'nameAr': 'قسم',
+      'nameEn': 'Section',
+      'sort': 9,
+    });
+
+    expect(category.isVisible, true);
+    expect(category.iconName, isNull);
   });
 }

@@ -488,5 +488,42 @@
   "productsBoardBulkPriceIncrease": "Increase",
   "productsBoardBulkPriceDecrease": "Decrease",
   "productsBoardBulkPricePercentLabel": "Percent",
-  "productsBoardBulkPriceFixedLabel": "Amount (EGP)"
+  "productsBoardBulkPriceFixedLabel": "Amount (EGP)",
+
+  "consoleNavTaxonomy": "Categories",
+  "consoleNavGeo": "Delivery Areas",
+
+  "fieldCategoryNameAr": "Category name (Arabic)",
+  "fieldCategoryNameEn": "Category name (English)",
+  "fieldAreaNameAr": "Area name (Arabic)",
+  "fieldAreaNameEn": "Area name (English)",
+  "fieldGovernorate": "Governorate",
+  "fieldDeliveryFeeOverrideOptional": "Delivery fee override (optional)",
+  "validateAmountInvalid": "Enter a valid amount",
+
+  "taxonomyBoardHint": "Categories shown to customers and shop owners. Hide instead of delete when in doubt.",
+  "taxonomyBoardAddAction": "Add category",
+  "taxonomyBoardErrorBody": "We can't load the categories right now — try again.",
+  "taxonomyBoardEmptyTitle": "No categories yet",
+  "taxonomyBoardActionFailed": "That didn't go through — try again.",
+  "taxonomyBoardHide": "Hide",
+  "taxonomyBoardShow": "Show",
+  "taxonomyBoardEditTitle": "Edit category",
+  "taxonomyBoardIconLabel": "Icon",
+  "taxonomyBoardDeleteConfirmTitle": "Delete category?",
+  "taxonomyBoardDeleteConfirmBody": "This can't be undone.",
+  "taxonomyBoardDeleteConfirmBodyWithProducts": "{count} products still use this category — they'll keep showing, but this can't be undone. Delete anyway?",
+
+  "geoBoardHint": "Delivery districts shown at checkout. Deactivate instead of delete when in doubt.",
+  "geoBoardAddAction": "Add area",
+  "geoBoardErrorBody": "We can't load the areas right now — try again.",
+  "geoBoardEmptyTitle": "No areas yet",
+  "geoBoardActionFailed": "That didn't go through — try again.",
+  "geoBoardEditTitle": "Edit area",
+  "geoBoardFeeOverrideBadge": "Fee override: {fee}",
+  "geoBoardDeactivateInsteadTitle": "Deactivate instead?",
+  "geoBoardDeactivateInsteadBody": "{count} orders reference this area — it can't be deleted, but you can deactivate it so it stops showing at checkout.",
+  "geoBoardDeactivateAction": "Deactivate",
+  "geoBoardDeleteConfirmTitle": "Delete area?",
+  "geoBoardDeleteConfirmBody": "This can't be undone."
 }

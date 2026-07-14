@@ -40,9 +40,13 @@ class AuditActions {
     'driver.activate',
     'driver.suspend',
     'driver.edit',
-    // Taxonomy / geo / settings (sessions 09, 12)
-    'taxonomy.edit',
-    'geo.edit',
+    // Taxonomy / geo (session 09) / settings (session 12)
+    'taxonomy.create',
+    'taxonomy.update',
+    'taxonomy.delete',
+    'area.create',
+    'area.update',
+    'area.delete',
     'settings.update',
     'flags.update',
     // Notifications / media (sessions 13, 14)
