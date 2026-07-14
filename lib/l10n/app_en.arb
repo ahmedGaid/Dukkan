@@ -192,6 +192,19 @@
   "orderAssignDriverErrorGeneric": "We couldn't assign this courier — try again.",
   "orderAssignedAtLabel": "Assigned",
   "orderTimelineTitle": "Order history",
+  "orderForcedChip": "Staff correction",
+  "orderNotesTitle": "Internal notes",
+  "orderNotesEmpty": "No notes yet.",
+  "orderNotesAddHint": "Add a note for other staff…",
+  "orderForceStatusAction": "Force status",
+  "orderForceStatusWarning": "This skips the normal order flow — use it only to correct a mistake.",
+  "orderForceStatusLabel": "New status",
+  "orderStaffReasonLabel": "Reason (required)",
+  "orderReassignDriverAction": "Reassign driver",
+  "orderUnassignDriverAction": "Unassign driver",
+  "orderRefundNoteLabel": "Refund note (optional)",
+  "orderRefundNoteHelper": "COD ledger note only — no money moves.",
+  "staffOrderActionErrorBody": "We couldn't complete this action — try again.",
   "notifyNewOrderTitle": "New order!",
   "notifyNewOrderBody": "You've got a new order — open your shop to check it out.",
   "notifyOrderStatusTitle": "Order update",
@@ -525,5 +538,17 @@
   "geoBoardDeactivateInsteadBody": "{count} orders reference this area — it can't be deleted, but you can deactivate it so it stops showing at checkout.",
   "geoBoardDeactivateAction": "Deactivate",
   "geoBoardDeleteConfirmTitle": "Delete area?",
-  "geoBoardDeleteConfirmBody": "This can't be undone."
+  "geoBoardDeleteConfirmBody": "This can't be undone.",
+
+  "consoleNavOrders": "Orders",
+  "dashboardQuickOrdersWaiting": "Orders waiting",
+
+  "ordersBoardSearchLabel": "Order id or exact phone",
+  "ordersBoardErrorBody": "We can't load the order list right now — try again.",
+  "ordersBoardEmptyTitle": "No orders match",
+  "ordersBoardEmptyBody": "Try a different filter or search.",
+  "ordersBoardShopLabel": "Shop",
+  "ordersBoardAreaLabel": "Area",
+  "ordersBoardDateRangeLabel": "Date range",
+  "ordersBoardNoDriver": "No driver"
 }

@@ -534,6 +534,46 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orderTimelineTitle => 'سجل الطلب';
 
   @override
+  String get orderForcedChip => 'تصحيح إداري';
+
+  @override
+  String get orderNotesTitle => 'الملاحظات الداخلية';
+
+  @override
+  String get orderNotesEmpty => 'لسه مفيش ملاحظات.';
+
+  @override
+  String get orderNotesAddHint => 'اكتب ملاحظة للفريق…';
+
+  @override
+  String get orderForceStatusAction => 'فرض الحالة';
+
+  @override
+  String get orderForceStatusWarning =>
+      'الخطوة دي بتتخطى مسار الطلب العادي — استخدمها بس لتصحيح غلطة.';
+
+  @override
+  String get orderForceStatusLabel => 'الحالة الجديدة';
+
+  @override
+  String get orderStaffReasonLabel => 'السبب (مطلوب)';
+
+  @override
+  String get orderReassignDriverAction => 'تغيير المندوب';
+
+  @override
+  String get orderUnassignDriverAction => 'إلغاء التعيين';
+
+  @override
+  String get orderRefundNoteLabel => 'ملاحظة استرداد (اختياري)';
+
+  @override
+  String get orderRefundNoteHelper => 'ملاحظة دفتر بس — مفيش تحويل فلوس.';
+
+  @override
+  String get staffOrderActionErrorBody => 'الإجراء ده مكملش — جرّب تاني.';
+
+  @override
   String get notifyNewOrderTitle => 'طلب جديد!';
 
   @override
@@ -1546,4 +1586,35 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get geoBoardDeleteConfirmBody => 'الحركة دي مش هترجع.';
+
+  @override
+  String get consoleNavOrders => 'الطلبات';
+
+  @override
+  String get dashboardQuickOrdersWaiting => 'طلبات مستنية';
+
+  @override
+  String get ordersBoardSearchLabel => 'رقم الطلب أو رقم الموبايل بالظبط';
+
+  @override
+  String get ordersBoardErrorBody =>
+      'معرفناش نجيب قائمة الطلبات دلوقتي — جرّب تاني.';
+
+  @override
+  String get ordersBoardEmptyTitle => 'مفيش طلبات مطابقة';
+
+  @override
+  String get ordersBoardEmptyBody => 'جرّب فلتر أو بحث تاني.';
+
+  @override
+  String get ordersBoardShopLabel => 'المتجر';
+
+  @override
+  String get ordersBoardAreaLabel => 'المنطقة';
+
+  @override
+  String get ordersBoardDateRangeLabel => 'الفترة الزمنية';
+
+  @override
+  String get ordersBoardNoDriver => 'بدون مندوب';
 }

@@ -12,6 +12,7 @@ import '../../domain/admin/entities/managed_user.dart';
 import '../../presentation/console/audit/pages/audit_log_page.dart';
 import '../../presentation/console/dashboard/pages/dashboard_page.dart';
 import '../../presentation/console/geo/pages/geo_board_page.dart';
+import '../../presentation/console/orders/pages/orders_board_page.dart';
 import '../../presentation/console/shell/console_sections.dart';
 import '../../presentation/console/shell/console_shell.dart';
 import '../../presentation/console/products/pages/products_board_page.dart';
@@ -186,6 +187,13 @@ class AppRouter {
             path: '/console/products',
             builder: (context, state) => const ProductsBoardPage(),
           ),
+          // Order admin (FILE_10). Gated by `orders.read` in the console menu
+          // + Firestore rules. No detail route — row tap reuses the shared
+          // `/order/:id?role=staff` route (see below).
+          GoRoute(
+            path: '/console/orders',
+            builder: (context, state) => const OrdersBoardPage(),
+          ),
           // Taxonomy + geo management (FILE_09). Gated by `taxonomy.edit`/
           // `geo.edit` in the console menu + Firestore rules.
           GoRoute(
@@ -205,6 +213,10 @@ class AppRouter {
           role: switch (state.uri.queryParameters['role']) {
             'owner' => OrderViewerRole.owner,
             'courier' => OrderViewerRole.courier,
+            // Staff console view (FC10) — only granted when the signed-in
+            // account actually has `orders.read`; anyone else deep-linking
+            // `?role=staff` just gets the ordinary customer view.
+            'staff' when _authBloc.state.can(Permissions.ordersRead) => OrderViewerRole.staff,
             _ => OrderViewerRole.customer,
           },
         ),

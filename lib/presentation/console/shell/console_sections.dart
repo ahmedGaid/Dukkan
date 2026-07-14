@@ -56,6 +56,12 @@ const consoleSections = <ConsoleSection>[
     requiredPerm: Permissions.productsUpdate,
   ),
   ConsoleSection(
+    route: '/console/orders',
+    icon: Icons.receipt_long_outlined,
+    labelKey: 'consoleNavOrders',
+    requiredPerm: Permissions.ordersRead,
+  ),
+  ConsoleSection(
     route: '/console/taxonomy',
     icon: Icons.category_outlined,
     labelKey: 'consoleNavTaxonomy',

@@ -5,6 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:flutter/widgets.dart' show Locale;
 
+import '../../../domain/admin/usecases/add_order_note.dart';
+import '../../../domain/admin/usecases/cancel_order_as_staff.dart';
+import '../../../domain/admin/usecases/force_order_status.dart';
+import '../../../domain/admin/usecases/reassign_order_driver.dart';
+import '../../../domain/admin/usecases/watch_order_notes.dart';
 import '../../../domain/areas/entities/area.dart';
 import '../../../domain/areas/usecases/get_areas.dart';
 import '../../../domain/auth/entities/app_user.dart';
@@ -12,6 +17,7 @@ import '../../../domain/auth/usecases/get_user_by_id.dart';
 import '../../../domain/notifications/repositories/notification_repository.dart';
 import '../../../domain/notifications/usecases/notify_order_event.dart';
 import '../../../domain/order/entities/order.dart';
+import '../../../domain/order/entities/order_note.dart';
 import '../../../domain/order/entities/order_status.dart';
 import '../../../domain/order/usecases/cancel_order.dart';
 import '../../../domain/order/usecases/rate_order.dart';
@@ -40,6 +46,11 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     required CancelOrder cancelOrder,
     required RateOrder rateOrder,
     required UpdateOrderStatus updateOrderStatus,
+    required ForceOrderStatus forceOrderStatus,
+    required ReassignOrderDriver reassignOrderDriver,
+    required CancelOrderAsStaff staffCancelOrder,
+    required WatchOrderNotes watchOrderNotes,
+    required AddOrderNote addOrderNote,
     GetUserById? getUserById,
     GetAreas? getAreas,
     NotifyOrderEvent? notifyOrderEvent,
@@ -49,6 +60,11 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         _cancelOrder = cancelOrder,
         _rateOrder = rateOrder,
         _updateOrderStatus = updateOrderStatus,
+        _forceOrderStatus = forceOrderStatus,
+        _reassignOrderDriver = reassignOrderDriver,
+        _staffCancelOrder = staffCancelOrder,
+        _watchOrderNotes = watchOrderNotes,
+        _addOrderNote = addOrderNote,
         _getUserById = getUserById,
         _getAreas = getAreas,
         _notifyOrderEvent = notifyOrderEvent,
@@ -58,6 +74,10 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     on<OrderDetailCancelRequested>(_onCancelRequested);
     on<OrderDetailRateSubmitted>(_onRateSubmitted);
     on<OrderDetailAdvanceRequested>(_onAdvanceRequested);
+    on<OrderDetailForceStatusRequested>(_onForceStatusRequested);
+    on<OrderDetailReassignRequested>(_onReassignRequested);
+    on<OrderDetailStaffCancelRequested>(_onStaffCancelRequested);
+    on<OrderDetailNoteAdded>(_onNoteAdded);
     on<_OrderArrived>(_onArrived);
     on<_OrderWatchFailed>(_onWatchFailed);
     on<_OrderCancelFailed>(_onCancelFailed);
@@ -65,6 +85,13 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     on<_OrderAdvanceFailed>(_onAdvanceFailed);
     on<_CustomerArrived>(_onCustomerArrived);
     on<_AreaArrived>(_onAreaArrived);
+    on<_NotesArrived>((event, emit) => emit(state.copyWith(notes: event.notes)));
+
+    if (_role == OrderViewerRole.staff) {
+      _notesSub = _watchOrderNotes(_orderId).listen(
+        (notes) => add(_NotesArrived(notes)),
+      );
+    }
   }
 
   final String _orderId;
@@ -72,11 +99,17 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
   final CancelOrder _cancelOrder;
   final RateOrder _rateOrder;
   final UpdateOrderStatus _updateOrderStatus;
+  final ForceOrderStatus _forceOrderStatus;
+  final ReassignOrderDriver _reassignOrderDriver;
+  final CancelOrderAsStaff _staffCancelOrder;
+  final WatchOrderNotes _watchOrderNotes;
+  final AddOrderNote _addOrderNote;
   final GetUserById? _getUserById;
   final GetAreas? _getAreas;
   final NotifyOrderEvent? _notifyOrderEvent;
   final OrderViewerRole _role;
   StreamSubscription<Order>? _sub;
+  StreamSubscription<List<OrderNote>>? _notesSub;
 
   Future<void> _onStarted(
     OrderDetailEvent event,
@@ -249,9 +282,74 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     emit(state.copyWith(advanceStatus: OrderAdvanceStatus.failure));
   }
 
+  /// Every staff action (force-status/reassign/cancel) shares one busy/error
+  /// flag — only one runs at a time from the action bar, and success needs no
+  /// local patch: the correction lands via `writeAudit`'s underlying Firestore
+  /// write, which arrives back through the order's own watch stream.
+  Future<void> _runStaffAction(
+    Emitter<OrderDetailState> emit,
+    Future<void> Function() action,
+  ) async {
+    if (state.isStaffActionBusy) return;
+    emit(state.copyWith(staffActionStatus: StaffActionStatus.submitting));
+    try {
+      await action();
+      emit(state.copyWith(staffActionStatus: StaffActionStatus.idle));
+    } catch (_) {
+      emit(state.copyWith(staffActionStatus: StaffActionStatus.failure));
+    }
+  }
+
+  Future<void> _onForceStatusRequested(
+    OrderDetailForceStatusRequested event,
+    Emitter<OrderDetailState> emit,
+  ) =>
+      _runStaffAction(
+        emit,
+        () => _forceOrderStatus(
+          orderId: _orderId,
+          toStatus: event.toStatus.wire,
+          reason: event.reason,
+        ),
+      );
+
+  Future<void> _onReassignRequested(
+    OrderDetailReassignRequested event,
+    Emitter<OrderDetailState> emit,
+  ) =>
+      _runStaffAction(
+        emit,
+        () => _reassignOrderDriver(
+          orderId: _orderId,
+          newDriverUid: event.newDriverUid,
+          clear: event.clear,
+          reason: event.reason,
+        ),
+      );
+
+  Future<void> _onStaffCancelRequested(
+    OrderDetailStaffCancelRequested event,
+    Emitter<OrderDetailState> emit,
+  ) =>
+      _runStaffAction(
+        emit,
+        () => _staffCancelOrder(
+          orderId: _orderId,
+          reason: event.reason,
+          refundNoteMinor: event.refundNoteMinor,
+        ),
+      );
+
+  Future<void> _onNoteAdded(
+    OrderDetailNoteAdded event,
+    Emitter<OrderDetailState> emit,
+  ) =>
+      _runStaffAction(emit, () => _addOrderNote(orderId: _orderId, text: event.text));
+
   @override
   Future<void> close() {
     _sub?.cancel();
+    _notesSub?.cancel();
     return super.close();
   }
 }

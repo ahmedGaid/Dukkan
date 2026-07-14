@@ -84,12 +84,14 @@ class OrderModel extends Order {
         status: OrderStatus.fromWire(map['status'] as String? ?? ''),
         at: DateTime.parse(map['at'] as String),
         byUid: map['byUid'] as String? ?? '',
+        forced: map['forced'] as bool? ?? false,
       );
 
   static Map<String, dynamic> _statusChangeToMap(StatusChange change) => {
         'status': change.status.wire,
         'at': change.at.toIso8601String(),
         'byUid': change.byUid,
+        if (change.forced) 'forced': change.forced,
       };
 
   static OrderItem _itemFromMap(Map<String, dynamic> map) => OrderItem(

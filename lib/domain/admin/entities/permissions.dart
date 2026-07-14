@@ -22,6 +22,7 @@ class Permissions {
   static const ordersUpdate = 'orders.update';
   static const ordersForceStatus = 'orders.forceStatus';
   static const ordersAssignDriver = 'orders.assignDriver';
+  static const ordersCancel = 'orders.cancel';
 
   static const driversManage = 'drivers.manage';
   static const taxonomyEdit = 'taxonomy.edit';
@@ -41,7 +42,7 @@ class Permissions {
   static const values = <String>[
     usersRead, usersCreate, usersUpdate, usersDelete, adminsManage,
     shopsUpdate, shopsTransfer, productsCreate, productsUpdate, productsDelete,
-    ordersRead, ordersUpdate, ordersForceStatus, ordersAssignDriver,
+    ordersRead, ordersUpdate, ordersForceStatus, ordersAssignDriver, ordersCancel,
     driversManage, taxonomyEdit, geoEdit, financeRead, settingsEdit,
     notificationsSend, promosEdit, reportsExport, imagesDelete,
     auditlogsRead, systemTools, systemImpersonate,

@@ -5,13 +5,16 @@ import 'package:intl/intl.dart';
 import '../../../core/di/injector.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../domain/admin/entities/permissions.dart';
 import '../../../domain/areas/entities/area.dart';
 import '../../../domain/auth/entities/app_user.dart';
 import '../../../domain/order/entities/order.dart';
 import '../../../domain/order/entities/order_item.dart';
+import '../../../domain/order/entities/order_note.dart';
 import '../../../domain/order/entities/order_status.dart';
 import '../../../domain/order/entities/status_change.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../auth/bloc/auth_bloc.dart';
 import '../../widgets/common/app_snackbar.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/price_tag.dart';
@@ -21,7 +24,10 @@ import '../bloc/order_detail_bloc.dart';
 import '../order_status_view.dart';
 import '../order_viewer_role.dart';
 import '../widgets/assign_driver_sheet.dart';
+import '../widgets/force_status_dialog.dart';
 import '../widgets/order_status_stepper.dart';
+import '../widgets/reassign_driver_sheet.dart';
+import '../widgets/staff_cancel_dialog.dart';
 import '../widgets/star_rating_picker.dart';
 
 /// One order's tracking page — realtime status stepper, items, delivery
@@ -120,7 +126,8 @@ class _OrderDetailView extends StatelessWidget {
         listenWhen: (previous, current) =>
             previous.cancelStatus != current.cancelStatus ||
             previous.rateStatus != current.rateStatus ||
-            previous.advanceStatus != current.advanceStatus,
+            previous.advanceStatus != current.advanceStatus ||
+            previous.staffActionStatus != current.staffActionStatus,
         listener: (context, state) {
           if (state.cancelStatus == OrderCancelStatus.failure) {
             AppSnackBar.error(context, l10n.orderCancelErrorBody);
@@ -130,6 +137,9 @@ class _OrderDetailView extends StatelessWidget {
           }
           if (state.advanceStatus == OrderAdvanceStatus.failure) {
             AppSnackBar.error(context, l10n.orderActionErrorBody);
+          }
+          if (state.staffActionStatus == StaffActionStatus.failure) {
+            AppSnackBar.error(context, l10n.staffOrderActionErrorBody);
           }
         },
         builder: (context, state) => switch (state.status) {
@@ -147,9 +157,11 @@ class _OrderDetailView extends StatelessWidget {
               role: role,
               customer: state.customer,
               area: state.area,
+              notes: state.notes,
               isCancelling: state.isCancelling,
               isRating: state.isRating,
               isAdvancing: state.isAdvancing,
+              isStaffActionBusy: state.isStaffActionBusy,
               onCancel: () => _confirmCancel(context),
               onRate: (rating) => context
                   .read<OrderDetailBloc>()
@@ -168,9 +180,11 @@ class _OrderDetailContent extends StatelessWidget {
     required this.role,
     required this.customer,
     required this.area,
+    required this.notes,
     required this.isCancelling,
     required this.isRating,
     required this.isAdvancing,
+    required this.isStaffActionBusy,
     required this.onCancel,
     required this.onRate,
     required this.onAdvance,
@@ -179,15 +193,20 @@ class _OrderDetailContent extends StatelessWidget {
   final Order order;
   final OrderViewerRole role;
 
-  /// The customer's `/users` profile — owner/courier view only, resolved by
-  /// the bloc. Null while it's still loading or the doc is missing.
+  /// The customer's `/users` profile — owner/courier/staff view only,
+  /// resolved by the bloc. Null while it's still loading or the doc is missing.
   final AppUser? customer;
 
   /// The delivery area's display name — courier view only (M10).
   final Area? area;
+
+  /// Internal staff notes (FC10, staff role only) — null until the first
+  /// snapshot arrives.
+  final List<OrderNote>? notes;
   final bool isCancelling;
   final bool isRating;
   final bool isAdvancing;
+  final bool isStaffActionBusy;
   final VoidCallback onCancel;
   final ValueChanged<int> onRate;
   final ValueChanged<OrderStatus> onAdvance;
@@ -201,6 +220,7 @@ class _OrderDetailContent extends StatelessWidget {
     final view = orderStatusView(l10n, order.status);
     final isOwner = role == OrderViewerRole.owner;
     final isCourier = role == OrderViewerRole.courier;
+    final isStaff = role == OrderViewerRole.staff;
     final areaName = area == null ? null : (locale == 'ar' ? area!.nameAr : area!.nameEn);
     final isTerminalBranch =
         order.status == OrderStatus.cancelled || order.status == OrderStatus.rejected;
@@ -249,7 +269,7 @@ class _OrderDetailContent extends StatelessWidget {
                 const SizedBox(height: AppSpacing.sm),
                 _CustomerContactCard(customer: customer!),
               ],
-              if (isOwner) ...[
+              if (isOwner || isStaff) ...[
                 const SizedBox(height: AppSpacing.lg),
                 _OwnerPaymentCard(order: order),
               ],
@@ -268,10 +288,18 @@ class _OrderDetailContent extends StatelessWidget {
               Text(l10n.orderTimelineTitle, style: text.titleSmall),
               const SizedBox(height: AppSpacing.sm),
               _OrderTimeline(order: order),
+              if (isStaff) ...[
+                const SizedBox(height: AppSpacing.lg),
+                Text(l10n.orderNotesTitle, style: text.titleSmall),
+                const SizedBox(height: AppSpacing.sm),
+                _StaffNotesCard(notes: notes),
+              ],
             ],
           ),
         ),
-        if (role == OrderViewerRole.customer && order.status.isCancellable)
+        if (isStaff)
+          _StaffActionBar(order: order, isBusy: isStaffActionBusy)
+        else if (role == OrderViewerRole.customer && order.status.isCancellable)
           DecoratedBox(
             decoration: BoxDecoration(
               color: scheme.surface,
@@ -734,6 +762,7 @@ class _OrderTimeline extends StatelessWidget {
               label: orderStatusView(l10n, history[i].status).label,
               tone: orderStatusView(l10n, history[i].status).tone,
               time: timeFormat.format(history[i].at),
+              forced: history[i].forced,
               isLast: i == history.length - 1,
             ),
           ],
@@ -748,16 +777,23 @@ class _TimelineRow extends StatelessWidget {
     required this.label,
     required this.tone,
     required this.time,
+    required this.forced,
     required this.isLast,
   });
 
   final String label;
   final StatusTone tone;
   final String time;
+
+  /// True for a Founder Console correction (FC10) — shows the «تصحيح إداري»
+  /// chip so a staff/owner reader can tell a normal transition from one that
+  /// was force-applied outside the usual flow.
+  final bool forced;
   final bool isLast;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
 
@@ -767,6 +803,10 @@ class _TimelineRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           StatusChip(label: label, tone: tone),
+          if (forced) ...[
+            const SizedBox(width: AppSpacing.xs),
+            StatusChip(label: l10n.orderForcedChip, tone: StatusTone.caution),
+          ],
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
@@ -777,6 +817,184 @@ class _TimelineRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Staff-only internal notes card (FC10) — realtime list, oldest first, plus
+/// an add field. Append-only: there is no edit/remove affordance anywhere,
+/// matching the rules (`allow update, delete: if false`).
+class _StaffNotesCard extends StatefulWidget {
+  const _StaffNotesCard({required this.notes});
+
+  final List<OrderNote>? notes;
+
+  @override
+  State<_StaffNotesCard> createState() => _StaffNotesCardState();
+}
+
+class _StaffNotesCardState extends State<_StaffNotesCard> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit(BuildContext context) {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+    context.read<OrderDetailBloc>().add(OrderDetailNoteAdded(text));
+    _controller.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).languageCode;
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    final notes = widget.notes;
+    final timeFormat = DateFormat.yMMMd(locale).add_Hm();
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(color: scheme.surface, borderRadius: AppRadius.lgAll),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (notes == null)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              child: ListShimmer(count: 2, itemHeight: 40),
+            )
+          else if (notes.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              child: Text(
+                l10n.orderNotesEmpty,
+                style: text.bodySmall
+                    ?.copyWith(color: scheme.onSurface.withValues(alpha: 0.6)),
+              ),
+            )
+          else
+            for (var i = 0; i < notes.length; i++) ...[
+              if (i != 0) const Divider(height: AppSpacing.lg),
+              Text(notes[i].text, style: text.bodyMedium),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                '${notes[i].byName} · ${timeFormat.format(notes[i].at)}',
+                style: text.bodySmall
+                    ?.copyWith(color: scheme.onSurface.withValues(alpha: 0.6)),
+              ),
+            ],
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  minLines: 1,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    hintText: l10n.orderNotesAddHint,
+                    border: OutlineInputBorder(borderRadius: AppRadius.mdAll),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              IconButton(
+                icon: const Icon(Icons.send_outlined),
+                onPressed: () => _submit(context),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Staff action bar (FC10) — force status / reassign driver / cancel, each
+/// perm-gated: a support agent without `orders.forceStatus` simply doesn't
+/// see that button (Firestore rules + the Worker still enforce underneath —
+/// the UI is never the only gate, same defense-in-depth as every other
+/// console mutation).
+class _StaffActionBar extends StatelessWidget {
+  const _StaffActionBar({required this.order, required this.isBusy});
+
+  final Order order;
+  final bool isBusy;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final authState = context.watch<AuthBloc>().state;
+    final canForceStatus = authState.can(Permissions.ordersForceStatus);
+    final canAssignDriver = authState.can(Permissions.ordersAssignDriver);
+    final canCancel = authState.can(Permissions.ordersCancel) && !order.status.isTerminal;
+
+    if (!canForceStatus && !canAssignDriver && !canCancel) return const SizedBox.shrink();
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border(top: BorderSide(color: scheme.outline)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              if (canForceStatus)
+                OutlinedButton.icon(
+                  onPressed: isBusy
+                      ? null
+                      : () async {
+                          final result = await showForceStatusDialog(context, order.status);
+                          if (result != null && context.mounted) {
+                            context.read<OrderDetailBloc>().add(OrderDetailForceStatusRequested(
+                                  toStatus: result.status,
+                                  reason: result.reason,
+                                ));
+                          }
+                        },
+                  icon: const Icon(Icons.build_outlined, size: 18),
+                  label: Text(l10n.orderForceStatusAction),
+                ),
+              if (canAssignDriver)
+                OutlinedButton.icon(
+                  onPressed: isBusy ? null : () => showReassignDriverSheet(context, order),
+                  icon: const Icon(Icons.delivery_dining_outlined, size: 18),
+                  label: Text(l10n.orderReassignDriverAction),
+                ),
+              if (canCancel)
+                OutlinedButton.icon(
+                  onPressed: isBusy
+                      ? null
+                      : () async {
+                          final result = await showStaffCancelDialog(context);
+                          if (result != null && context.mounted) {
+                            context.read<OrderDetailBloc>().add(OrderDetailStaffCancelRequested(
+                                  reason: result.reason,
+                                  refundNoteMinor: result.refundNoteMinor,
+                                ));
+                          }
+                        },
+                  style: OutlinedButton.styleFrom(foregroundColor: scheme.error),
+                  icon: const Icon(Icons.cancel_outlined, size: 18),
+                  label: Text(l10n.actionCancelOrder),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

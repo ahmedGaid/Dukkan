@@ -109,3 +109,61 @@ class _OrderAdvanceFailed extends OrderDetailEvent {
   @override
   List<Object?> get props => [error];
 }
+
+/// Staff tapped "force status" and confirmed the dialog (FC10, staff role only).
+class OrderDetailForceStatusRequested extends OrderDetailEvent {
+  const OrderDetailForceStatusRequested({required this.toStatus, required this.reason});
+
+  final OrderStatus toStatus;
+  final String reason;
+
+  @override
+  List<Object?> get props => [toStatus, reason];
+}
+
+/// Staff tapped "reassign driver" and confirmed a new driver (or "unassign").
+class OrderDetailReassignRequested extends OrderDetailEvent {
+  const OrderDetailReassignRequested({
+    this.newDriverUid,
+    this.clear = false,
+    required this.reason,
+  });
+
+  final String? newDriverUid;
+  final bool clear;
+  final String reason;
+
+  @override
+  List<Object?> get props => [newDriverUid, clear, reason];
+}
+
+/// Staff tapped "cancel" and confirmed the reason/refund-note dialog.
+class OrderDetailStaffCancelRequested extends OrderDetailEvent {
+  const OrderDetailStaffCancelRequested({required this.reason, this.refundNoteMinor});
+
+  final String reason;
+  final int? refundNoteMinor;
+
+  @override
+  List<Object?> get props => [reason, refundNoteMinor];
+}
+
+/// Staff submitted the internal-note field.
+class OrderDetailNoteAdded extends OrderDetailEvent {
+  const OrderDetailNoteAdded(this.text);
+
+  final String text;
+
+  @override
+  List<Object?> get props => [text];
+}
+
+/// Internal: a new notes snapshot arrived (staff role only).
+class _NotesArrived extends OrderDetailEvent {
+  const _NotesArrived(this.notes);
+
+  final List<OrderNote> notes;
+
+  @override
+  List<Object?> get props => [notes];
+}

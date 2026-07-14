@@ -35,4 +35,8 @@ enum OrderStatus {
 
   /// Customer can only back out before the shop starts preparing.
   bool get isCancellable => this == pending || this == accepted;
+
+  /// No further transition happens from here — mirrors the Worker's
+  /// `TERMINAL_STATUSES` (force-status/cancel side-effect guards, FC10).
+  bool get isTerminal => this == delivered || this == cancelled || this == rejected;
 }

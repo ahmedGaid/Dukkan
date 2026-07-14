@@ -147,8 +147,13 @@ export function fsTimestamp(iso) {
   return { __fsTimestamp: iso };
 }
 
-/** Wraps one plain JS value as a Firestore typed value. */
-function toValue(v) {
+/**
+ * Wraps one plain JS value as a Firestore typed value. Exported so callers
+ * that build raw `commit` transforms (e.g. `admin.js`'s order corrections,
+ * which append a `statusHistory` entry via `appendMissingElements`) can wrap
+ * one value without duplicating this switch.
+ */
+export function toValue(v) {
   if (v === null) return { nullValue: null };
   if (v && typeof v === 'object' && '__fsTimestamp' in v) {
     return { timestampValue: v.__fsTimestamp };

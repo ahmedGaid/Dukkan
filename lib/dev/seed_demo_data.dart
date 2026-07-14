@@ -335,6 +335,7 @@ const _adminPermissions = <String>[
   Permissions.ordersUpdate,
   Permissions.ordersForceStatus,
   Permissions.ordersAssignDriver,
+  Permissions.ordersCancel,
   Permissions.driversManage,
   Permissions.taxonomyEdit,
   Permissions.geoEdit,

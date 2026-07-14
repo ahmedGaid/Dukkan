@@ -1118,6 +1118,84 @@ abstract class AppLocalizations {
   /// **'سجل الطلب'**
   String get orderTimelineTitle;
 
+  /// No description provided for @orderForcedChip.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصحيح إداري'**
+  String get orderForcedChip;
+
+  /// No description provided for @orderNotesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الملاحظات الداخلية'**
+  String get orderNotesTitle;
+
+  /// No description provided for @orderNotesEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش ملاحظات.'**
+  String get orderNotesEmpty;
+
+  /// No description provided for @orderNotesAddHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب ملاحظة للفريق…'**
+  String get orderNotesAddHint;
+
+  /// No description provided for @orderForceStatusAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'فرض الحالة'**
+  String get orderForceStatusAction;
+
+  /// No description provided for @orderForceStatusWarning.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخطوة دي بتتخطى مسار الطلب العادي — استخدمها بس لتصحيح غلطة.'**
+  String get orderForceStatusWarning;
+
+  /// No description provided for @orderForceStatusLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالة الجديدة'**
+  String get orderForceStatusLabel;
+
+  /// No description provided for @orderStaffReasonLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'السبب (مطلوب)'**
+  String get orderStaffReasonLabel;
+
+  /// No description provided for @orderReassignDriverAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير المندوب'**
+  String get orderReassignDriverAction;
+
+  /// No description provided for @orderUnassignDriverAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء التعيين'**
+  String get orderUnassignDriverAction;
+
+  /// No description provided for @orderRefundNoteLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظة استرداد (اختياري)'**
+  String get orderRefundNoteLabel;
+
+  /// No description provided for @orderRefundNoteHelper.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظة دفتر بس — مفيش تحويل فلوس.'**
+  String get orderRefundNoteHelper;
+
+  /// No description provided for @staffOrderActionErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإجراء ده مكملش — جرّب تاني.'**
+  String get staffOrderActionErrorBody;
+
   /// No description provided for @notifyNewOrderTitle.
   ///
   /// In ar, this message translates to:
@@ -2983,6 +3061,66 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'الحركة دي مش هترجع.'**
   String get geoBoardDeleteConfirmBody;
+
+  /// No description provided for @consoleNavOrders.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات'**
+  String get consoleNavOrders;
+
+  /// No description provided for @dashboardQuickOrdersWaiting.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبات مستنية'**
+  String get dashboardQuickOrdersWaiting;
+
+  /// No description provided for @ordersBoardSearchLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الطلب أو رقم الموبايل بالظبط'**
+  String get ordersBoardSearchLabel;
+
+  /// No description provided for @ordersBoardErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نجيب قائمة الطلبات دلوقتي — جرّب تاني.'**
+  String get ordersBoardErrorBody;
+
+  /// No description provided for @ordersBoardEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش طلبات مطابقة'**
+  String get ordersBoardEmptyTitle;
+
+  /// No description provided for @ordersBoardEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب فلتر أو بحث تاني.'**
+  String get ordersBoardEmptyBody;
+
+  /// No description provided for @ordersBoardShopLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المتجر'**
+  String get ordersBoardShopLabel;
+
+  /// No description provided for @ordersBoardAreaLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المنطقة'**
+  String get ordersBoardAreaLabel;
+
+  /// No description provided for @ordersBoardDateRangeLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الفترة الزمنية'**
+  String get ordersBoardDateRangeLabel;
+
+  /// No description provided for @ordersBoardNoDriver.
+  ///
+  /// In ar, this message translates to:
+  /// **'بدون مندوب'**
+  String get ordersBoardNoDriver;
 }
 
 class _AppLocalizationsDelegate

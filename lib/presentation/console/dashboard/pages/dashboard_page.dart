@@ -144,6 +144,12 @@ class _DashboardLoaded extends StatelessWidget {
                 label: Text(l10n.dashboardQuickAudit),
                 onPressed: () => context.go('/console/audit'),
               ),
+              if (context.read<AuthBloc>().state.can(Permissions.ordersRead))
+                ActionChip(
+                  avatar: const Icon(Icons.hourglass_bottom_outlined, size: 18),
+                  label: Text(l10n.dashboardQuickOrdersWaiting),
+                  onPressed: () => context.go('/console/orders?status=pending'),
+                ),
             ],
           ),
         ],

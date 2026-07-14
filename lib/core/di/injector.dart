@@ -7,11 +7,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/admin/datasources/admin_api_datasource.dart';
 import '../../data/admin/datasources/admin_remote_datasource.dart';
 import '../../data/admin/datasources/admin_geo_remote_datasource.dart';
+import '../../data/admin/datasources/admin_orders_remote_datasource.dart';
 import '../../data/admin/datasources/admin_products_remote_datasource.dart';
 import '../../data/admin/datasources/admin_shops_remote_datasource.dart';
 import '../../data/admin/datasources/admin_taxonomy_remote_datasource.dart';
 import '../../data/admin/datasources/admin_users_remote_datasource.dart';
 import '../../data/admin/repositories/admin_geo_repository_impl.dart';
+import '../../data/admin/repositories/admin_orders_repository_impl.dart';
 import '../../data/admin/repositories/admin_products_repository_impl.dart';
 import '../../data/admin/repositories/admin_repository_impl.dart';
 import '../../data/admin/repositories/admin_shops_repository_impl.dart';
@@ -53,13 +55,16 @@ import '../../data/taxonomy/datasources/taxonomy_local_datasource.dart';
 import '../../data/taxonomy/datasources/taxonomy_remote_datasource.dart';
 import '../../data/taxonomy/repositories/taxonomy_repository_impl.dart';
 import '../../domain/admin/repositories/admin_geo_repository.dart';
+import '../../domain/admin/repositories/admin_orders_repository.dart';
 import '../../domain/admin/repositories/admin_products_repository.dart';
 import '../../domain/admin/repositories/admin_repository.dart';
 import '../../domain/admin/repositories/admin_shops_repository.dart';
 import '../../domain/admin/repositories/admin_taxonomy_repository.dart';
 import '../../domain/admin/repositories/admin_user_actions.dart';
 import '../../domain/admin/repositories/admin_users_repository.dart';
+import '../../domain/admin/usecases/add_order_note.dart';
 import '../../domain/admin/usecases/bulk_update_products.dart';
+import '../../domain/admin/usecases/cancel_order_as_staff.dart';
 import '../../domain/admin/usecases/change_user_email.dart';
 import '../../domain/admin/usecases/count_orders_in_area.dart';
 import '../../domain/admin/usecases/count_products_in_category.dart';
@@ -70,10 +75,14 @@ import '../../domain/admin/usecases/create_user.dart';
 import '../../domain/admin/usecases/delete_area.dart';
 import '../../domain/admin/usecases/delete_category.dart';
 import '../../domain/admin/usecases/duplicate_product.dart';
+import '../../domain/admin/usecases/force_order_status.dart';
 import '../../domain/admin/usecases/get_admin_profile.dart';
 import '../../domain/admin/usecases/get_all_areas.dart';
 import '../../domain/admin/usecases/get_all_categories.dart';
 import '../../domain/admin/usecases/get_all_shops.dart';
+import '../../domain/admin/usecases/get_console_order_by_id.dart';
+import '../../domain/admin/usecases/get_orders_by_customer.dart';
+import '../../domain/admin/usecases/get_orders_page.dart';
 import '../../domain/admin/usecases/get_products.dart';
 import '../../domain/admin/usecases/get_shop_by_id.dart';
 import '../../domain/admin/usecases/get_staff_profile_for_uid.dart';
@@ -82,6 +91,7 @@ import '../../domain/admin/usecases/get_user_by_phone.dart';
 import '../../domain/admin/usecases/get_users.dart';
 import '../../domain/admin/usecases/hard_delete_product.dart';
 import '../../domain/admin/usecases/lookup_user_auth.dart';
+import '../../domain/admin/usecases/reassign_order_driver.dart';
 import '../../domain/admin/usecases/remove_admin.dart';
 import '../../domain/admin/usecases/reset_admin_profile.dart';
 import '../../domain/admin/usecases/restore_product.dart';
@@ -98,6 +108,7 @@ import '../../domain/admin/usecases/set_shop_verified.dart';
 import '../../domain/admin/usecases/set_user_disabled.dart';
 import '../../domain/admin/usecases/set_user_persona_role.dart';
 import '../../domain/admin/usecases/soft_delete_shop.dart';
+import '../../domain/admin/usecases/watch_order_notes.dart';
 import '../../domain/admin/usecases/soft_delete_user.dart';
 import '../../domain/admin/usecases/swap_category_sort.dart';
 import '../../domain/admin/usecases/transfer_shop_ownership.dart';
@@ -174,6 +185,7 @@ import '../../domain/admin/entities/managed_user.dart';
 import '../../presentation/console/audit/bloc/audit_log_bloc.dart';
 import '../../presentation/console/dashboard/bloc/dashboard_bloc.dart';
 import '../../presentation/console/geo/bloc/geo_board_bloc.dart';
+import '../../presentation/console/orders/bloc/orders_board_bloc.dart';
 import '../../presentation/console/products/bloc/products_board_bloc.dart';
 import '../../presentation/console/shops/bloc/shop_detail_bloc.dart';
 import '../../presentation/console/shops/bloc/shops_board_bloc.dart';
@@ -373,6 +385,34 @@ Future<void> initDependencies() async {
         updateArea: sl(),
         setAreaActive: sl(),
         deleteArea: sl(),
+      ));
+
+  // Order admin (Founder Console session 10). Board reads are Firestore-direct
+  // (gated by `orders.read`); the three corrections (force-status/reassign/
+  // cancel) are Worker-routed — see `AdminOrdersRepositoryImpl`.
+  sl.registerLazySingleton(
+    () => AdminOrdersRemoteDataSource(firestore: sl(), auth: sl()),
+  );
+  sl.registerLazySingleton<AdminOrdersRepository>(
+    () => AdminOrdersRepositoryImpl(sl(), sl()),
+  );
+  sl.registerLazySingleton(() => GetOrdersPage(sl()));
+  sl.registerLazySingleton(() => GetConsoleOrderById(sl()));
+  sl.registerLazySingleton(() => GetOrdersByCustomer(sl()));
+  sl.registerLazySingleton(() => ForceOrderStatus(sl()));
+  sl.registerLazySingleton(() => ReassignOrderDriver(sl()));
+  sl.registerLazySingleton(() => CancelOrderAsStaff(sl()));
+  sl.registerLazySingleton(() => WatchOrderNotes(sl()));
+  sl.registerLazySingleton(() => AddOrderNote(sl()));
+
+  // Order admin — bloc (page-scoped, one board load per /console/orders open).
+  sl.registerFactory(() => OrdersBoardBloc(
+        getOrdersPage: sl(),
+        getOrderById: sl(),
+        getOrdersByCustomer: sl(),
+        getUserByPhone: sl(),
+        getAllShops: sl(),
+        getAllAreas: sl(),
       ));
 
   // Auth — bloc (app lifetime; createDriverProfile only fires for a courier
@@ -616,6 +656,11 @@ Future<void> initDependencies() async {
       cancelOrder: sl(),
       rateOrder: sl(),
       updateOrderStatus: sl(),
+      forceOrderStatus: sl(),
+      reassignOrderDriver: sl(),
+      staffCancelOrder: sl(),
+      watchOrderNotes: sl(),
+      addOrderNote: sl(),
       getUserById: sl(),
       getAreas: sl(),
       notifyOrderEvent: sl(),

@@ -16,6 +16,12 @@ enum OrderRateStatus { idle, submitting, failure }
 /// the same watch stream.
 enum OrderAdvanceStatus { idle, submitting, failure }
 
+/// Status of the staff action bar's in-flight call (FC10 — force-status/
+/// reassign/cancel/add-note all share this, only one runs at a time). Same
+/// reasoning as [OrderCancelStatus]: a correction's success needs no local
+/// patch, it arrives back through the order's own watch stream.
+enum StaffActionStatus { idle, submitting, failure }
+
 class OrderDetailState extends Equatable {
   const OrderDetailState({
     this.status = OrderDetailStatus.loading,
@@ -23,8 +29,10 @@ class OrderDetailState extends Equatable {
     this.cancelStatus = OrderCancelStatus.idle,
     this.rateStatus = OrderRateStatus.idle,
     this.advanceStatus = OrderAdvanceStatus.idle,
+    this.staffActionStatus = StaffActionStatus.idle,
     this.customer,
     this.area,
+    this.notes,
   });
 
   final OrderDetailStatus status;
@@ -32,10 +40,11 @@ class OrderDetailState extends Equatable {
   final OrderCancelStatus cancelStatus;
   final OrderRateStatus rateStatus;
   final OrderAdvanceStatus advanceStatus;
+  final StaffActionStatus staffActionStatus;
 
-  /// The customer's `/users` profile — owner/courier view only (M2, M10),
-  /// resolved once per order. Null while loading, missing, or on the
-  /// customer's own view.
+  /// The customer's `/users` profile — owner/courier/staff view only (M2,
+  /// M10, FC10), resolved once per order. Null while loading, missing, or on
+  /// the customer's own view.
   final AppUser? customer;
 
   /// The delivery area's display name — courier view only (M10), resolved
@@ -43,9 +52,14 @@ class OrderDetailState extends Equatable {
   /// secondary info, never blocks the page if it fails to resolve.
   final Area? area;
 
+  /// Internal staff notes (FC10, staff role only) — null while the first
+  /// snapshot hasn't arrived yet, empty list once it has and there are none.
+  final List<OrderNote>? notes;
+
   bool get isCancelling => cancelStatus == OrderCancelStatus.submitting;
   bool get isRating => rateStatus == OrderRateStatus.submitting;
   bool get isAdvancing => advanceStatus == OrderAdvanceStatus.submitting;
+  bool get isStaffActionBusy => staffActionStatus == StaffActionStatus.submitting;
 
   OrderDetailState copyWith({
     OrderDetailStatus? status,
@@ -53,8 +67,10 @@ class OrderDetailState extends Equatable {
     OrderCancelStatus? cancelStatus,
     OrderRateStatus? rateStatus,
     OrderAdvanceStatus? advanceStatus,
+    StaffActionStatus? staffActionStatus,
     AppUser? customer,
     Area? area,
+    List<OrderNote>? notes,
   }) {
     return OrderDetailState(
       status: status ?? this.status,
@@ -62,8 +78,10 @@ class OrderDetailState extends Equatable {
       cancelStatus: cancelStatus ?? this.cancelStatus,
       rateStatus: rateStatus ?? this.rateStatus,
       advanceStatus: advanceStatus ?? this.advanceStatus,
+      staffActionStatus: staffActionStatus ?? this.staffActionStatus,
       customer: customer ?? this.customer,
       area: area ?? this.area,
+      notes: notes ?? this.notes,
     );
   }
 
@@ -74,7 +92,9 @@ class OrderDetailState extends Equatable {
         cancelStatus,
         rateStatus,
         advanceStatus,
+        staffActionStatus,
         customer,
         area,
+        notes,
       ];
 }

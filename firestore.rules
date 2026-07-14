@@ -238,6 +238,13 @@ service cloud.firestore {
             || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusHistory'])));
 
       allow delete: if false;
+
+      // Internal staff notes (FC10) — append-only; no client update/delete
+      // path anywhere, console included.
+      match /notes/{noteId} {
+        allow read, create: if hasPerm('orders.update');
+        allow update, delete: if false;
+      }
     }
 
     // Taxonomy (M3, console-editable from FC9) — the console is now the write

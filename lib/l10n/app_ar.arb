@@ -201,6 +201,19 @@
   "orderAssignDriverErrorGeneric": "معرفناش نعيّن المندوب ده — جرّب تاني.",
   "orderAssignedAtLabel": "اتعيّن",
   "orderTimelineTitle": "سجل الطلب",
+  "orderForcedChip": "تصحيح إداري",
+  "orderNotesTitle": "الملاحظات الداخلية",
+  "orderNotesEmpty": "لسه مفيش ملاحظات.",
+  "orderNotesAddHint": "اكتب ملاحظة للفريق…",
+  "orderForceStatusAction": "فرض الحالة",
+  "orderForceStatusWarning": "الخطوة دي بتتخطى مسار الطلب العادي — استخدمها بس لتصحيح غلطة.",
+  "orderForceStatusLabel": "الحالة الجديدة",
+  "orderStaffReasonLabel": "السبب (مطلوب)",
+  "orderReassignDriverAction": "تغيير المندوب",
+  "orderUnassignDriverAction": "إلغاء التعيين",
+  "orderRefundNoteLabel": "ملاحظة استرداد (اختياري)",
+  "orderRefundNoteHelper": "ملاحظة دفتر بس — مفيش تحويل فلوس.",
+  "staffOrderActionErrorBody": "الإجراء ده مكملش — جرّب تاني.",
   "notifyNewOrderTitle": "طلب جديد!",
   "notifyNewOrderBody": "وصلك طلب جديد، افتح دكانك وشوفه.",
   "notifyOrderStatusTitle": "تحديث على طلبك",
@@ -552,5 +565,17 @@
   "geoBoardDeactivateInsteadBody": "{count} طلب بيستخدم المنطقة دي — مينفعش تتمسح، بس ممكن توقفها فتختفي من الشيك أوت.",
   "geoBoardDeactivateAction": "إيقاف",
   "geoBoardDeleteConfirmTitle": "تمسح المنطقة؟",
-  "geoBoardDeleteConfirmBody": "الحركة دي مش هترجع."
+  "geoBoardDeleteConfirmBody": "الحركة دي مش هترجع.",
+
+  "consoleNavOrders": "الطلبات",
+  "dashboardQuickOrdersWaiting": "طلبات مستنية",
+
+  "ordersBoardSearchLabel": "رقم الطلب أو رقم الموبايل بالظبط",
+  "ordersBoardErrorBody": "معرفناش نجيب قائمة الطلبات دلوقتي — جرّب تاني.",
+  "ordersBoardEmptyTitle": "مفيش طلبات مطابقة",
+  "ordersBoardEmptyBody": "جرّب فلتر أو بحث تاني.",
+  "ordersBoardShopLabel": "المتجر",
+  "ordersBoardAreaLabel": "المنطقة",
+  "ordersBoardDateRangeLabel": "الفترة الزمنية",
+  "ordersBoardNoDriver": "بدون مندوب"
 }

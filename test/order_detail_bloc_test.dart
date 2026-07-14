@@ -1,5 +1,12 @@
 import 'dart:async';
 
+import 'package:dukkan/domain/admin/entities/orders_page.dart';
+import 'package:dukkan/domain/admin/repositories/admin_orders_repository.dart';
+import 'package:dukkan/domain/admin/usecases/add_order_note.dart';
+import 'package:dukkan/domain/admin/usecases/cancel_order_as_staff.dart';
+import 'package:dukkan/domain/admin/usecases/force_order_status.dart';
+import 'package:dukkan/domain/admin/usecases/reassign_order_driver.dart';
+import 'package:dukkan/domain/admin/usecases/watch_order_notes.dart';
 import 'package:dukkan/domain/auth/entities/app_user.dart';
 import 'package:dukkan/domain/auth/entities/user_role.dart';
 import 'package:dukkan/domain/auth/repositories/auth_repository.dart';
@@ -7,6 +14,7 @@ import 'package:dukkan/domain/auth/usecases/get_user_by_id.dart';
 import 'package:dukkan/domain/order/entities/address.dart';
 import 'package:dukkan/domain/order/entities/order.dart';
 import 'package:dukkan/domain/order/entities/order_item.dart';
+import 'package:dukkan/domain/order/entities/order_note.dart';
 import 'package:dukkan/domain/order/entities/order_status.dart';
 import 'package:dukkan/domain/order/repositories/order_repository.dart';
 import 'package:dukkan/domain/order/usecases/cancel_order.dart';
@@ -18,6 +26,49 @@ import 'package:dukkan/domain/notifications/usecases/notify_order_event.dart';
 import 'package:dukkan/presentation/orders/bloc/order_detail_bloc.dart';
 import 'package:dukkan/presentation/orders/order_viewer_role.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+/// Not exercised by these tests — the staff role has its own suite. Every
+/// method just returns an empty/no-op result so it can satisfy
+/// `OrderDetailBloc`'s (always-injected) admin usecases.
+class _FakeAdminOrdersRepository implements AdminOrdersRepository {
+  @override
+  Future<OrdersPage> getOrders({String? status, DateTime? cursor}) async =>
+      const OrdersPage(orders: [], hasMore: false);
+
+  @override
+  Future<Order?> getOrderById(String orderId) async => null;
+
+  @override
+  Future<List<Order>> getOrdersByCustomerUid(String customerUid) async => [];
+
+  @override
+  Future<void> forceStatus({
+    required String orderId,
+    required String toStatus,
+    required String reason,
+  }) async {}
+
+  @override
+  Future<void> reassignDriver({
+    required String orderId,
+    String? newDriverUid,
+    bool clear = false,
+    required String reason,
+  }) async {}
+
+  @override
+  Future<void> cancelOrder({
+    required String orderId,
+    required String reason,
+    int? refundNoteMinor,
+  }) async {}
+
+  @override
+  Stream<List<OrderNote>> watchNotes(String orderId) => const Stream.empty();
+
+  @override
+  Future<void> addNote({required String orderId, required String text}) async {}
+}
 
 /// Fake so the courier-delivered push (M11-followup) is testable without a
 /// real Worker call.
@@ -169,16 +220,23 @@ Order _order(OrderStatus status, {int? rating}) => Order(
 
 void main() {
   late _FakeOrderRepository repo;
+  late _FakeAdminOrdersRepository adminRepo;
   late OrderDetailBloc bloc;
 
   setUp(() {
     repo = _FakeOrderRepository();
+    adminRepo = _FakeAdminOrdersRepository();
     bloc = OrderDetailBloc(
       orderId: 'o1',
       watchOrder: WatchOrder(repo),
       cancelOrder: CancelOrder(repo),
       rateOrder: RateOrder(repo),
       updateOrderStatus: UpdateOrderStatus(repo),
+      forceOrderStatus: ForceOrderStatus(adminRepo),
+      reassignOrderDriver: ReassignOrderDriver(adminRepo),
+      staffCancelOrder: CancelOrderAsStaff(adminRepo),
+      watchOrderNotes: WatchOrderNotes(adminRepo),
+      addOrderNote: AddOrderNote(adminRepo),
     );
   });
 
@@ -346,6 +404,11 @@ void main() {
       cancelOrder: CancelOrder(repo),
       rateOrder: RateOrder(repo),
       updateOrderStatus: UpdateOrderStatus(repo),
+      forceOrderStatus: ForceOrderStatus(adminRepo),
+      reassignOrderDriver: ReassignOrderDriver(adminRepo),
+      staffCancelOrder: CancelOrderAsStaff(adminRepo),
+      watchOrderNotes: WatchOrderNotes(adminRepo),
+      addOrderNote: AddOrderNote(adminRepo),
       getUserById: GetUserById(authRepo),
       role: OrderViewerRole.owner,
     );
@@ -377,6 +440,11 @@ void main() {
       cancelOrder: CancelOrder(repo),
       rateOrder: RateOrder(repo),
       updateOrderStatus: UpdateOrderStatus(repo),
+      forceOrderStatus: ForceOrderStatus(adminRepo),
+      reassignOrderDriver: ReassignOrderDriver(adminRepo),
+      staffCancelOrder: CancelOrderAsStaff(adminRepo),
+      watchOrderNotes: WatchOrderNotes(adminRepo),
+      addOrderNote: AddOrderNote(adminRepo),
       getUserById: GetUserById(authRepo),
     );
     addTearDown(customerBloc.close);
@@ -441,6 +509,11 @@ void main() {
       cancelOrder: CancelOrder(repo),
       rateOrder: RateOrder(repo),
       updateOrderStatus: UpdateOrderStatus(repo),
+      forceOrderStatus: ForceOrderStatus(adminRepo),
+      reassignOrderDriver: ReassignOrderDriver(adminRepo),
+      staffCancelOrder: CancelOrderAsStaff(adminRepo),
+      watchOrderNotes: WatchOrderNotes(adminRepo),
+      addOrderNote: AddOrderNote(adminRepo),
       notifyOrderEvent: NotifyOrderEvent(notifyRepo),
       role: OrderViewerRole.courier,
     );
@@ -466,6 +539,11 @@ void main() {
       cancelOrder: CancelOrder(repo),
       rateOrder: RateOrder(repo),
       updateOrderStatus: UpdateOrderStatus(repo),
+      forceOrderStatus: ForceOrderStatus(adminRepo),
+      reassignOrderDriver: ReassignOrderDriver(adminRepo),
+      staffCancelOrder: CancelOrderAsStaff(adminRepo),
+      watchOrderNotes: WatchOrderNotes(adminRepo),
+      addOrderNote: AddOrderNote(adminRepo),
       notifyOrderEvent: NotifyOrderEvent(notifyRepo),
       role: OrderViewerRole.courier,
     );

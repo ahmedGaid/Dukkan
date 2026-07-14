@@ -543,6 +543,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderTimelineTitle => 'Order history';
 
   @override
+  String get orderForcedChip => 'Staff correction';
+
+  @override
+  String get orderNotesTitle => 'Internal notes';
+
+  @override
+  String get orderNotesEmpty => 'No notes yet.';
+
+  @override
+  String get orderNotesAddHint => 'Add a note for other staff…';
+
+  @override
+  String get orderForceStatusAction => 'Force status';
+
+  @override
+  String get orderForceStatusWarning =>
+      'This skips the normal order flow — use it only to correct a mistake.';
+
+  @override
+  String get orderForceStatusLabel => 'New status';
+
+  @override
+  String get orderStaffReasonLabel => 'Reason (required)';
+
+  @override
+  String get orderReassignDriverAction => 'Reassign driver';
+
+  @override
+  String get orderUnassignDriverAction => 'Unassign driver';
+
+  @override
+  String get orderRefundNoteLabel => 'Refund note (optional)';
+
+  @override
+  String get orderRefundNoteHelper => 'COD ledger note only — no money moves.';
+
+  @override
+  String get staffOrderActionErrorBody =>
+      'We couldn\'t complete this action — try again.';
+
+  @override
   String get notifyNewOrderTitle => 'New order!';
 
   @override
@@ -1579,4 +1620,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get geoBoardDeleteConfirmBody => 'This can\'t be undone.';
+
+  @override
+  String get consoleNavOrders => 'Orders';
+
+  @override
+  String get dashboardQuickOrdersWaiting => 'Orders waiting';
+
+  @override
+  String get ordersBoardSearchLabel => 'Order id or exact phone';
+
+  @override
+  String get ordersBoardErrorBody =>
+      'We can\'t load the order list right now — try again.';
+
+  @override
+  String get ordersBoardEmptyTitle => 'No orders match';
+
+  @override
+  String get ordersBoardEmptyBody => 'Try a different filter or search.';
+
+  @override
+  String get ordersBoardShopLabel => 'Shop';
+
+  @override
+  String get ordersBoardAreaLabel => 'Area';
+
+  @override
+  String get ordersBoardDateRangeLabel => 'Date range';
+
+  @override
+  String get ordersBoardNoDriver => 'No driver';
 }

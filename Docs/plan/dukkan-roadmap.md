@@ -560,8 +560,33 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       already covered by the existing `fieldCity`/`City→المدينة`). Gates green (analyze
       0, test 192/192 — up from 187, +place_order_test.dart 4 cases, category/area model
       tests extended; parity 481 — up from 448). Rules + reorder/delete/deactivate flows
-      need a live device smoke test — not run this session. **Next: FC10 (FILE_10) —
-      order admin.**
+      need a live device smoke test — not run this session.
+      **FC10 DONE (code) 2026-07-14** — order admin (FILE_10). Worker `/admin/orders/
+      force-status|reassign-driver|cancel` (new `orders.cancel` perm) build raw Firestore
+      `commit` writes by hand (`firebase.js` gained an exported `toValue` for the
+      `statusHistory` `appendMissingElements` transform — first real use of `firestoreCommit`
+      since it shipped in Session 2); side effects mirror the client's `_advanceStatus`
+      exactly: `commissionPayable` always explicitly set (both directions, since force-status
+      can move an order backward out of `delivered`, unlike the client), driver
+      `activeOrdersCount` decremented only on the transition INTO a terminal status from a
+      non-terminal one (guards the "force delivered→preparing→delivered again" double-
+      decrement case the smoke test calls out). `StatusChange` gained `forced` (additive);
+      timeline rows show a «تصحيح إداري» chip. New `OrderViewerRole.staff` — router grants
+      `?role=staff` only when `orders.read`, else falls back to customer. `firestore.rules`
+      added `/orders/{id}/notes` (append-only, `orders.update`). New `AdminOrdersRepository`
+      (+impl+datasource): status-filtered cursor-paginated board reads (Firestore composite
+      index needs `status+createdAt DESC`, added) — shop/area/date-range/exact-phone-or-id
+      search are client-side refinements over the loaded page, same "small marketplace"
+      contract as `ShopsBoardBloc`, not a combinatorial index matrix. `console/orders` board
+      + dashboard's "orders waiting" chip now wired to `?status=pending`. `OrderDetailBloc`
+      extended with the 3 staff actions + notes stream, all sharing one `StaffActionStatus`
+      (success needs no local patch — corrections arrive back through the order's own watch
+      stream; note-add self-resets since notes are a separate subcollection stream). 40 i18n
+      keys ×2, `order_detail_bloc_test.dart` updated with a fake `AdminOrdersRepository`.
+      Gates green (analyze 0, test 192/192, parity 504). Worker deploy + rules/indexes deploy
+      + a live device smoke test (force-status count check, reassign capacity/area rejection,
+      notes realtime, courier/owner regression) still owed — not run this session. **Next:
+      FC11 (FILE_11) — driver admin.**
 - [ ] **FC12–FC15 — Platform ops.** Settings/flags/maintenance+version gates · notification
       center (topics) · media library (R2) · impersonation + dev tools. (FILE_12–15)
 - [ ] **FC16–FC18 — Growth + close.** Promotions (coupons/banners/featured) · global search +

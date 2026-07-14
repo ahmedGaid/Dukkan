@@ -20,8 +20,11 @@ import {
   firestoreCreateDoc,
   firestorePatchFields,
   firestoreDeleteDoc,
+  firestoreCommit,
   identityToolkitCall,
   fsTimestamp,
+  toValue,
+  toFirestoreFields,
   json,
   bearer,
 } from './firebase.js';
@@ -522,6 +525,228 @@ async function handleShopsTransfer(request, env, cors, auth) {
   return json({ ok: true, oldOwnerUid, oldOwnerStillOwnerRole }, 200, cors);
 }
 
+// ---------------------------------------------------------------------------
+// Session 10 (FILE_10) — order admin: force-status, reassign-driver, cancel.
+// The client-side transition whitelist in `firestore.rules` stays untouched;
+// these three are the ONLY way an order is corrected outside it, always
+// audited, always with a caller-supplied reason.
+// ---------------------------------------------------------------------------
+
+const ORDER_STATUSES = [
+  'pending', 'accepted', 'preparing', 'outForDelivery', 'delivered', 'cancelled', 'rejected',
+];
+const TERMINAL_STATUSES = ['delivered', 'cancelled', 'rejected'];
+
+const docName = (env, path) =>
+  `projects/${env.PROJECT_ID}/databases/(default)/documents/${path}`;
+
+/** One `update` Write — only [mask] fields are touched, mirrors `firestorePatchFields`. */
+function updateWrite(env, path, fields, mask) {
+  return {
+    update: { name: docName(env, path), fields: toFirestoreFields(fields) },
+    updateMask: { fieldPaths: mask },
+  };
+}
+
+/** One `transform` Write — appends [values] to the array at [fieldPath]. */
+function appendArrayWrite(env, path, fieldPath, values) {
+  return {
+    transform: {
+      document: docName(env, path),
+      fieldTransforms: [
+        { fieldPath, appendMissingElements: { values: values.map(toValue) } },
+      ],
+    },
+  };
+}
+
+/**
+ * Decrements one driver's `activeOrdersCount` (floor 0) — the same side
+ * effect `_advanceStatus` (client) applies inline, done here as an extra
+ * commit write since the Worker's reads aren't inside the commit itself.
+ */
+async function buildDriverDecrementWrite(env, accessToken, driverUid) {
+  const driver = await firestoreGetFields(env, accessToken, `drivers/${driverUid}`);
+  const active = Number(driver?.activeOrdersCount ?? 0);
+  return updateWrite(env, `drivers/${driverUid}`, {
+    activeOrdersCount: active > 0 ? active - 1 : 0,
+  }, ['activeOrdersCount']);
+}
+
+/**
+ * `/admin/orders/force-status` — moves an order to any of the 7 statuses
+ * outside the normal whitelist. `commissionPayable` is always explicitly set
+ * (true iff landing on `delivered`) since, unlike the client's one-directional
+ * `_advanceStatus`, this can move an order backward out of `delivered` too.
+ * The driver's slot is only freed on the transition INTO a terminal status
+ * from a non-terminal one — so forcing an already-delivered order back to
+ * `preparing` then forward to `delivered` again decrements exactly once, not
+ * twice (see the FILE_10 smoke test).
+ */
+async function handleForceStatus(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { orderId, toStatus, reason } = body ?? {};
+  if (!isValidStr(orderId, true) || !ORDER_STATUSES.includes(toStatus) || !isValidStr(reason, true)) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  const before = await firestoreGetFields(env, accessToken, `orders/${orderId}`);
+  if (!before) return json({ error: 'not_found' }, 404, cors);
+
+  const nowIso = new Date().toISOString();
+  const writes = [
+    updateWrite(env, `orders/${orderId}`, {
+      status: toStatus,
+      commissionPayable: toStatus === 'delivered',
+    }, ['status', 'commissionPayable']),
+    appendArrayWrite(env, `orders/${orderId}`, 'statusHistory', [
+      { status: toStatus, at: nowIso, byUid: actorUid, forced: true },
+    ]),
+  ];
+
+  const enteringTerminal =
+    TERMINAL_STATUSES.includes(toStatus) && !TERMINAL_STATUSES.includes(before.status);
+  if (enteringTerminal && before.driverUid) {
+    writes.push(await buildDriverDecrementWrite(env, accessToken, before.driverUid));
+  }
+
+  await firestoreCommit(env, accessToken, writes);
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'order.forceStatus',
+    targetType: 'order',
+    targetId: orderId,
+    before: { status: before.status },
+    after: { status: toStatus },
+    reason,
+  });
+  return json({ ok: true }, 200, cors);
+}
+
+/**
+ * `/admin/orders/reassign-driver` — moves the order's assigned driver, or
+ * clears it (`clear: true`). Validates the new driver the same way the M9
+ * client transaction does (online, not suspended, capacity, covers the
+ * order's area) — the Worker bypasses rules, so this IS the enforcement.
+ */
+async function handleReassignDriver(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { orderId, newDriverUid, clear, reason } = body ?? {};
+  if (!isValidStr(orderId, true) || !isValidStr(reason, true)) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+  if (!clear && !isValidStr(newDriverUid, true)) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  const order = await firestoreGetFields(env, accessToken, `orders/${orderId}`);
+  if (!order) return json({ error: 'not_found' }, 404, cors);
+  const oldDriverUid = order.driverUid ?? null;
+  if (!clear && newDriverUid === oldDriverUid) {
+    return json({ error: 'same_driver' }, 400, cors);
+  }
+
+  const writes = [];
+  if (oldDriverUid) {
+    writes.push(await buildDriverDecrementWrite(env, accessToken, oldDriverUid));
+  }
+
+  if (clear) {
+    writes.push(updateWrite(env, `orders/${orderId}`, {
+      driverUid: null, driverName: null, driverPhone: null, assignedAt: null,
+    }, ['driverUid', 'driverName', 'driverPhone', 'assignedAt']));
+  } else {
+    const newDriver = await firestoreGetFields(env, accessToken, `drivers/${newDriverUid}`);
+    if (!newDriver) return json({ error: 'driver_not_found' }, 400, cors);
+    if (newDriver.isSuspended === true) return json({ error: 'driver_suspended' }, 400, cors);
+    if (newDriver.isOnline !== true) return json({ error: 'driver_offline' }, 400, cors);
+    const active = Number(newDriver.activeOrdersCount ?? 0);
+    const max = Number(newDriver.maxActiveOrders ?? 0);
+    if (active >= max) return json({ error: 'driver_capacity' }, 400, cors);
+    const areas = Array.isArray(newDriver.areaIds) ? newDriver.areaIds : [];
+    const orderArea = order.deliveryAddress?.areaId ?? null;
+    if (!orderArea || !areas.includes(orderArea)) return json({ error: 'driver_area' }, 400, cors);
+
+    writes.push(updateWrite(env, `drivers/${newDriverUid}`, {
+      activeOrdersCount: active + 1,
+    }, ['activeOrdersCount']));
+    writes.push(updateWrite(env, `orders/${orderId}`, {
+      driverUid: newDriverUid,
+      driverName: newDriver.name ?? null,
+      driverPhone: newDriver.phone ?? null,
+      assignedAt: new Date().toISOString(), // plain ISO string — OrderModel parses it as one, not a Timestamp
+    }, ['driverUid', 'driverName', 'driverPhone', 'assignedAt']));
+  }
+
+  await firestoreCommit(env, accessToken, writes);
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'order.reassign',
+    targetType: 'order',
+    targetId: orderId,
+    before: { driverUid: oldDriverUid },
+    after: { driverUid: clear ? null : newDriverUid },
+    reason,
+  });
+  return json({ ok: true }, 200, cors);
+}
+
+/**
+ * `/admin/orders/cancel` — cancels an order outside the customer's own
+ * pending/accepted-only window. [refundNoteMinor] is a COD ledger note only;
+ * no money actually moves (there is nothing to reverse — the customer never
+ * paid electronically).
+ */
+async function handleCancelOrder(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { orderId, reason, refundNoteMinor } = body ?? {};
+  if (!isValidStr(orderId, true) || !isValidStr(reason, true)) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+  if (refundNoteMinor != null && (!Number.isInteger(refundNoteMinor) || refundNoteMinor < 0)) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  const before = await firestoreGetFields(env, accessToken, `orders/${orderId}`);
+  if (!before) return json({ error: 'not_found' }, 404, cors);
+  if (TERMINAL_STATUSES.includes(before.status)) {
+    return json({ error: 'already_terminal' }, 400, cors);
+  }
+
+  const nowIso = new Date().toISOString();
+  const orderFields = { status: 'cancelled' };
+  const orderMask = ['status'];
+  if (refundNoteMinor != null) {
+    orderFields.refundNoteMinor = refundNoteMinor;
+    orderMask.push('refundNoteMinor');
+  }
+
+  const writes = [
+    updateWrite(env, `orders/${orderId}`, orderFields, orderMask),
+    appendArrayWrite(env, `orders/${orderId}`, 'statusHistory', [
+      { status: 'cancelled', at: nowIso, byUid: actorUid, forced: true },
+    ]),
+  ];
+  if (before.driverUid) {
+    writes.push(await buildDriverDecrementWrite(env, accessToken, before.driverUid));
+  }
+
+  await firestoreCommit(env, accessToken, writes);
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'order.cancel',
+    targetType: 'order',
+    targetId: orderId,
+    before: { status: before.status },
+    after: { status: 'cancelled' },
+    reason,
+  });
+  return json({ ok: true }, 200, cors);
+}
+
 /**
  * Dispatch table for `/admin/*`. `perm: null` still requires an ACTIVE staff
  * doc (any staff), a string requires that permission (or `'*'`). Later
@@ -542,6 +767,9 @@ export async function handleAdmin(request, env, cors) {
     '/admin/admins/set': { perm: 'admins.manage', fn: handleAdminsSet },
     '/admin/admins/remove': { perm: 'admins.manage', fn: handleAdminsRemove },
     '/admin/shops/transfer': { perm: 'shops.transfer', fn: handleShopsTransfer },
+    '/admin/orders/force-status': { perm: 'orders.forceStatus', fn: handleForceStatus },
+    '/admin/orders/reassign-driver': { perm: 'orders.assignDriver', fn: handleReassignDriver },
+    '/admin/orders/cancel': { perm: 'orders.cancel', fn: handleCancelOrder },
   };
   const route = routes[path];
   if (!route) return json({ error: 'not_found' }, 404, cors);
