@@ -318,6 +318,7 @@ String _sectionLabel(AppLocalizations l10n, String key) => switch (key) {
       'consoleNavSettings' => l10n.consoleNavSettings,
       'consoleNavNotifications' => l10n.consoleNavNotifications,
       'consoleNavMedia' => l10n.consoleNavMedia,
+      'consoleNavDevtools' => l10n.consoleNavDevtools,
       _ => key,
     };
 

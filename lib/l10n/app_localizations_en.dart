@@ -2068,4 +2068,170 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mediaBrokenFixAction => 'Go to source';
+
+  @override
+  String get userDetailImpersonate => 'Log in as this user';
+
+  @override
+  String get impersonateConfirmBody =>
+      'You\'ll be signed into this user\'s account and see the app exactly as they do — this is logged in the audit trail.';
+
+  @override
+  String get impersonateFailedBody =>
+      'Couldn\'t log in as this user right now — try again.';
+
+  @override
+  String impersonationBannerLabel(Object name) {
+    return 'Impersonating: $name — session is logged';
+  }
+
+  @override
+  String get impersonationExitAction => 'Exit';
+
+  @override
+  String get consoleNavDevtools => 'Developer tools';
+
+  @override
+  String get devtoolsLoadError =>
+      'Couldn\'t open devtools right now — try again.';
+
+  @override
+  String get devtoolsActionFailed => 'That didn\'t work — try again.';
+
+  @override
+  String get devtoolsEnvironmentTitle => 'Environment';
+
+  @override
+  String get devtoolsEnvVersion => 'App version';
+
+  @override
+  String get devtoolsEnvProjectId => 'Firebase project';
+
+  @override
+  String get devtoolsEnvWorkerUrl => 'Worker URL';
+
+  @override
+  String get devtoolsEnvWorkerConfigured => 'Worker configured';
+
+  @override
+  String get devtoolsEnvFlavor => 'Build flavor';
+
+  @override
+  String get devtoolsHealthTitle => 'Health checks';
+
+  @override
+  String get devtoolsHealthRunAll => 'Run all';
+
+  @override
+  String get devtoolsHealthEmpty => 'Tap \"Run all\" to start checking.';
+
+  @override
+  String get devtoolsHealthWorkerPing => 'Worker ping';
+
+  @override
+  String get devtoolsHealthFirestoreRead => 'Firestore read';
+
+  @override
+  String get devtoolsHealthConfigSanity => 'Platform config sanity';
+
+  @override
+  String get devtoolsHealthTaxonomy => 'Taxonomy exists';
+
+  @override
+  String get devtoolsHealthAreas => 'Areas exist';
+
+  @override
+  String get devtoolsHealthActiveDriver => 'An active driver exists';
+
+  @override
+  String get devtoolsSeedTitle => 'Re-seed demo data';
+
+  @override
+  String get devtoolsSeedWarning =>
+      'Destructive — overwrites the demo accounts\' data and signs you out when it finishes.';
+
+  @override
+  String get devtoolsSeedRbac => 'Roles & permissions';
+
+  @override
+  String get devtoolsSeedCatalog => 'Shops & products';
+
+  @override
+  String get devtoolsSeedCustomers => 'Customer accounts';
+
+  @override
+  String get devtoolsSeedAction => 'Re-seed';
+
+  @override
+  String get devtoolsSeedConfirmTitle => 'Are you sure?';
+
+  @override
+  String get devtoolsSeedConfirmBody =>
+      'Type SEED to confirm you want to re-seed the demo data.';
+
+  @override
+  String get devtoolsSeedConfirmField => 'Type SEED';
+
+  @override
+  String get devtoolsFakeTitle => 'Fake data';
+
+  @override
+  String get devtoolsFakeCustomersLabel => 'Fake customer count';
+
+  @override
+  String get devtoolsFakeGenerate => 'Generate';
+
+  @override
+  String devtoolsFakeCustomersResult(Object count) {
+    return 'Generated $count fake customer(s).';
+  }
+
+  @override
+  String get devtoolsFakeNoShops => 'No shops to generate fake orders against.';
+
+  @override
+  String get devtoolsFakeShopLabel => 'Shop';
+
+  @override
+  String get devtoolsFakeOrdersLabel => 'Fake order count';
+
+  @override
+  String devtoolsFakeOrdersResult(Object count) {
+    return 'Generated $count fake order(s).';
+  }
+
+  @override
+  String get devtoolsFakeCleanupAction => 'Delete all fake data';
+
+  @override
+  String devtoolsFakeCleanupResult(Object count) {
+    return 'Deleted $count fake item(s).';
+  }
+
+  @override
+  String get devtoolsCachesTitle => 'Local caches';
+
+  @override
+  String get devtoolsCachesCleared => 'Caches cleared.';
+
+  @override
+  String get devtoolsCachesAction => 'Clear';
+
+  @override
+  String get devtoolsNotifyTitle => 'Test notification';
+
+  @override
+  String get devtoolsNotifySent => 'Notification sent.';
+
+  @override
+  String get devtoolsNotifyAction => 'Send';
+
+  @override
+  String get devtoolsMigrationsTitle => 'Migrations';
+
+  @override
+  String get devtoolsMigrationRun => 'Run';
+
+  @override
+  String get devtoolsMigrationRerun => 'Re-run';
 }

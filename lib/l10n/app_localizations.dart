@@ -3895,6 +3895,312 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'روح لمصدرها'**
   String get mediaBrokenFixAction;
+
+  /// No description provided for @userDetailImpersonate.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدخول كهذا المستخدم'**
+  String get userDetailImpersonate;
+
+  /// No description provided for @impersonateConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هتدخل بحساب المستخدم ده وتشوف التطبيق زيه بالظبط — العملية دي مسجّلة في سجل التدقيق.'**
+  String get impersonateConfirmBody;
+
+  /// No description provided for @impersonateFailedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين ندخل بحساب المستخدم دلوقتي — جرب تاني.'**
+  String get impersonateFailedBody;
+
+  /// No description provided for @impersonationBannerLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'وضع الانتحال: {name} — جلسة مسجّلة'**
+  String impersonationBannerLabel(Object name);
+
+  /// No description provided for @impersonationExitAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'خروج'**
+  String get impersonationExitAction;
+
+  /// No description provided for @consoleNavDevtools.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدوات المطوّر'**
+  String get consoleNavDevtools;
+
+  /// No description provided for @devtoolsLoadError.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نفتح أدوات المطوّر دلوقتي — جرب تاني.'**
+  String get devtoolsLoadError;
+
+  /// No description provided for @devtoolsActionFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'العملية فشلت — جرب تاني.'**
+  String get devtoolsActionFailed;
+
+  /// No description provided for @devtoolsEnvironmentTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'البيئة'**
+  String get devtoolsEnvironmentTitle;
+
+  /// No description provided for @devtoolsEnvVersion.
+  ///
+  /// In ar, this message translates to:
+  /// **'إصدار التطبيق'**
+  String get devtoolsEnvVersion;
+
+  /// No description provided for @devtoolsEnvProjectId.
+  ///
+  /// In ar, this message translates to:
+  /// **'مشروع Firebase'**
+  String get devtoolsEnvProjectId;
+
+  /// No description provided for @devtoolsEnvWorkerUrl.
+  ///
+  /// In ar, this message translates to:
+  /// **'رابط الـ Worker'**
+  String get devtoolsEnvWorkerUrl;
+
+  /// No description provided for @devtoolsEnvWorkerConfigured.
+  ///
+  /// In ar, this message translates to:
+  /// **'الـ Worker مُفعّل'**
+  String get devtoolsEnvWorkerConfigured;
+
+  /// No description provided for @devtoolsEnvFlavor.
+  ///
+  /// In ar, this message translates to:
+  /// **'نوع البناء'**
+  String get devtoolsEnvFlavor;
+
+  /// No description provided for @devtoolsHealthTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'فحوصات الصحة'**
+  String get devtoolsHealthTitle;
+
+  /// No description provided for @devtoolsHealthRunAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'تشغيل الكل'**
+  String get devtoolsHealthRunAll;
+
+  /// No description provided for @devtoolsHealthEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط «تشغيل الكل» لبدء الفحص.'**
+  String get devtoolsHealthEmpty;
+
+  /// No description provided for @devtoolsHealthWorkerPing.
+  ///
+  /// In ar, this message translates to:
+  /// **'استجابة الـ Worker'**
+  String get devtoolsHealthWorkerPing;
+
+  /// No description provided for @devtoolsHealthFirestoreRead.
+  ///
+  /// In ar, this message translates to:
+  /// **'قراءة من Firestore'**
+  String get devtoolsHealthFirestoreRead;
+
+  /// No description provided for @devtoolsHealthConfigSanity.
+  ///
+  /// In ar, this message translates to:
+  /// **'سلامة إعدادات المنصة'**
+  String get devtoolsHealthConfigSanity;
+
+  /// No description provided for @devtoolsHealthTaxonomy.
+  ///
+  /// In ar, this message translates to:
+  /// **'التصنيفات موجودة'**
+  String get devtoolsHealthTaxonomy;
+
+  /// No description provided for @devtoolsHealthAreas.
+  ///
+  /// In ar, this message translates to:
+  /// **'المناطق موجودة'**
+  String get devtoolsHealthAreas;
+
+  /// No description provided for @devtoolsHealthActiveDriver.
+  ///
+  /// In ar, this message translates to:
+  /// **'يوجد مندوب متصل'**
+  String get devtoolsHealthActiveDriver;
+
+  /// No description provided for @devtoolsSeedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة تعبئة البيانات التجريبية'**
+  String get devtoolsSeedTitle;
+
+  /// No description provided for @devtoolsSeedWarning.
+  ///
+  /// In ar, this message translates to:
+  /// **'عملية مدمّرة — هتستبدل بيانات الحسابات التجريبية وتسجّل خروجك في الآخر.'**
+  String get devtoolsSeedWarning;
+
+  /// No description provided for @devtoolsSeedRbac.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأدوار والصلاحيات'**
+  String get devtoolsSeedRbac;
+
+  /// No description provided for @devtoolsSeedCatalog.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدكاكين والمنتجات'**
+  String get devtoolsSeedCatalog;
+
+  /// No description provided for @devtoolsSeedCustomers.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسابات العملاء'**
+  String get devtoolsSeedCustomers;
+
+  /// No description provided for @devtoolsSeedAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة التعبئة'**
+  String get devtoolsSeedAction;
+
+  /// No description provided for @devtoolsSeedConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'متأكد؟'**
+  String get devtoolsSeedConfirmTitle;
+
+  /// No description provided for @devtoolsSeedConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب SEED عشان تأكد إنك عايز تعيد تعبئة البيانات التجريبية.'**
+  String get devtoolsSeedConfirmBody;
+
+  /// No description provided for @devtoolsSeedConfirmField.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب SEED'**
+  String get devtoolsSeedConfirmField;
+
+  /// No description provided for @devtoolsFakeTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'بيانات وهمية'**
+  String get devtoolsFakeTitle;
+
+  /// No description provided for @devtoolsFakeCustomersLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'عدد العملاء الوهميين'**
+  String get devtoolsFakeCustomersLabel;
+
+  /// No description provided for @devtoolsFakeGenerate.
+  ///
+  /// In ar, this message translates to:
+  /// **'توليد'**
+  String get devtoolsFakeGenerate;
+
+  /// No description provided for @devtoolsFakeCustomersResult.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتولّد {count} عميل وهمي.'**
+  String devtoolsFakeCustomersResult(Object count);
+
+  /// No description provided for @devtoolsFakeNoShops.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش دكاكين عشان تتولّد طلبات وهمية.'**
+  String get devtoolsFakeNoShops;
+
+  /// No description provided for @devtoolsFakeShopLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدكان'**
+  String get devtoolsFakeShopLabel;
+
+  /// No description provided for @devtoolsFakeOrdersLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'عدد الطلبات الوهمية'**
+  String get devtoolsFakeOrdersLabel;
+
+  /// No description provided for @devtoolsFakeOrdersResult.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتولّد {count} طلب وهمي.'**
+  String devtoolsFakeOrdersResult(Object count);
+
+  /// No description provided for @devtoolsFakeCleanupAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف كل البيانات الوهمية'**
+  String get devtoolsFakeCleanupAction;
+
+  /// No description provided for @devtoolsFakeCleanupResult.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتحذف {count} عنصر وهمي.'**
+  String devtoolsFakeCleanupResult(Object count);
+
+  /// No description provided for @devtoolsCachesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'التخزين المؤقت المحلي'**
+  String get devtoolsCachesTitle;
+
+  /// No description provided for @devtoolsCachesCleared.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتنضّف التخزين المؤقت.'**
+  String get devtoolsCachesCleared;
+
+  /// No description provided for @devtoolsCachesAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'تنظيف'**
+  String get devtoolsCachesAction;
+
+  /// No description provided for @devtoolsNotifyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إشعار تجريبي'**
+  String get devtoolsNotifyTitle;
+
+  /// No description provided for @devtoolsNotifySent.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتبعت الإشعار.'**
+  String get devtoolsNotifySent;
+
+  /// No description provided for @devtoolsNotifyAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال'**
+  String get devtoolsNotifyAction;
+
+  /// No description provided for @devtoolsMigrationsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الترحيلات'**
+  String get devtoolsMigrationsTitle;
+
+  /// No description provided for @devtoolsMigrationRun.
+  ///
+  /// In ar, this message translates to:
+  /// **'تشغيل'**
+  String get devtoolsMigrationRun;
+
+  /// No description provided for @devtoolsMigrationRerun.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة تشغيل'**
+  String get devtoolsMigrationRerun;
 }
 
 class _AppLocalizationsDelegate

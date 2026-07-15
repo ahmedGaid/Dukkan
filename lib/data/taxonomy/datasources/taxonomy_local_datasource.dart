@@ -31,4 +31,10 @@ class TaxonomyLocalDataSource {
         .map((e) => CategoryModel.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();
   }
+
+  /// Devtools "clear caches" tool (FC15) — forces the next read to hit remote.
+  Future<void> clear() async {
+    await _ready;
+    await _prefs.remove(_key);
+  }
 }

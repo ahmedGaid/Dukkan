@@ -16,10 +16,12 @@
 import {
   verifyFirebaseToken,
   getServiceAccountToken,
+  mintCustomToken,
   firestoreGetFields,
   firestoreCreateDoc,
   firestorePatchFields,
   firestoreDeleteDoc,
+  firestoreQueryBooleanTrue,
   firestoreCommit,
   identityToolkitCall,
   sendFcm,
@@ -962,6 +964,197 @@ async function handleMediaDelete(request, env, cors, auth) {
   return json({ ok: true, count: keys.length }, 200, cors);
 }
 
+// ---------------------------------------------------------------------------
+// Session 15 (FILE_15) — devtools fake data. Worker-routed because both
+// `/users` and `/orders` `create` rules require `isSelf`, which no staff
+// account can ever satisfy for someone else's uid — there is no `hasPerm`
+// bypass for either, unlike `/shops`. Cleanup uses a structured query since
+// it must find every `fake: true` doc, not just ones from the current
+// session (the console can be closed and reopened between generate/cleanup).
+// ---------------------------------------------------------------------------
+
+const FAKE_MAX = 200;
+const FAKE_ORDER_STATUSES = [
+  'pending', 'accepted', 'preparing', 'outForDelivery', 'delivered', 'cancelled',
+];
+
+/** `/admin/devtools/fake-customers` — `/users` docs only, no Auth account. */
+async function handleFakeCustomers(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { count } = body ?? {};
+  if (!Number.isInteger(count) || count < 1 || count > FAKE_MAX) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  const uids = [];
+  for (let i = 0; i < count; i++) {
+    const doc = await firestoreCreateDoc(env, accessToken, 'users', {
+      name: `عميل تجريبي ${i + 1}`,
+      email: `fake_${Date.now()}_${i}@dukkan.dev`,
+      role: 'customer',
+      phone: `010${String(10000000 + Math.floor(Math.random() * 89999999))}`,
+      fake: true,
+      createdAt: fsTimestamp(new Date().toISOString()),
+    });
+    uids.push(doc.name.split('/').pop());
+  }
+
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'devtools.fakeCustomers',
+    targetType: 'devtools',
+    targetId: 'fake-customers',
+    after: { count },
+  });
+  return json({ ok: true, uids }, 200, cors);
+}
+
+/**
+ * `/admin/devtools/fake-orders` — `{shopId, count, products, customerUids}`.
+ * [products]/[customerUids] are supplied by the console (it already has both
+ * loaded for its board views) so this endpoint never needs its own query.
+ */
+async function handleFakeOrders(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { shopId, count, products, customerUids } = body ?? {};
+  if (
+    !isValidStr(shopId, true) ||
+    !Number.isInteger(count) || count < 1 || count > FAKE_MAX ||
+    !Array.isArray(products) || products.length === 0 ||
+    !Array.isArray(customerUids) || customerUids.length === 0
+  ) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  const ids = [];
+  for (let i = 0; i < count; i++) {
+    const customerUid = customerUids[Math.floor(Math.random() * customerUids.length)];
+    const itemCount = 1 + Math.floor(Math.random() * 3);
+    const items = [];
+    let subtotal = 0;
+    for (let j = 0; j < itemCount; j++) {
+      const p = products[Math.floor(Math.random() * products.length)];
+      const qty = 1 + Math.floor(Math.random() * 3);
+      const priceMinor = Number(p.priceMinor ?? 0);
+      items.push({ productId: p.id, name: p.name, nameAr: p.nameAr, priceMinor, quantity: qty });
+      subtotal += priceMinor * qty;
+    }
+    const status = FAKE_ORDER_STATUSES[Math.floor(Math.random() * FAKE_ORDER_STATUSES.length)];
+    const createdAt = new Date(Date.now() - Math.floor(Math.random() * 72) * 3600000);
+    const deliveryFeeMinor = 3000;
+
+    const doc = await firestoreCreateDoc(env, accessToken, 'orders', {
+      shopId,
+      customerUid,
+      items,
+      subtotalMinor: subtotal,
+      deliveryFeeMinor,
+      totalMinor: subtotal + deliveryFeeMinor,
+      commissionBps: 500,
+      commissionMinor: Math.round((subtotal * 500) / 10000),
+      commissionPayable: status === 'delivered',
+      status,
+      createdAt: fsTimestamp(createdAt.toISOString()),
+      deliveryAddress: { line1: 'عنوان تجريبي', city: 'الإسماعيلية', areaId: 'abu-atwa' },
+      statusHistory: [
+        { status: 'pending', at: createdAt.toISOString(), byUid: customerUid },
+        ...(status === 'pending'
+          ? []
+          : [{
+              status,
+              at: new Date(createdAt.getTime() + 20 * 60000).toISOString(),
+              byUid: customerUid,
+            }]),
+      ],
+      fake: true,
+    });
+    ids.push(doc.name.split('/').pop());
+  }
+
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'devtools.fakeOrders',
+    targetType: 'devtools',
+    targetId: shopId,
+    after: { count },
+  });
+  return json({ ok: true, ids }, 200, cors);
+}
+
+/** `/admin/devtools/fake-cleanup` — deletes every `fake: true` doc, both collections. */
+async function handleFakeCleanup(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  let count = 0;
+  try {
+    for (const collection of ['users', 'orders']) {
+      const paths = await firestoreQueryBooleanTrue(env, accessToken, collection, 'fake');
+      for (const path of paths) {
+        await firestoreDeleteDoc(env, accessToken, path);
+        count++;
+      }
+    }
+  } catch (e) {
+    console.error('[admin] fake cleanup failed', e);
+    return json({ error: 'cleanup_failed' }, 502, cors);
+  }
+
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'devtools.fakeCleanup',
+    targetType: 'devtools',
+    targetId: 'fake-cleanup',
+    after: { count },
+  });
+  return json({ ok: true, count }, 200, cors);
+}
+
+// ---------------------------------------------------------------------------
+// Session 15 (FILE_15) — impersonation. Mints TWO custom tokens: one that
+// signs the caller INTO the target's session, one that signs them back OUT
+// to their own uid later. Rank-guarded exactly like `admins/set` — never a
+// peer or superior (covers the founder never being impersonable at all).
+// ---------------------------------------------------------------------------
+
+/**
+ * `/admin/impersonate` — `{targetUid}`. If the target is itself staff
+ * (`/admins/{targetUid}` exists), the caller must strictly outrank them.
+ * A non-staff target (the common case: customer/owner/courier) always
+ * passes this check, since it only fires when a `/admins` doc exists.
+ */
+async function handleImpersonate(request, env, cors, auth) {
+  const { uid: actorUid, admin: callerAdmin, accessToken } = auth;
+  const body = await readBody(request);
+  const { targetUid } = body ?? {};
+  if (!isValidStr(targetUid, true)) return json({ error: 'bad_request' }, 400, cors);
+
+  const targetAdmin = await firestoreGetFields(env, accessToken, `admins/${targetUid}`);
+  if (targetAdmin) {
+    const targetRank = Number(targetAdmin.rank ?? 0);
+    const callerRank = Number(callerAdmin.rank ?? 0);
+    if (callerRank <= targetRank) return json({ error: 'forbidden' }, 403, cors);
+  }
+
+  let token;
+  let returnToken;
+  try {
+    token = await mintCustomToken(env, targetUid, { impersonatedBy: actorUid });
+    returnToken = await mintCustomToken(env, actorUid, {});
+  } catch (e) {
+    console.error('[admin] impersonate mint failed', e);
+    return json({ error: 'mint_failed' }, 500, cors);
+  }
+
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'impersonation.start',
+    targetType: 'user',
+    targetId: targetUid,
+  });
+  return json({ token, returnToken }, 200, cors);
+}
+
 /**
  * Dispatch table for `/admin/*`. `perm: null` still requires an ACTIVE staff
  * doc (any staff), a string requires that permission (or `'*'`). Later
@@ -990,6 +1183,10 @@ export async function handleAdmin(request, env, cors) {
     '/admin/media/list': { perm: 'images.delete', fn: handleMediaList },
     '/admin/media/stats': { perm: 'images.delete', fn: handleMediaStats },
     '/admin/media/delete': { perm: 'images.delete', fn: handleMediaDelete },
+    '/admin/impersonate': { perm: 'system.impersonate', fn: handleImpersonate },
+    '/admin/devtools/fake-customers': { perm: 'system.tools', fn: handleFakeCustomers },
+    '/admin/devtools/fake-orders': { perm: 'system.tools', fn: handleFakeOrders },
+    '/admin/devtools/fake-cleanup': { perm: 'system.tools', fn: handleFakeCleanup },
   };
   const route = routes[path];
   if (!route) return json({ error: 'not_found' }, 404, cors);

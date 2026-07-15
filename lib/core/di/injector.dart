@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/admin/datasources/admin_api_datasource.dart';
+import '../impersonation/impersonation_session.dart';
 import '../../data/admin/datasources/admin_remote_datasource.dart';
 import '../../data/admin/datasources/admin_drivers_remote_datasource.dart';
 import '../../data/admin/datasources/admin_geo_remote_datasource.dart';
@@ -29,6 +30,7 @@ import '../../data/areas/datasources/areas_remote_datasource.dart';
 import '../../data/areas/repositories/areas_repository_impl.dart';
 import '../../data/audit/datasources/audit_remote_datasource.dart';
 import '../../data/audit/repositories/audit_repository_impl.dart';
+import '../../data/devtools/repositories/devtools_repository_impl.dart';
 import '../../data/dashboard/datasources/dashboard_remote_datasource.dart';
 import '../../data/dashboard/repositories/dashboard_repository_impl.dart';
 import '../../data/auth/datasources/auth_remote_datasource.dart';
@@ -143,6 +145,15 @@ import '../../domain/audit/repositories/audit_repository.dart';
 import '../../domain/audit/usecases/get_audit_entries.dart';
 import '../../domain/dashboard/repositories/dashboard_repository.dart';
 import '../../domain/dashboard/usecases/get_dashboard_summary.dart';
+import '../../domain/devtools/repositories/devtools_repository.dart';
+import '../../domain/devtools/usecases/cleanup_fake_data.dart';
+import '../../domain/devtools/usecases/clear_devtools_caches.dart';
+import '../../domain/devtools/usecases/generate_fake_customers.dart';
+import '../../domain/devtools/usecases/generate_fake_orders.dart';
+import '../../domain/devtools/usecases/get_migrations.dart';
+import '../../domain/devtools/usecases/run_demo_seed.dart';
+import '../../domain/devtools/usecases/run_health_checks.dart';
+import '../../domain/devtools/usecases/run_migration.dart';
 import '../../domain/auth/repositories/auth_repository.dart';
 import '../../domain/auth/usecases/get_user_by_id.dart';
 import '../../domain/auth/usecases/log_in.dart';
@@ -225,6 +236,7 @@ import '../../presentation/catalog/bloc/collections_bloc.dart';
 import '../../domain/admin/entities/managed_user.dart';
 import '../../presentation/console/audit/bloc/audit_log_bloc.dart';
 import '../../presentation/console/dashboard/bloc/dashboard_bloc.dart';
+import '../../presentation/console/devtools/bloc/devtools_bloc.dart';
 import '../../presentation/console/drivers/bloc/driver_detail_bloc.dart';
 import '../../presentation/console/drivers/bloc/drivers_board_bloc.dart';
 import '../../presentation/console/geo/bloc/geo_board_bloc.dart';
@@ -300,6 +312,11 @@ Future<void> initDependencies() async {
   // Worker `/admin/*` client (privileged back-office ops + best-effort audit
   // reporting). Uses the Firebase ID token as bearer.
   sl.registerLazySingleton(() => AdminApiDataSource(auth: sl()));
+
+  // Impersonation (Founder Console session 15). App-lifetime — the return
+  // token it holds must survive the impersonated session, not be recreated
+  // per page.
+  sl.registerLazySingleton(() => ImpersonationSession(api: sl(), auth: sl()));
 
   // User + staff management (Founder Console session 6). AdminUserActions is
   // Worker-routed (every mutation); AdminUsersRepository is a direct,
@@ -574,6 +591,48 @@ Future<void> initDependencies() async {
         getMediaReferences: sl(),
         uploadImage: sl(),
       ));
+
+  // Devtools (Founder Console session 15). Mixed Worker-routed (fake data)
+  // + Firestore-direct (seed/caches/migrations) contract — see
+  // `DevToolsRepository` doc.
+  sl.registerLazySingleton<DevToolsRepository>(() => DevToolsRepositoryImpl(
+        firestore: sl(),
+        api: sl(),
+        taxonomyLocal: sl(),
+        areasLocal: sl(),
+        shopLocal: sl(),
+        productLocal: sl(),
+        platformConfigRepository: sl(),
+        flagsRepository: sl(),
+      ));
+  sl.registerLazySingleton(() => RunHealthChecks(sl()));
+  sl.registerLazySingleton(() => RunDemoSeed(sl()));
+  sl.registerLazySingleton(() => GenerateFakeCustomers(sl()));
+  sl.registerLazySingleton(() => GenerateFakeOrders(sl()));
+  sl.registerLazySingleton(() => CleanupFakeData(sl()));
+  sl.registerLazySingleton(() => ClearDevToolsCaches(sl()));
+  sl.registerLazySingleton(() => GetMigrations(sl()));
+  sl.registerLazySingleton(() => RunMigration(sl()));
+
+  // Devtools — bloc (page-scoped: the signed-in founder's own uid is the
+  // factory param, the test-notification tool's target — mirrors ShopsBoardBloc).
+  sl.registerFactoryParam<DevToolsBloc, String, void>(
+    (actorUid, _) => DevToolsBloc(
+      actorUid: actorUid,
+      getAllShops: sl(),
+      getProducts: sl(),
+      getUsers: sl(),
+      sendDirectNotification: sl(),
+      runHealthChecks: sl(),
+      runDemoSeed: sl(),
+      generateFakeCustomers: sl(),
+      generateFakeOrders: sl(),
+      cleanupFakeData: sl(),
+      clearDevToolsCaches: sl(),
+      getMigrations: sl(),
+      runMigration: sl(),
+    ),
+  );
 
   // Auth — bloc (app lifetime; createDriverProfile only fires for a courier
   // signup, see AuthBloc._onSignUpRequested; getAdminProfile enriches the

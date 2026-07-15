@@ -2028,4 +2028,170 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get mediaBrokenFixAction => 'روح لمصدرها';
+
+  @override
+  String get userDetailImpersonate => 'الدخول كهذا المستخدم';
+
+  @override
+  String get impersonateConfirmBody =>
+      'هتدخل بحساب المستخدم ده وتشوف التطبيق زيه بالظبط — العملية دي مسجّلة في سجل التدقيق.';
+
+  @override
+  String get impersonateFailedBody =>
+      'مش قادرين ندخل بحساب المستخدم دلوقتي — جرب تاني.';
+
+  @override
+  String impersonationBannerLabel(Object name) {
+    return 'وضع الانتحال: $name — جلسة مسجّلة';
+  }
+
+  @override
+  String get impersonationExitAction => 'خروج';
+
+  @override
+  String get consoleNavDevtools => 'أدوات المطوّر';
+
+  @override
+  String get devtoolsLoadError =>
+      'مش قادرين نفتح أدوات المطوّر دلوقتي — جرب تاني.';
+
+  @override
+  String get devtoolsActionFailed => 'العملية فشلت — جرب تاني.';
+
+  @override
+  String get devtoolsEnvironmentTitle => 'البيئة';
+
+  @override
+  String get devtoolsEnvVersion => 'إصدار التطبيق';
+
+  @override
+  String get devtoolsEnvProjectId => 'مشروع Firebase';
+
+  @override
+  String get devtoolsEnvWorkerUrl => 'رابط الـ Worker';
+
+  @override
+  String get devtoolsEnvWorkerConfigured => 'الـ Worker مُفعّل';
+
+  @override
+  String get devtoolsEnvFlavor => 'نوع البناء';
+
+  @override
+  String get devtoolsHealthTitle => 'فحوصات الصحة';
+
+  @override
+  String get devtoolsHealthRunAll => 'تشغيل الكل';
+
+  @override
+  String get devtoolsHealthEmpty => 'اضغط «تشغيل الكل» لبدء الفحص.';
+
+  @override
+  String get devtoolsHealthWorkerPing => 'استجابة الـ Worker';
+
+  @override
+  String get devtoolsHealthFirestoreRead => 'قراءة من Firestore';
+
+  @override
+  String get devtoolsHealthConfigSanity => 'سلامة إعدادات المنصة';
+
+  @override
+  String get devtoolsHealthTaxonomy => 'التصنيفات موجودة';
+
+  @override
+  String get devtoolsHealthAreas => 'المناطق موجودة';
+
+  @override
+  String get devtoolsHealthActiveDriver => 'يوجد مندوب متصل';
+
+  @override
+  String get devtoolsSeedTitle => 'إعادة تعبئة البيانات التجريبية';
+
+  @override
+  String get devtoolsSeedWarning =>
+      'عملية مدمّرة — هتستبدل بيانات الحسابات التجريبية وتسجّل خروجك في الآخر.';
+
+  @override
+  String get devtoolsSeedRbac => 'الأدوار والصلاحيات';
+
+  @override
+  String get devtoolsSeedCatalog => 'الدكاكين والمنتجات';
+
+  @override
+  String get devtoolsSeedCustomers => 'حسابات العملاء';
+
+  @override
+  String get devtoolsSeedAction => 'إعادة التعبئة';
+
+  @override
+  String get devtoolsSeedConfirmTitle => 'متأكد؟';
+
+  @override
+  String get devtoolsSeedConfirmBody =>
+      'اكتب SEED عشان تأكد إنك عايز تعيد تعبئة البيانات التجريبية.';
+
+  @override
+  String get devtoolsSeedConfirmField => 'اكتب SEED';
+
+  @override
+  String get devtoolsFakeTitle => 'بيانات وهمية';
+
+  @override
+  String get devtoolsFakeCustomersLabel => 'عدد العملاء الوهميين';
+
+  @override
+  String get devtoolsFakeGenerate => 'توليد';
+
+  @override
+  String devtoolsFakeCustomersResult(Object count) {
+    return 'اتولّد $count عميل وهمي.';
+  }
+
+  @override
+  String get devtoolsFakeNoShops => 'مفيش دكاكين عشان تتولّد طلبات وهمية.';
+
+  @override
+  String get devtoolsFakeShopLabel => 'الدكان';
+
+  @override
+  String get devtoolsFakeOrdersLabel => 'عدد الطلبات الوهمية';
+
+  @override
+  String devtoolsFakeOrdersResult(Object count) {
+    return 'اتولّد $count طلب وهمي.';
+  }
+
+  @override
+  String get devtoolsFakeCleanupAction => 'حذف كل البيانات الوهمية';
+
+  @override
+  String devtoolsFakeCleanupResult(Object count) {
+    return 'اتحذف $count عنصر وهمي.';
+  }
+
+  @override
+  String get devtoolsCachesTitle => 'التخزين المؤقت المحلي';
+
+  @override
+  String get devtoolsCachesCleared => 'اتنضّف التخزين المؤقت.';
+
+  @override
+  String get devtoolsCachesAction => 'تنظيف';
+
+  @override
+  String get devtoolsNotifyTitle => 'إشعار تجريبي';
+
+  @override
+  String get devtoolsNotifySent => 'اتبعت الإشعار.';
+
+  @override
+  String get devtoolsNotifyAction => 'إرسال';
+
+  @override
+  String get devtoolsMigrationsTitle => 'الترحيلات';
+
+  @override
+  String get devtoolsMigrationRun => 'تشغيل';
+
+  @override
+  String get devtoolsMigrationRerun => 'إعادة تشغيل';
 }

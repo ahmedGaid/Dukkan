@@ -21,6 +21,7 @@ import 'l10n/app_localizations.dart';
 import 'presentation/auth/bloc/auth_bloc.dart';
 import 'presentation/cart/bloc/cart_bloc.dart';
 import 'presentation/favorites/bloc/favorites_bloc.dart';
+import 'presentation/impersonation/impersonation_overlay.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -93,6 +94,10 @@ class DukkanApp extends StatelessWidget {
                   GlobalCupertinoLocalizations.delegate,
                 ],
                 routerConfig: sl<AppRouter>().router,
+                // Impersonation banner (FC15) — sits above every routed
+                // screen, incl. dialog barriers, and survives route changes.
+                builder: (context, child) =>
+                    ImpersonationOverlay(child: child ?? const SizedBox.shrink()),
               );
             },
           );

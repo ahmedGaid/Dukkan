@@ -65,6 +65,15 @@ class ProductLocalDataSource {
     return null;
   }
 
+  /// Devtools "clear caches" tool (FC15) — every per-shop key plus the
+  /// whole-catalog key share [_keyPrefix], so one scan clears all of them.
+  Future<void> clear() async {
+    await _ready;
+    for (final key in _prefs.getKeys().where((k) => k.startsWith(_keyPrefix)).toList()) {
+      await _prefs.remove(key);
+    }
+  }
+
   List<ProductModel> _decode(String raw) {
     final list = jsonDecode(raw) as List;
     return list

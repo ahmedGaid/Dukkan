@@ -46,4 +46,11 @@ class AppConfig {
   /// `firestore.rules`' `isFounder()`; both must be updated together if the
   /// founder account ever changes.
   static const String founderUid = 'LPPjx32MJpWlMR3SEksJ7sY2NAF2';
+
+  /// Firebase project ids devtools' destructive re-seed tool (FC15) is
+  /// allowed to run against. A founder always clears the RBAC/permission
+  /// gate, so this is the second, project-identity gate — keeps a re-seed
+  /// from ever reaching a real production project once one exists
+  /// alongside this one. Update if/when the project ever splits.
+  static const devProjectIds = <String>['dukkan-93042'];
 }

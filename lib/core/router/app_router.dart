@@ -14,6 +14,7 @@ import '../../presentation/console/dashboard/pages/dashboard_page.dart';
 import '../../presentation/console/drivers/pages/driver_detail_page.dart';
 import '../../presentation/console/drivers/pages/drivers_board_page.dart';
 import '../../presentation/console/geo/pages/geo_board_page.dart';
+import '../../presentation/console/devtools/pages/devtools_page.dart';
 import '../../presentation/console/media/pages/media_page.dart';
 import '../../presentation/console/notifications/pages/notifications_page.dart';
 import '../../presentation/console/orders/pages/orders_board_page.dart';
@@ -252,6 +253,14 @@ class AppRouter {
           GoRoute(
             path: '/console/media',
             builder: (context, state) => const MediaPage(),
+          ),
+          // Impersonation + devtools (FILE_15). Gated by `system.tools` in the
+          // console menu + Firestore rules; the destructive re-seed tool
+          // inside additionally checks the founder wildcard + dev-project
+          // allowlist (see `DevToolsPage` doc).
+          GoRoute(
+            path: '/console/devtools',
+            builder: (context, state) => const DevToolsPage(),
           ),
         ],
       ),

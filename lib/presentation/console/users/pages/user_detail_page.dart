@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/di/injector.dart';
+import '../../../../core/impersonation/impersonation_session.dart';
 import '../../../../core/money.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../domain/admin/entities/admin_profile.dart';
@@ -21,6 +22,7 @@ import '../../../../domain/shop/usecases/get_shop_by_owner.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../widgets/common/app_card.dart';
+import '../../../widgets/common/app_snackbar.dart';
 import '../../../widgets/common/status_chip.dart';
 import '../bloc/user_detail_bloc.dart';
 
@@ -268,6 +270,8 @@ class _ActionsCard extends StatelessWidget {
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             children: [
+              if (context.select((AuthBloc b) => b.state.can(Permissions.systemImpersonate)))
+                _ImpersonateButton(uid: user.uid),
               if (user.status != 'suspended')
                 OutlinedButton(
                   onPressed: busy
@@ -433,6 +437,72 @@ class _ActionsCard extends StatelessWidget {
     if (result != null && result != user.role) {
       bloc.add(UserDetailSetPersonaRoleRequested(uid: user.uid, role: result.wire));
     }
+  }
+}
+
+/// «الدخول كهذا المستخدم» (FC15) — separate from [_ActionsCard]'s bloc-driven
+/// buttons since it owns its own async flow (start impersonation → the app
+/// signs in as the target; [UserDetailBloc] plays no part) and must keep
+/// spinning even after this page starts tearing down mid-redirect.
+class _ImpersonateButton extends StatefulWidget {
+  const _ImpersonateButton({required this.uid});
+
+  final String uid;
+
+  @override
+  State<_ImpersonateButton> createState() => _ImpersonateButtonState();
+}
+
+class _ImpersonateButtonState extends State<_ImpersonateButton> {
+  bool _busy = false;
+
+  Future<void> _start(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.userDetailImpersonate),
+        content: Text(l10n.impersonateConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.actionCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.actionConfirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    setState(() => _busy = true);
+    try {
+      await sl<ImpersonationSession>().start(widget.uid);
+      // AuthBloc's own auth-state stream picks up the new signed-in user and
+      // the router redirects — nothing else to do here.
+    } catch (_) {
+      if (!context.mounted) return;
+      setState(() => _busy = false);
+      AppSnackBar.error(context, l10n.impersonateFailedBody);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return OutlinedButton.icon(
+      icon: _busy
+          ? const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.login, size: 18),
+      onPressed: _busy ? null : () => _start(context),
+      label: Text(l10n.userDetailImpersonate),
+    );
   }
 }
 

@@ -110,6 +110,34 @@ export async function getServiceAccountToken(env) {
   return saTokenCache.token;
 }
 
+/**
+ * Mints a Firebase Auth custom token for [uid] (optionally carrying extra
+ * [claims]) — the same RS256-signed-by-the-service-account JWT shape the
+ * Admin SDK's `createCustomToken` produces, hand-rolled since Workers can't
+ * run that SDK. `signInWithCustomToken` on the client exchanges this for a
+ * real ID token. Used only by impersonation (Session 15) — every other
+ * Worker auth op goes through [getServiceAccountToken] + Identity Toolkit
+ * instead, since those are ADMIN calls, not a token to hand to a client.
+ */
+export async function mintCustomToken(env, uid, claims) {
+  const sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
+  const key = await importPKCS8(sa.private_key, 'RS256');
+  const iat = Math.floor(Date.now() / 1000);
+  return new SignJWT({
+    uid,
+    claims: claims ?? {},
+  })
+    .setProtectedHeader({ alg: 'RS256', typ: 'JWT' })
+    .setIssuer(sa.client_email)
+    .setSubject(sa.client_email)
+    .setAudience(
+      'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit',
+    )
+    .setIssuedAt(iat)
+    .setExpirationTime(iat + 3600)
+    .sign(key);
+}
+
 // ---------------------------------------------------------------------------
 // Firestore typed-value conversion (plain JS  <->  Firestore REST `Value`s)
 // ---------------------------------------------------------------------------
@@ -247,6 +275,37 @@ export async function firestoreCommit(env, accessToken, writes) {
   });
   if (!res.ok) throw new Error(`firestore_commit_${res.status}: ${await res.text()}`);
   return res.json();
+}
+
+/**
+ * Structured query: doc paths (`'users/abc123'`, relative — same shape every
+ * other helper here takes) in [collection] where [field] == true. Used by
+ * devtools cleanup (Session 15) to find every `fake: true` doc without the
+ * caller having tracked which ones it created.
+ */
+export async function firestoreQueryBooleanTrue(env, accessToken, collection, field) {
+  const res = await fetch(`${FS_BASE(env)}:runQuery`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${accessToken}`, 'content-type': 'application/json' },
+    body: JSON.stringify({
+      structuredQuery: {
+        from: [{ collectionId: collection }],
+        where: {
+          fieldFilter: {
+            field: { fieldPath: field },
+            op: 'EQUAL',
+            value: { booleanValue: true },
+          },
+        },
+        limit: 500,
+      },
+    }),
+  });
+  if (!res.ok) throw new Error(`firestore_query_${res.status}: ${await res.text()}`);
+  const rows = await res.json();
+  return rows
+    .filter((r) => r.document)
+    .map((r) => r.document.name.split('/documents/')[1]);
 }
 
 /** DELETE …/documents/{path} — deletes one doc. Idempotent (404 is not an error). */
