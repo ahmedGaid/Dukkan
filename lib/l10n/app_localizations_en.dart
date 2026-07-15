@@ -1964,4 +1964,108 @@ class AppLocalizationsEn extends AppLocalizations {
   String notificationsStatsFailed(Object count) {
     return '$count failed';
   }
+
+  @override
+  String get consoleNavMedia => 'Media library';
+
+  @override
+  String get mediaTabBrowse => 'Browse';
+
+  @override
+  String get mediaTabUnused => 'Unused';
+
+  @override
+  String get mediaTabBroken => 'Broken links';
+
+  @override
+  String get mediaLoadError =>
+      'Couldn\'t open the media library right now — try again.';
+
+  @override
+  String get mediaFolderAll => 'All';
+
+  @override
+  String get mediaFolderShopLogos => 'Shop logos';
+
+  @override
+  String get mediaFolderProductImages => 'Product images';
+
+  @override
+  String get mediaFolderDriverDocs => 'Driver docs';
+
+  @override
+  String get mediaFolderBanners => 'Banners';
+
+  @override
+  String get mediaStatsCountLabel => 'images';
+
+  @override
+  String get mediaStatsSizeLabel => 'total size';
+
+  @override
+  String get mediaEmptyTitle => 'No images here';
+
+  @override
+  String get mediaEmptyBody => 'Uploads to this folder will show up here.';
+
+  @override
+  String get mediaUploadAction => 'Upload image';
+
+  @override
+  String get mediaUploadErrorBody => 'Upload failed — try again.';
+
+  @override
+  String get mediaDeleteConfirmTitle => 'Are you sure?';
+
+  @override
+  String mediaDeleteConfirmBody(Object count) {
+    return '$count image(s) will be permanently deleted — images can\'t be recovered.';
+  }
+
+  @override
+  String get mediaDeleteAction => 'Delete';
+
+  @override
+  String mediaSelectedCount(Object count) {
+    return '$count selected';
+  }
+
+  @override
+  String get mediaFindersScanningBody =>
+      'Scanning images and linked references…';
+
+  @override
+  String get mediaFindersErrorBody =>
+      'Couldn\'t scan images right now — try again.';
+
+  @override
+  String get mediaUnusedEmptyTitle => 'No unused images';
+
+  @override
+  String get mediaUnusedEmptyBody =>
+      'Every image in the library is linked to something.';
+
+  @override
+  String get mediaUnusedSelectAllAction => 'Select all';
+
+  @override
+  String get mediaBrokenEmptyTitle => 'All links are working';
+
+  @override
+  String get mediaBrokenEmptyBody => 'No broken image links right now.';
+
+  @override
+  String get mediaDocTypeShop => 'Shop';
+
+  @override
+  String get mediaDocTypeProduct => 'Product';
+
+  @override
+  String get mediaDocTypeDriver => 'Driver';
+
+  @override
+  String get mediaDocTypeBanner => 'Banner';
+
+  @override
+  String get mediaBrokenFixAction => 'Go to source';
 }

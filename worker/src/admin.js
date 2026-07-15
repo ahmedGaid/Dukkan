@@ -858,6 +858,110 @@ async function handleNotifyUser(request, env, cors, auth) {
   return json({ ok: true, status }, 200, cors);
 }
 
+// ---------------------------------------------------------------------------
+// Session 14 (FILE_14) — media library: browse/stats/delete R2 objects. Read
+// (`list`/`stats`) rides `images.delete` — media is one console area with no
+// separate read permission, same one-perm-per-section shape as taxonomy/geo.
+// ---------------------------------------------------------------------------
+
+const MEDIA_LIST_LIMIT = 100;
+const MEDIA_STATS_CAP = 10000; // bucket is small; an honest cap, not a real ceiling
+const MEDIA_DELETE_MAX = 100;
+
+/** `/admin/media/list` — one page of R2 objects, optionally prefix-filtered. */
+async function handleMediaList(request, env, cors, _auth) {
+  const body = await readBody(request);
+  const { prefix, cursor } = body ?? {};
+  if (
+    (prefix != null && typeof prefix !== 'string') ||
+    (cursor != null && typeof cursor !== 'string')
+  ) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  let listed;
+  try {
+    listed = await env.BUCKET.list({
+      prefix: prefix || undefined,
+      cursor: cursor || undefined,
+      limit: MEDIA_LIST_LIMIT,
+    });
+  } catch (e) {
+    console.error('[admin] media list failed', e);
+    return json({ error: 'list_failed' }, 502, cors);
+  }
+
+  const objects = listed.objects.map((o) => ({ key: o.key, size: o.size, uploaded: o.uploaded }));
+  return json({ objects, cursor: listed.truncated ? listed.cursor : null }, 200, cors);
+}
+
+/**
+ * `/admin/media/stats` — full-bucket pagination loop (server-side, so the
+ * console makes one call, not N). Capped at [MEDIA_STATS_CAP] objects.
+ */
+async function handleMediaStats(request, env, cors, _auth) {
+  let count = 0;
+  let totalBytes = 0;
+  const byFolder = {};
+  let cursor;
+  let truncated = false;
+
+  try {
+    do {
+      const listed = await env.BUCKET.list({ cursor, limit: MEDIA_LIST_LIMIT });
+      for (const o of listed.objects) {
+        count += 1;
+        totalBytes += o.size;
+        const folder = o.key.split('/')[0] || 'unknown';
+        const bucket = byFolder[folder] ?? (byFolder[folder] = { count: 0, bytes: 0 });
+        bucket.count += 1;
+        bucket.bytes += o.size;
+      }
+      cursor = listed.truncated ? listed.cursor : undefined;
+      if (count >= MEDIA_STATS_CAP) {
+        truncated = true;
+        break;
+      }
+    } while (cursor);
+  } catch (e) {
+    console.error('[admin] media stats failed', e);
+    return json({ error: 'stats_failed' }, 502, cors);
+  }
+
+  return json({ count, totalBytes, byFolder, truncated }, 200, cors);
+}
+
+/** `/admin/media/delete` — permanent, unrecoverable R2 delete + one audit entry. */
+async function handleMediaDelete(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { keys } = body ?? {};
+  if (
+    !Array.isArray(keys) ||
+    keys.length === 0 ||
+    keys.length > MEDIA_DELETE_MAX ||
+    !keys.every((k) => typeof k === 'string' && k.length > 0 && k.length <= MAX_STR)
+  ) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  try {
+    await env.BUCKET.delete(keys);
+  } catch (e) {
+    console.error('[admin] media delete failed', e);
+    return json({ error: 'delete_failed' }, 502, cors);
+  }
+
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'media.delete',
+    targetType: 'media',
+    targetId: keys[0],
+    after: { count: keys.length, keys: keys.slice(0, 20) },
+  });
+  return json({ ok: true, count: keys.length }, 200, cors);
+}
+
 /**
  * Dispatch table for `/admin/*`. `perm: null` still requires an ACTIVE staff
  * doc (any staff), a string requires that permission (or `'*'`). Later
@@ -883,6 +987,9 @@ export async function handleAdmin(request, env, cors) {
     '/admin/orders/cancel': { perm: 'orders.cancel', fn: handleCancelOrder },
     '/admin/notify/broadcast': { perm: 'notifications.send', fn: handleNotifyBroadcast },
     '/admin/notify/user': { perm: 'notifications.send', fn: handleNotifyUser },
+    '/admin/media/list': { perm: 'images.delete', fn: handleMediaList },
+    '/admin/media/stats': { perm: 'images.delete', fn: handleMediaStats },
+    '/admin/media/delete': { perm: 'images.delete', fn: handleMediaDelete },
   };
   const route = routes[path];
   if (!route) return json({ error: 'not_found' }, 404, cors);

@@ -45,6 +45,8 @@ import '../../data/favorites/datasources/favorites_remote_datasource.dart';
 import '../../data/favorites/repositories/favorites_repository_impl.dart';
 import '../../data/finance/datasources/finance_remote_datasource.dart';
 import '../../data/finance/repositories/finance_repository_impl.dart';
+import '../../data/media/datasources/media_reference_remote_datasource.dart';
+import '../../data/media/repositories/media_repository_impl.dart';
 import '../../data/notifications/datasources/notification_remote_datasource.dart';
 import '../../data/notifications/repositories/notification_repository_impl.dart';
 import '../../data/notifications_admin/datasources/admin_notifications_remote_datasource.dart';
@@ -174,6 +176,12 @@ import '../../domain/favorites/usecases/toggle_favorite_shop.dart';
 import '../../domain/favorites/usecases/watch_favorites.dart';
 import '../../domain/finance/repositories/finance_repository.dart';
 import '../../domain/finance/usecases/get_finance_summary.dart';
+import '../../domain/media/repositories/media_repository.dart';
+import '../../domain/media/usecases/delete_media.dart';
+import '../../domain/media/usecases/get_all_media.dart';
+import '../../domain/media/usecases/get_media_references.dart';
+import '../../domain/media/usecases/get_media_stats.dart';
+import '../../domain/media/usecases/list_media.dart';
 import '../../domain/notifications/repositories/notification_repository.dart';
 import '../../domain/notifications/usecases/notify_order_event.dart';
 import '../../domain/notifications_admin/repositories/admin_notifications_repository.dart';
@@ -220,6 +228,7 @@ import '../../presentation/console/dashboard/bloc/dashboard_bloc.dart';
 import '../../presentation/console/drivers/bloc/driver_detail_bloc.dart';
 import '../../presentation/console/drivers/bloc/drivers_board_bloc.dart';
 import '../../presentation/console/geo/bloc/geo_board_bloc.dart';
+import '../../presentation/console/media/bloc/media_bloc.dart';
 import '../../presentation/console/notifications/bloc/notifications_bloc.dart';
 import '../../presentation/console/orders/bloc/orders_board_bloc.dart';
 import '../../presentation/console/products/bloc/products_board_bloc.dart';
@@ -541,6 +550,29 @@ Future<void> initDependencies() async {
         deleteTemplate: sl(),
         getUserByEmail: sl(),
         getUserByPhone: sl(),
+      ));
+
+  // Media library (Founder Console session 14). Browse/stats/delete are
+  // Worker-routed (`/admin/media/*` — R2 isn't Firestore, unlike every other
+  // section); the finder tabs additionally scan the four collections that
+  // hold image URLs, Firestore-direct.
+  sl.registerLazySingleton(() => MediaReferenceRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<MediaRepository>(() => MediaRepositoryImpl(sl(), sl()));
+  sl.registerLazySingleton(() => ListMedia(sl()));
+  sl.registerLazySingleton(() => GetAllMedia(sl()));
+  sl.registerLazySingleton(() => GetMediaStats(sl()));
+  sl.registerLazySingleton(() => DeleteMedia(sl()));
+  sl.registerLazySingleton(() => GetMediaReferences(sl()));
+
+  // Media library — bloc (page-scoped: one browse load per /console/media
+  // open; the finder tabs load lazily on first visit, see MediaBloc doc).
+  sl.registerFactory(() => MediaBloc(
+        listMedia: sl(),
+        getAllMedia: sl(),
+        getMediaStats: sl(),
+        deleteMedia: sl(),
+        getMediaReferences: sl(),
+        uploadImage: sl(),
       ));
 
   // Auth — bloc (app lifetime; createDriverProfile only fires for a courier

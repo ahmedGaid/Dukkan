@@ -1928,4 +1928,104 @@ class AppLocalizationsAr extends AppLocalizations {
   String notificationsStatsFailed(Object count) {
     return '$count فشلوا';
   }
+
+  @override
+  String get consoleNavMedia => 'مكتبة الصور';
+
+  @override
+  String get mediaTabBrowse => 'تصفح';
+
+  @override
+  String get mediaTabUnused => 'غير مستخدم';
+
+  @override
+  String get mediaTabBroken => 'روابط معطلة';
+
+  @override
+  String get mediaLoadError => 'مش قادرين نفتح مكتبة الصور دلوقتي — جرب تاني.';
+
+  @override
+  String get mediaFolderAll => 'الكل';
+
+  @override
+  String get mediaFolderShopLogos => 'شعارات الدكاكين';
+
+  @override
+  String get mediaFolderProductImages => 'صور المنتجات';
+
+  @override
+  String get mediaFolderDriverDocs => 'مستندات المناديب';
+
+  @override
+  String get mediaFolderBanners => 'بانرات';
+
+  @override
+  String get mediaStatsCountLabel => 'صورة';
+
+  @override
+  String get mediaStatsSizeLabel => 'الحجم الكلي';
+
+  @override
+  String get mediaEmptyTitle => 'مفيش صور هنا';
+
+  @override
+  String get mediaEmptyBody => 'الصور المرفوعة للقسم ده هتظهر هنا.';
+
+  @override
+  String get mediaUploadAction => 'رفع صورة';
+
+  @override
+  String get mediaUploadErrorBody => 'الرفع فشل — جرب تاني.';
+
+  @override
+  String get mediaDeleteConfirmTitle => 'متأكد؟';
+
+  @override
+  String mediaDeleteConfirmBody(Object count) {
+    return 'هيتحذف $count صورة نهائيًا — الصور لا تخضع للاسترجاع.';
+  }
+
+  @override
+  String get mediaDeleteAction => 'حذف';
+
+  @override
+  String mediaSelectedCount(Object count) {
+    return '$count متحدد';
+  }
+
+  @override
+  String get mediaFindersScanningBody => 'جارٍ فحص الصور والروابط المرتبطة…';
+
+  @override
+  String get mediaFindersErrorBody => 'مش قادرين نفحص الصور دلوقتي — جرب تاني.';
+
+  @override
+  String get mediaUnusedEmptyTitle => 'مفيش صور غير مستخدمة';
+
+  @override
+  String get mediaUnusedEmptyBody => 'كل الصور في المكتبة مرتبطة بحاجة.';
+
+  @override
+  String get mediaUnusedSelectAllAction => 'تحديد الكل';
+
+  @override
+  String get mediaBrokenEmptyTitle => 'كل الروابط شغالة';
+
+  @override
+  String get mediaBrokenEmptyBody => 'مفيش رابط صورة معطل دلوقتي.';
+
+  @override
+  String get mediaDocTypeShop => 'دكان';
+
+  @override
+  String get mediaDocTypeProduct => 'منتج';
+
+  @override
+  String get mediaDocTypeDriver => 'مندوب';
+
+  @override
+  String get mediaDocTypeBanner => 'بانر';
+
+  @override
+  String get mediaBrokenFixAction => 'روح لمصدرها';
 }

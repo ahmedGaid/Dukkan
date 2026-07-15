@@ -7,4 +7,8 @@ class StorageFolder {
   static const String shopLogos = 'shop-logos';
   static const String productImages = 'product-images';
   static const String driverDocs = 'driver-docs';
+  static const String banners = 'banners';
+
+  /// Every folder, for the media library's folder-chip filter (FC14).
+  static const values = <String>[shopLogos, productImages, driverDocs, banners];
 }

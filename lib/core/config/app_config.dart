@@ -32,6 +32,15 @@ class AppConfig {
 
   static bool get workerConfigured => workerBaseUrl != _stub;
 
+  /// The R2 public-read origin (`PUBLIC_BASE_URL` in `worker/wrangler.toml`).
+  /// The `/upload` response already returns a full URL, but `/admin/media/*`
+  /// returns bare keys (FC14) — the console composes `mediaPublicBaseUrl/key`
+  /// itself, same scheme the Worker uses server-side.
+  static const String _mediaStub = 'https://REPLACE-WITH-YOUR-R2-PUBLIC-URL';
+
+  static const String mediaPublicBaseUrl =
+      String.fromEnvironment('MEDIA_PUBLIC_BASE_URL', defaultValue: _mediaStub);
+
   /// The one account allowed onto the finance summary (M13) — a v1 stopgap
   /// gate until a real admin-role system exists. Mirrors the literal uid in
   /// `firestore.rules`' `isFounder()`; both must be updated together if the

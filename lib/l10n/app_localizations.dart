@@ -3703,6 +3703,198 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'{count} فشلوا'**
   String notificationsStatsFailed(Object count);
+
+  /// No description provided for @consoleNavMedia.
+  ///
+  /// In ar, this message translates to:
+  /// **'مكتبة الصور'**
+  String get consoleNavMedia;
+
+  /// No description provided for @mediaTabBrowse.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصفح'**
+  String get mediaTabBrowse;
+
+  /// No description provided for @mediaTabUnused.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير مستخدم'**
+  String get mediaTabUnused;
+
+  /// No description provided for @mediaTabBroken.
+  ///
+  /// In ar, this message translates to:
+  /// **'روابط معطلة'**
+  String get mediaTabBroken;
+
+  /// No description provided for @mediaLoadError.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نفتح مكتبة الصور دلوقتي — جرب تاني.'**
+  String get mediaLoadError;
+
+  /// No description provided for @mediaFolderAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكل'**
+  String get mediaFolderAll;
+
+  /// No description provided for @mediaFolderShopLogos.
+  ///
+  /// In ar, this message translates to:
+  /// **'شعارات الدكاكين'**
+  String get mediaFolderShopLogos;
+
+  /// No description provided for @mediaFolderProductImages.
+  ///
+  /// In ar, this message translates to:
+  /// **'صور المنتجات'**
+  String get mediaFolderProductImages;
+
+  /// No description provided for @mediaFolderDriverDocs.
+  ///
+  /// In ar, this message translates to:
+  /// **'مستندات المناديب'**
+  String get mediaFolderDriverDocs;
+
+  /// No description provided for @mediaFolderBanners.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانرات'**
+  String get mediaFolderBanners;
+
+  /// No description provided for @mediaStatsCountLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'صورة'**
+  String get mediaStatsCountLabel;
+
+  /// No description provided for @mediaStatsSizeLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجم الكلي'**
+  String get mediaStatsSizeLabel;
+
+  /// No description provided for @mediaEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش صور هنا'**
+  String get mediaEmptyTitle;
+
+  /// No description provided for @mediaEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصور المرفوعة للقسم ده هتظهر هنا.'**
+  String get mediaEmptyBody;
+
+  /// No description provided for @mediaUploadAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'رفع صورة'**
+  String get mediaUploadAction;
+
+  /// No description provided for @mediaUploadErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرفع فشل — جرب تاني.'**
+  String get mediaUploadErrorBody;
+
+  /// No description provided for @mediaDeleteConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'متأكد؟'**
+  String get mediaDeleteConfirmTitle;
+
+  /// No description provided for @mediaDeleteConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيتحذف {count} صورة نهائيًا — الصور لا تخضع للاسترجاع.'**
+  String mediaDeleteConfirmBody(Object count);
+
+  /// No description provided for @mediaDeleteAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف'**
+  String get mediaDeleteAction;
+
+  /// No description provided for @mediaSelectedCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} متحدد'**
+  String mediaSelectedCount(Object count);
+
+  /// No description provided for @mediaFindersScanningBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ فحص الصور والروابط المرتبطة…'**
+  String get mediaFindersScanningBody;
+
+  /// No description provided for @mediaFindersErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نفحص الصور دلوقتي — جرب تاني.'**
+  String get mediaFindersErrorBody;
+
+  /// No description provided for @mediaUnusedEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش صور غير مستخدمة'**
+  String get mediaUnusedEmptyTitle;
+
+  /// No description provided for @mediaUnusedEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل الصور في المكتبة مرتبطة بحاجة.'**
+  String get mediaUnusedEmptyBody;
+
+  /// No description provided for @mediaUnusedSelectAllAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديد الكل'**
+  String get mediaUnusedSelectAllAction;
+
+  /// No description provided for @mediaBrokenEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل الروابط شغالة'**
+  String get mediaBrokenEmptyTitle;
+
+  /// No description provided for @mediaBrokenEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش رابط صورة معطل دلوقتي.'**
+  String get mediaBrokenEmptyBody;
+
+  /// No description provided for @mediaDocTypeShop.
+  ///
+  /// In ar, this message translates to:
+  /// **'دكان'**
+  String get mediaDocTypeShop;
+
+  /// No description provided for @mediaDocTypeProduct.
+  ///
+  /// In ar, this message translates to:
+  /// **'منتج'**
+  String get mediaDocTypeProduct;
+
+  /// No description provided for @mediaDocTypeDriver.
+  ///
+  /// In ar, this message translates to:
+  /// **'مندوب'**
+  String get mediaDocTypeDriver;
+
+  /// No description provided for @mediaDocTypeBanner.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانر'**
+  String get mediaDocTypeBanner;
+
+  /// No description provided for @mediaBrokenFixAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'روح لمصدرها'**
+  String get mediaBrokenFixAction;
 }
 
 class _AppLocalizationsDelegate

@@ -14,6 +14,7 @@ import '../../presentation/console/dashboard/pages/dashboard_page.dart';
 import '../../presentation/console/drivers/pages/driver_detail_page.dart';
 import '../../presentation/console/drivers/pages/drivers_board_page.dart';
 import '../../presentation/console/geo/pages/geo_board_page.dart';
+import '../../presentation/console/media/pages/media_page.dart';
 import '../../presentation/console/notifications/pages/notifications_page.dart';
 import '../../presentation/console/orders/pages/orders_board_page.dart';
 import '../../presentation/console/settings/pages/settings_page.dart';
@@ -244,6 +245,13 @@ class AppRouter {
           GoRoute(
             path: '/console/notifications',
             builder: (context, state) => const NotificationsPage(),
+          ),
+          // Media library (FILE_14). Gated by `images.delete` in the console
+          // menu + Firestore rules (`/admin/media/*` is Worker-routed — R2
+          // isn't reachable from Firestore rules at all).
+          GoRoute(
+            path: '/console/media',
+            builder: (context, state) => const MediaPage(),
           ),
         ],
       ),
