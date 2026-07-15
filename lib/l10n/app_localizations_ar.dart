@@ -1617,4 +1617,95 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get ordersBoardNoDriver => 'بدون مندوب';
+
+  @override
+  String get consoleNavDrivers => 'المناديب';
+
+  @override
+  String get driversBoardErrorBody =>
+      'معرفناش نجيب قايمة المناديب دلوقتي — جرّب تاني.';
+
+  @override
+  String get driversBoardEmptyTitle => 'مفيش مناديب مطابقين';
+
+  @override
+  String get driversBoardEmptyBody => 'جرّب فلتر تاني.';
+
+  @override
+  String get driversFilterPendingActivation => 'بانتظار التفعيل';
+
+  @override
+  String get driversFilterActive => 'نشط';
+
+  @override
+  String get driversFilterSuspended => 'موقوف';
+
+  @override
+  String get driversFilterOnline => 'متصل الآن';
+
+  @override
+  String get driverDetailMissingSeed => 'افتح صفحة المندوب من القايمة.';
+
+  @override
+  String get driverDetailStatusTitle => 'الحالة';
+
+  @override
+  String get driverDetailActiveSwitch => 'نشط';
+
+  @override
+  String get driverDetailVerifiedSwitch => 'موثّق';
+
+  @override
+  String get driverDetailVerifiedBadge => 'موثّق';
+
+  @override
+  String get driverDetailSuspendTitle => 'إيقاف المندوب';
+
+  @override
+  String get driverDetailSuspendReasonLabel => 'سبب الإيقاف';
+
+  @override
+  String get driverDetailFieldsTitle => 'البيانات';
+
+  @override
+  String get fieldDriverName => 'الاسم';
+
+  @override
+  String get fieldDriverPhone => 'رقم الموبايل';
+
+  @override
+  String get driverDetailAreasLabel => 'مناطق التوصيل';
+
+  @override
+  String get driverDetailMaxActiveOrdersLabel => 'أقصى عدد طلبات في نفس الوقت';
+
+  @override
+  String get driverDetailVehicleTypeLabel => 'نوع المركبة';
+
+  @override
+  String get driverDetailVehiclePlateLabel => 'رقم اللوحة';
+
+  @override
+  String get driverDetailIdDocLabel => 'صورة إثبات الشخصية';
+
+  @override
+  String get driverDetailIdDocUploadError => 'معرفناش نرفع الصورة — جرّب تاني.';
+
+  @override
+  String get driverDetailPerformanceTitle => 'الأداء';
+
+  @override
+  String get driverDetailActiveLoad => 'الحمل الحالي';
+
+  @override
+  String get driverDetailDeliveredThisMonth => 'التوصيلات الشهر ده';
+
+  @override
+  String get driverDetailDeliveredTotal => 'إجمالي التوصيلات';
+
+  @override
+  String get driverDetailAssignedOrdersTitle => 'الطلبات الحالية';
+
+  @override
+  String get driverDetailNoAssignedOrders => 'مفيش طلبات معاه دلوقتي.';
 }

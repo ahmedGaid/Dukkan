@@ -73,6 +73,12 @@ const consoleSections = <ConsoleSection>[
     labelKey: 'consoleNavGeo',
     requiredPerm: Permissions.geoEdit,
   ),
+  ConsoleSection(
+    route: '/console/drivers',
+    icon: Icons.delivery_dining_outlined,
+    labelKey: 'consoleNavDrivers',
+    requiredPerm: Permissions.driversManage,
+  ),
 ];
 
 /// The sections a given staff member may see, in order. Empty for a non-staff

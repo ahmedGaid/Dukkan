@@ -1651,4 +1651,96 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ordersBoardNoDriver => 'No driver';
+
+  @override
+  String get consoleNavDrivers => 'Drivers';
+
+  @override
+  String get driversBoardErrorBody =>
+      'We can\'t load the driver list right now — try again.';
+
+  @override
+  String get driversBoardEmptyTitle => 'No drivers match';
+
+  @override
+  String get driversBoardEmptyBody => 'Try a different filter.';
+
+  @override
+  String get driversFilterPendingActivation => 'Pending activation';
+
+  @override
+  String get driversFilterActive => 'Active';
+
+  @override
+  String get driversFilterSuspended => 'Suspended';
+
+  @override
+  String get driversFilterOnline => 'Online now';
+
+  @override
+  String get driverDetailMissingSeed => 'Open a driver\'s page from the list.';
+
+  @override
+  String get driverDetailStatusTitle => 'Status';
+
+  @override
+  String get driverDetailActiveSwitch => 'Active';
+
+  @override
+  String get driverDetailVerifiedSwitch => 'Verified';
+
+  @override
+  String get driverDetailVerifiedBadge => 'Verified';
+
+  @override
+  String get driverDetailSuspendTitle => 'Suspend driver';
+
+  @override
+  String get driverDetailSuspendReasonLabel => 'Suspension reason';
+
+  @override
+  String get driverDetailFieldsTitle => 'Details';
+
+  @override
+  String get fieldDriverName => 'Name';
+
+  @override
+  String get fieldDriverPhone => 'Phone number';
+
+  @override
+  String get driverDetailAreasLabel => 'Delivery areas';
+
+  @override
+  String get driverDetailMaxActiveOrdersLabel => 'Max orders at once';
+
+  @override
+  String get driverDetailVehicleTypeLabel => 'Vehicle type';
+
+  @override
+  String get driverDetailVehiclePlateLabel => 'Plate number';
+
+  @override
+  String get driverDetailIdDocLabel => 'ID document photo';
+
+  @override
+  String get driverDetailIdDocUploadError =>
+      'We couldn\'t upload the photo — try again.';
+
+  @override
+  String get driverDetailPerformanceTitle => 'Performance';
+
+  @override
+  String get driverDetailActiveLoad => 'Current load';
+
+  @override
+  String get driverDetailDeliveredThisMonth => 'Delivered this month';
+
+  @override
+  String get driverDetailDeliveredTotal => 'Total delivered';
+
+  @override
+  String get driverDetailAssignedOrdersTitle => 'Current orders';
+
+  @override
+  String get driverDetailNoAssignedOrders => 'No orders assigned right now.';
 }

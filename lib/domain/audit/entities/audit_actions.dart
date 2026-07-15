@@ -39,7 +39,8 @@ class AuditActions {
     // Drivers (session 11)
     'driver.activate',
     'driver.suspend',
-    'driver.edit',
+    'driver.verify',
+    'driver.update',
     // Taxonomy / geo (session 09) / settings (session 12)
     'taxonomy.create',
     'taxonomy.update',

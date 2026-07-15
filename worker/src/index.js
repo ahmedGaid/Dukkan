@@ -44,7 +44,7 @@ import { handleAdmin } from './admin.js';
 
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB — a logo / product photo, not a video
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
-const ALLOWED_FOLDERS = new Set(['shop-logos', 'product-images']);
+const ALLOWED_FOLDERS = new Set(['shop-logos', 'product-images', 'driver-docs']);
 const NOTIFY_TYPES = new Set(['newOrder', 'statusUpdate', 'driverAssigned', 'orderDelivered']);
 
 export default {

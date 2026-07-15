@@ -3121,6 +3121,186 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'بدون مندوب'**
   String get ordersBoardNoDriver;
+
+  /// No description provided for @consoleNavDrivers.
+  ///
+  /// In ar, this message translates to:
+  /// **'المناديب'**
+  String get consoleNavDrivers;
+
+  /// No description provided for @driversBoardErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نجيب قايمة المناديب دلوقتي — جرّب تاني.'**
+  String get driversBoardErrorBody;
+
+  /// No description provided for @driversBoardEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش مناديب مطابقين'**
+  String get driversBoardEmptyTitle;
+
+  /// No description provided for @driversBoardEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب فلتر تاني.'**
+  String get driversBoardEmptyBody;
+
+  /// No description provided for @driversFilterPendingActivation.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار التفعيل'**
+  String get driversFilterPendingActivation;
+
+  /// No description provided for @driversFilterActive.
+  ///
+  /// In ar, this message translates to:
+  /// **'نشط'**
+  String get driversFilterActive;
+
+  /// No description provided for @driversFilterSuspended.
+  ///
+  /// In ar, this message translates to:
+  /// **'موقوف'**
+  String get driversFilterSuspended;
+
+  /// No description provided for @driversFilterOnline.
+  ///
+  /// In ar, this message translates to:
+  /// **'متصل الآن'**
+  String get driversFilterOnline;
+
+  /// No description provided for @driverDetailMissingSeed.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح صفحة المندوب من القايمة.'**
+  String get driverDetailMissingSeed;
+
+  /// No description provided for @driverDetailStatusTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالة'**
+  String get driverDetailStatusTitle;
+
+  /// No description provided for @driverDetailActiveSwitch.
+  ///
+  /// In ar, this message translates to:
+  /// **'نشط'**
+  String get driverDetailActiveSwitch;
+
+  /// No description provided for @driverDetailVerifiedSwitch.
+  ///
+  /// In ar, this message translates to:
+  /// **'موثّق'**
+  String get driverDetailVerifiedSwitch;
+
+  /// No description provided for @driverDetailVerifiedBadge.
+  ///
+  /// In ar, this message translates to:
+  /// **'موثّق'**
+  String get driverDetailVerifiedBadge;
+
+  /// No description provided for @driverDetailSuspendTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيقاف المندوب'**
+  String get driverDetailSuspendTitle;
+
+  /// No description provided for @driverDetailSuspendReasonLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبب الإيقاف'**
+  String get driverDetailSuspendReasonLabel;
+
+  /// No description provided for @driverDetailFieldsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'البيانات'**
+  String get driverDetailFieldsTitle;
+
+  /// No description provided for @fieldDriverName.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم'**
+  String get fieldDriverName;
+
+  /// No description provided for @fieldDriverPhone.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الموبايل'**
+  String get fieldDriverPhone;
+
+  /// No description provided for @driverDetailAreasLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'مناطق التوصيل'**
+  String get driverDetailAreasLabel;
+
+  /// No description provided for @driverDetailMaxActiveOrdersLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'أقصى عدد طلبات في نفس الوقت'**
+  String get driverDetailMaxActiveOrdersLabel;
+
+  /// No description provided for @driverDetailVehicleTypeLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'نوع المركبة'**
+  String get driverDetailVehicleTypeLabel;
+
+  /// No description provided for @driverDetailVehiclePlateLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم اللوحة'**
+  String get driverDetailVehiclePlateLabel;
+
+  /// No description provided for @driverDetailIdDocLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'صورة إثبات الشخصية'**
+  String get driverDetailIdDocLabel;
+
+  /// No description provided for @driverDetailIdDocUploadError.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نرفع الصورة — جرّب تاني.'**
+  String get driverDetailIdDocUploadError;
+
+  /// No description provided for @driverDetailPerformanceTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأداء'**
+  String get driverDetailPerformanceTitle;
+
+  /// No description provided for @driverDetailActiveLoad.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحمل الحالي'**
+  String get driverDetailActiveLoad;
+
+  /// No description provided for @driverDetailDeliveredThisMonth.
+  ///
+  /// In ar, this message translates to:
+  /// **'التوصيلات الشهر ده'**
+  String get driverDetailDeliveredThisMonth;
+
+  /// No description provided for @driverDetailDeliveredTotal.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجمالي التوصيلات'**
+  String get driverDetailDeliveredTotal;
+
+  /// No description provided for @driverDetailAssignedOrdersTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات الحالية'**
+  String get driverDetailAssignedOrdersTitle;
+
+  /// No description provided for @driverDetailNoAssignedOrders.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش طلبات معاه دلوقتي.'**
+  String get driverDetailNoAssignedOrders;
 }
 
 class _AppLocalizationsDelegate

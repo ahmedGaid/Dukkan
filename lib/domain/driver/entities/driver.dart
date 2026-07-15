@@ -15,6 +15,11 @@ class Driver extends Equatable {
     required this.isOnline,
     required this.isSuspended,
     this.phone,
+    this.vehicleType,
+    this.vehiclePlate,
+    this.idDocUrl,
+    this.isVerified = false,
+    this.suspendReason,
   });
 
   final String uid;
@@ -26,6 +31,20 @@ class Driver extends Equatable {
   final bool isOnline;
   final bool isSuspended;
 
+  /// FC11, console-editable. E.g. «موتوسيكل».
+  final String? vehicleType;
+  final String? vehiclePlate;
+
+  /// FC11 — uploaded to `driver-docs/` via the Worker, console-only.
+  final String? idDocUrl;
+
+  /// FC11 — a founder-confirmed identity check, separate from [isSuspended]
+  /// (a driver can be active but not yet verified).
+  final bool isVerified;
+
+  /// FC11 — set by the console when [isSuspended] flips true; null otherwise.
+  final String? suspendReason;
+
   @override
   List<Object?> get props => [
         uid,
@@ -36,5 +55,10 @@ class Driver extends Equatable {
         activeOrdersCount,
         isOnline,
         isSuspended,
+        vehicleType,
+        vehiclePlate,
+        idDocUrl,
+        isVerified,
+        suspendReason,
       ];
 }

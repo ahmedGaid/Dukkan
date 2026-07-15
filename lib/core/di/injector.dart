@@ -6,12 +6,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/admin/datasources/admin_api_datasource.dart';
 import '../../data/admin/datasources/admin_remote_datasource.dart';
+import '../../data/admin/datasources/admin_drivers_remote_datasource.dart';
 import '../../data/admin/datasources/admin_geo_remote_datasource.dart';
 import '../../data/admin/datasources/admin_orders_remote_datasource.dart';
 import '../../data/admin/datasources/admin_products_remote_datasource.dart';
 import '../../data/admin/datasources/admin_shops_remote_datasource.dart';
 import '../../data/admin/datasources/admin_taxonomy_remote_datasource.dart';
 import '../../data/admin/datasources/admin_users_remote_datasource.dart';
+import '../../data/admin/repositories/admin_drivers_repository_impl.dart';
 import '../../data/admin/repositories/admin_geo_repository_impl.dart';
 import '../../data/admin/repositories/admin_orders_repository_impl.dart';
 import '../../data/admin/repositories/admin_products_repository_impl.dart';
@@ -54,6 +56,7 @@ import '../../data/storage/repositories/storage_repository_impl.dart';
 import '../../data/taxonomy/datasources/taxonomy_local_datasource.dart';
 import '../../data/taxonomy/datasources/taxonomy_remote_datasource.dart';
 import '../../data/taxonomy/repositories/taxonomy_repository_impl.dart';
+import '../../domain/admin/repositories/admin_drivers_repository.dart';
 import '../../domain/admin/repositories/admin_geo_repository.dart';
 import '../../domain/admin/repositories/admin_orders_repository.dart';
 import '../../domain/admin/repositories/admin_products_repository.dart';
@@ -81,8 +84,12 @@ import '../../domain/admin/usecases/get_all_areas.dart';
 import '../../domain/admin/usecases/get_all_categories.dart';
 import '../../domain/admin/usecases/get_all_shops.dart';
 import '../../domain/admin/usecases/get_console_order_by_id.dart';
+import '../../domain/admin/usecases/get_driver_assigned_orders.dart';
+import '../../domain/admin/usecases/get_driver_by_id.dart';
+import '../../domain/admin/usecases/get_driver_performance.dart';
 import '../../domain/admin/usecases/get_orders_by_customer.dart';
 import '../../domain/admin/usecases/get_orders_page.dart';
+import '../../domain/admin/usecases/get_all_drivers.dart';
 import '../../domain/admin/usecases/get_products.dart';
 import '../../domain/admin/usecases/get_shop_by_id.dart';
 import '../../domain/admin/usecases/get_staff_profile_for_uid.dart';
@@ -101,6 +108,8 @@ import '../../domain/admin/usecases/search_products.dart';
 import '../../domain/admin/usecases/set_admin.dart';
 import '../../domain/admin/usecases/set_area_active.dart';
 import '../../domain/admin/usecases/set_category_visible.dart';
+import '../../domain/admin/usecases/set_driver_suspended.dart';
+import '../../domain/admin/usecases/set_driver_verified.dart';
 import '../../domain/admin/usecases/set_shop_featured.dart';
 import '../../domain/admin/usecases/set_shop_status.dart';
 import '../../domain/admin/usecases/soft_delete_product.dart';
@@ -114,6 +123,7 @@ import '../../domain/admin/usecases/swap_category_sort.dart';
 import '../../domain/admin/usecases/transfer_shop_ownership.dart';
 import '../../domain/admin/usecases/update_area.dart';
 import '../../domain/admin/usecases/update_category.dart';
+import '../../domain/admin/usecases/update_driver.dart';
 import '../../domain/admin/usecases/update_shop_details.dart';
 import '../../domain/areas/repositories/areas_repository.dart';
 import '../../domain/areas/usecases/get_areas.dart';
@@ -136,6 +146,7 @@ import '../../domain/collections/usecases/rename_collection.dart';
 import '../../domain/collections/usecases/watch_collections.dart';
 import '../../domain/config/repositories/platform_config_repository.dart';
 import '../../domain/config/usecases/get_platform_config.dart';
+import '../../domain/driver/entities/driver.dart';
 import '../../domain/driver/repositories/driver_repository.dart';
 import '../../domain/driver/usecases/assign_driver.dart';
 import '../../domain/driver/usecases/available_drivers.dart';
@@ -184,6 +195,8 @@ import '../../presentation/catalog/bloc/collections_bloc.dart';
 import '../../domain/admin/entities/managed_user.dart';
 import '../../presentation/console/audit/bloc/audit_log_bloc.dart';
 import '../../presentation/console/dashboard/bloc/dashboard_bloc.dart';
+import '../../presentation/console/drivers/bloc/driver_detail_bloc.dart';
+import '../../presentation/console/drivers/bloc/drivers_board_bloc.dart';
 import '../../presentation/console/geo/bloc/geo_board_bloc.dart';
 import '../../presentation/console/orders/bloc/orders_board_bloc.dart';
 import '../../presentation/console/products/bloc/products_board_bloc.dart';
@@ -414,6 +427,39 @@ Future<void> initDependencies() async {
         getAllShops: sl(),
         getAllAreas: sl(),
       ));
+
+  // Driver admin (Founder Console session 11). AdminDriversRepository reads
+  // are direct + unfiltered (drivers read is `isSignedIn()` — no permission
+  // gate to route through, same reasoning as AdminShopsRepository); every
+  // write is also direct (gated by the `drivers.manage` rules branch) — no
+  // Worker-routed op here, unlike shop ownership transfer.
+  sl.registerLazySingleton(() => AdminDriversRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<AdminDriversRepository>(
+    () => AdminDriversRepositoryImpl(sl(), sl()),
+  );
+  sl.registerLazySingleton(() => GetAllDrivers(sl()));
+  sl.registerLazySingleton(() => GetDriverById(sl()));
+  sl.registerLazySingleton(() => SetDriverSuspended(sl()));
+  sl.registerLazySingleton(() => SetDriverVerified(sl()));
+  sl.registerLazySingleton(() => UpdateDriver(sl()));
+  sl.registerLazySingleton(() => GetDriverPerformance(sl()));
+  sl.registerLazySingleton(() => GetDriverAssignedOrders(sl()));
+
+  // Driver admin — bloc (page-scoped: board loads its own snapshot per open,
+  // same contract as ShopsBoardBloc; detail is seeded with the tapped Driver).
+  sl.registerFactory(() => DriversBoardBloc(getAllDrivers: sl(), getAllAreas: sl()));
+  sl.registerFactoryParam<DriverDetailBloc, Driver, void>(
+    (seed, _) => DriverDetailBloc(
+      seed: seed,
+      getDriverById: sl(),
+      setDriverSuspended: sl(),
+      setDriverVerified: sl(),
+      updateDriver: sl(),
+      getDriverPerformance: sl(),
+      getDriverAssignedOrders: sl(),
+      getAllAreas: sl(),
+    ),
+  );
 
   // Auth — bloc (app lifetime; createDriverProfile only fires for a courier
   // signup, see AuthBloc._onSignUpRequested; getAdminProfile enriches the

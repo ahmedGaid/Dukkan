@@ -11,6 +11,8 @@ import '../../presentation/cart/pages/order_placed_page.dart';
 import '../../domain/admin/entities/managed_user.dart';
 import '../../presentation/console/audit/pages/audit_log_page.dart';
 import '../../presentation/console/dashboard/pages/dashboard_page.dart';
+import '../../presentation/console/drivers/pages/driver_detail_page.dart';
+import '../../presentation/console/drivers/pages/drivers_board_page.dart';
 import '../../presentation/console/geo/pages/geo_board_page.dart';
 import '../../presentation/console/orders/pages/orders_board_page.dart';
 import '../../presentation/console/shell/console_sections.dart';
@@ -27,6 +29,7 @@ import '../../domain/admin/entities/admin_profile.dart';
 import '../../domain/admin/entities/permissions.dart';
 import '../../domain/auth/entities/user_role.dart';
 import '../../domain/order/entities/order.dart';
+import '../../domain/driver/entities/driver.dart';
 import '../../domain/product/entities/product.dart';
 import '../../domain/shop/entities/shop.dart';
 import '../../domain/shop/usecases/get_shop_by_owner.dart';
@@ -203,6 +206,18 @@ class AppRouter {
           GoRoute(
             path: '/console/geo',
             builder: (context, state) => const GeoBoardPage(),
+          ),
+          // Driver admin (FILE_11). Gated by `drivers.manage` in the console
+          // menu + Firestore rules. The detail route is always reached via
+          // the board row's `extra: Driver` — see `DriverDetailPage`.
+          GoRoute(
+            path: '/console/drivers',
+            builder: (context, state) => const DriversBoardPage(),
+          ),
+          GoRoute(
+            path: '/console/drivers/:uid',
+            builder: (context, state) =>
+                DriverDetailPage(seed: state.extra as Driver?),
           ),
         ],
       ),

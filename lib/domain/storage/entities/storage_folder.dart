@@ -6,4 +6,5 @@ class StorageFolder {
 
   static const String shopLogos = 'shop-logos';
   static const String productImages = 'product-images';
+  static const String driverDocs = 'driver-docs';
 }

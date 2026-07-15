@@ -289,7 +289,12 @@ service cloud.firestore {
       allow update: if (isSelf(uid)
           && request.resource.data.diff(resource.data).affectedKeys()
                .hasOnly(['isOnline', 'name', 'phone']))
-        || isValidActiveCountBump();
+        || isValidActiveCountBump()
+        || (hasPerm('drivers.manage')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+               'isSuspended', 'suspendReason', 'areaIds', 'maxActiveOrders',
+               'vehicleType', 'vehiclePlate', 'idDocUrl', 'isVerified',
+               'name', 'phone']));
 
       allow delete: if false;
     }

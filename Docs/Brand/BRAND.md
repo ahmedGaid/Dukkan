@@ -96,6 +96,8 @@ Rules:
 | Shop curation: featured | مميّز | مُروّج له |
 | Governorate (console geo grouping) | المحافظة | الولاية، المنطقة الإدارية |
 | City (console geo grouping) | المدينة | البلد، الحي |
+| Activate (console driver admin) | تفعيل | تنشيط |
+| Vehicle (console driver admin) | المركبة | العربية، الموتوسيكل (كنوع فقط) |
 
 - Human statuses ("جارٍ تجهيز طلبك"), blame-free errors ("حصلت مشكلة — جرّب تاني").
 - RTL is the default layout. LTR (English) must read identically well.

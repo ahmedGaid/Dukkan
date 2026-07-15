@@ -10,6 +10,11 @@ class DriverModel extends Driver {
     required super.isOnline,
     required super.isSuspended,
     super.phone,
+    super.vehicleType,
+    super.vehiclePlate,
+    super.idDocUrl,
+    super.isVerified,
+    super.suspendReason,
   });
 
   factory DriverModel.fromFirestore(String uid, Map<String, dynamic> data) {
@@ -24,6 +29,11 @@ class DriverModel extends Driver {
       activeOrdersCount: (data['activeOrdersCount'] as num?)?.toInt() ?? 0,
       isOnline: data['isOnline'] as bool? ?? false,
       isSuspended: data['isSuspended'] as bool? ?? true,
+      vehicleType: data['vehicleType'] as String?,
+      vehiclePlate: data['vehiclePlate'] as String?,
+      idDocUrl: data['idDocUrl'] as String?,
+      isVerified: data['isVerified'] as bool? ?? false,
+      suspendReason: data['suspendReason'] as String?,
     );
   }
 
@@ -50,5 +60,10 @@ class DriverModel extends Driver {
         'activeOrdersCount': activeOrdersCount,
         'isOnline': isOnline,
         'isSuspended': isSuspended,
+        if (vehicleType != null) 'vehicleType': vehicleType,
+        if (vehiclePlate != null) 'vehiclePlate': vehiclePlate,
+        if (idDocUrl != null) 'idDocUrl': idDocUrl,
+        'isVerified': isVerified,
+        if (suspendReason != null) 'suspendReason': suspendReason,
       };
 }

@@ -11,6 +11,11 @@ void main() {
       'activeOrdersCount': 2,
       'isOnline': true,
       'isSuspended': false,
+      'vehicleType': 'موتوسيكل',
+      'vehiclePlate': 'أ ب ج 123',
+      'idDocUrl': 'https://example.com/id.jpg',
+      'isVerified': true,
+      'suspendReason': null,
     });
 
     expect(driver.uid, 'driver1');
@@ -21,6 +26,29 @@ void main() {
     expect(driver.activeOrdersCount, 2);
     expect(driver.isOnline, isTrue);
     expect(driver.isSuspended, isFalse);
+    expect(driver.vehicleType, 'موتوسيكل');
+    expect(driver.vehiclePlate, 'أ ب ج 123');
+    expect(driver.idDocUrl, 'https://example.com/id.jpg');
+    expect(driver.isVerified, isTrue);
+    expect(driver.suspendReason, isNull);
+  });
+
+  test('fromFirestore parses an old doc with no vehicle fields (FC11 smoke test)', () {
+    final driver = DriverModel.fromFirestore('driver1', {
+      'name': 'كريم',
+      'phone': '01011111111',
+      'areaIds': ['abu-atwa'],
+      'maxActiveOrders': 5,
+      'activeOrdersCount': 2,
+      'isOnline': true,
+      'isSuspended': false,
+    });
+
+    expect(driver.vehicleType, isNull);
+    expect(driver.vehiclePlate, isNull);
+    expect(driver.idDocUrl, isNull);
+    expect(driver.isVerified, isFalse);
+    expect(driver.suspendReason, isNull);
   });
 
   test('fromFirestore defaults a missing doc safely', () {

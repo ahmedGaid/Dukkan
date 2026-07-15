@@ -585,8 +585,29 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       keys ×2, `order_detail_bloc_test.dart` updated with a fake `AdminOrdersRepository`.
       Gates green (analyze 0, test 192/192, parity 504). Worker deploy + rules/indexes deploy
       + a live device smoke test (force-status count check, reassign capacity/area rejection,
-      notes realtime, courier/owner regression) still owed — not run this session. **Next:
-      FC11 (FILE_11) — driver admin.**
+      notes realtime, courier/owner regression) still owed — not run this session.
+      **FC11 DONE (code) 2026-07-15** (FILE_11) — driver admin. `Driver` entity/model gained
+      additive fields (`vehicleType`, `vehiclePlate`, `idDocUrl`, `isVerified`, `suspendReason`);
+      `firestore.rules` `/drivers` update gained the `drivers.manage` staff branch (excludes
+      `activeOrdersCount` — only the assignment txn/Worker touch it). New composite index
+      `driverUid+status+createdAt` for the this-month delivered aggregate (the existing
+      `driverUid+status` index already covers the total-delivered count and the assigned-orders
+      `whereIn` read). Worker `ALLOWED_FOLDERS` gained `driver-docs` for the ID-photo upload.
+      New `AdminDriversRepository` (+impl+datasource, no Worker route — every mutation is
+      Firestore-direct + best-effort audit, same shape as `AdminShopsRepositoryImpl`) — reads
+      unfiltered (`/drivers` read is `isSignedIn()`, no perm gate to route through), writes
+      gated by `drivers.manage`. `console/drivers` board (4 filter chips: pending-activation /
+      active / suspended / online, client-side over one unfiltered load — driver pool is small,
+      no pagination/search) + detail page (activate/suspend with a required reason on suspend,
+      verified toggle, areas multi-select via the existing FC9 `GetAllAreas`, capacity stepper
+      1–10, vehicle fields, ID-doc upload/preview, performance card, assigned-orders list linking
+      to the shared staff order-detail route). New nav entry gated by `drivers.manage`. Audit
+      codes settled on `driver.activate|suspend|verify|update` (dropped the placeholder
+      `driver.edit`). 29 i18n keys ×2. `driver_model_test.dart` extended with the FC11 smoke
+      test's old-doc-parses case. Gates green (analyze 0, test 193/193, parity 534). Rules/
+      indexes deploy + a live device smoke test (activate/suspend ripple to the M9 assignment
+      sheet + courier suspended banner, ID-doc upload lands in R2, performance numbers vs. seed
+      data) still owed — not run this session. **Next: FC12 (FILE_12) — platform settings.**
 - [ ] **FC12–FC15 — Platform ops.** Settings/flags/maintenance+version gates · notification
       center (topics) · media library (R2) · impersonation + dev tools. (FILE_12–15)
 - [ ] **FC16–FC18 — Growth + close.** Promotions (coupons/banners/featured) · global search +
