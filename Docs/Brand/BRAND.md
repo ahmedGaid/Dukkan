@@ -100,6 +100,7 @@ Rules:
 | Vehicle (console driver admin) | المركبة | العربية، الموتوسيكل (كنوع فقط) |
 | Maintenance mode (console settings) | وضع الصيانة | تحت الصيانة |
 | Feature flag (console settings) | خاصية تجريبية | فيتشر، علم |
+| Broadcast (console notification center) | إشعار عام | برودكاست، تعميم |
 
 - Human statuses ("جارٍ تجهيز طلبك"), blame-free errors ("حصلت مشكلة — جرّب تاني").
 - RTL is the default layout. LTR (English) must read identically well.

@@ -316,6 +316,7 @@ String _sectionLabel(AppLocalizations l10n, String key) => switch (key) {
       'consoleNavGeo' => l10n.consoleNavGeo,
       'consoleNavDrivers' => l10n.consoleNavDrivers,
       'consoleNavSettings' => l10n.consoleNavSettings,
+      'consoleNavNotifications' => l10n.consoleNavNotifications,
       _ => key,
     };
 

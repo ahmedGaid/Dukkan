@@ -1053,6 +1053,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardPendingShops => 'Shops pending approval';
 
   @override
+  String get dashboardFailedNotifications => 'Failed pushes (7d)';
+
+  @override
   String get dashboardChartTitle => 'Orders — last 7 days';
 
   @override
@@ -1748,6 +1751,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get consoleNavSettings => 'Settings';
 
   @override
+  String get consoleNavNotifications => 'Notifications';
+
+  @override
   String get settingsSaveOk => 'Saved';
 
   @override
@@ -1846,4 +1852,116 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get updateRequiredBody =>
       'Please update Dukkan from the Play Store to keep using the app.';
+
+  @override
+  String get notificationsTabSend => 'Send';
+
+  @override
+  String get notificationsTabHistory => 'History';
+
+  @override
+  String get notificationsLoadError =>
+      'We can\'t load the notification center right now — try again.';
+
+  @override
+  String get notificationsSendFailed => 'Send failed — try again.';
+
+  @override
+  String get notificationsSendOk => 'Sent';
+
+  @override
+  String get notificationsAudienceLabel => 'Audience';
+
+  @override
+  String get notificationsAudienceCustomers => 'Customers';
+
+  @override
+  String get notificationsAudienceOwners => 'Shop owners';
+
+  @override
+  String get notificationsAudienceCouriers => 'Couriers';
+
+  @override
+  String get notificationsAudienceAll => 'Everyone';
+
+  @override
+  String get notificationsAudienceSpecificUser => 'Specific user';
+
+  @override
+  String get notificationsTargetSearchLabel => 'Search by exact email or phone';
+
+  @override
+  String get notificationsTargetSearchHint => 'e.g. user@email.com or 010…';
+
+  @override
+  String get notificationsTargetNotFound => 'No user matches that email/phone.';
+
+  @override
+  String get notificationsTemplatesLabel => 'Templates';
+
+  @override
+  String get notificationsTitleLabel => 'Title';
+
+  @override
+  String get notificationsBodyLabel => 'Body';
+
+  @override
+  String get notificationsSaveTemplateAction => 'Save as template';
+
+  @override
+  String get notificationsTemplateNameLabel => 'Template name';
+
+  @override
+  String get notificationsTemplateRename => 'Rename';
+
+  @override
+  String get notificationsTemplateDelete => 'Delete';
+
+  @override
+  String get notificationsPreviewLabel => 'Preview';
+
+  @override
+  String get notificationsSendAction => 'Send';
+
+  @override
+  String get notificationsConfirmTitle => 'Send this notification?';
+
+  @override
+  String notificationsConfirmDirectBody(Object name) {
+    return 'This will be sent to $name right now.';
+  }
+
+  @override
+  String notificationsConfirmBroadcastBody(Object audience) {
+    return 'This will be sent to everyone in \"$audience\" right now. We can\'t tell you how many people that is — a broadcast has no audience-size preview.';
+  }
+
+  @override
+  String get notificationsHistoryEmptyTitle => 'No sends yet';
+
+  @override
+  String get notificationsHistoryEmptyBody =>
+      'Broadcasts and direct sends will show up here.';
+
+  @override
+  String get notificationsResendAction => 'Resend';
+
+  @override
+  String get notificationsStatusSent => 'Sent';
+
+  @override
+  String get notificationsStatusFailed => 'Failed';
+
+  @override
+  String get notificationsStatusSkipped => 'Skipped';
+
+  @override
+  String notificationsStatsSent(Object count) {
+    return '$count sent';
+  }
+
+  @override
+  String notificationsStatsFailed(Object count) {
+    return '$count failed';
+  }
 }

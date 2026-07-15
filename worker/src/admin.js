@@ -22,6 +22,7 @@ import {
   firestoreDeleteDoc,
   firestoreCommit,
   identityToolkitCall,
+  sendFcm,
   fsTimestamp,
   toValue,
   toFirestoreFields,
@@ -747,6 +748,116 @@ async function handleCancelOrder(request, env, cors, auth) {
   return json({ ok: true }, 200, cors);
 }
 
+// ---------------------------------------------------------------------------
+// Session 13 (FILE_13) — notification center: broadcast (topic) + direct
+// (token) push. Both write an immutable `/notifications` history doc so the
+// console can show sent/failed/skipped status without re-deriving it from
+// FCM, which gives no audience-size feedback on a topic send at all.
+// ---------------------------------------------------------------------------
+
+const AUDIENCE_TOPICS = {
+  customers: ['role-customer'],
+  owners: ['role-owner'],
+  couriers: ['role-courier'],
+  all: ['role-customer', 'role-owner', 'role-courier'],
+};
+
+async function writeNotificationHistory(env, accessToken, fields) {
+  return firestoreCreateDoc(env, accessToken, 'notifications', {
+    ...fields,
+    sentAt: fsTimestamp(new Date().toISOString()),
+  });
+}
+
+/**
+ * `/admin/notify/broadcast` — sends to one or all three role topics (`all`
+ * fans out sequentially, stopping at the first failure). `status` only
+ * reflects whether the FCM send call(s) themselves succeeded — a topic send
+ * has no delivery/recipient-count feedback, which is why the console's
+ * confirm dialog says the audience size is unknown.
+ */
+async function handleNotifyBroadcast(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { audience, title, body: msgBody } = body ?? {};
+  if (
+    !Object.prototype.hasOwnProperty.call(AUDIENCE_TOPICS, audience) ||
+    !isValidStr(title, true) ||
+    !isValidStr(msgBody, true)
+  ) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  let status = 'sent';
+  let error = null;
+  for (const topic of AUDIENCE_TOPICS[audience]) {
+    try {
+      await sendFcm(env, accessToken, { topic, title, body: msgBody });
+    } catch (e) {
+      console.error('[admin] broadcast send failed', topic, e);
+      status = 'failed';
+      error = String(e);
+      break;
+    }
+  }
+
+  await writeNotificationHistory(env, accessToken, {
+    kind: 'broadcast', audience, title, body: msgBody, sentBy: actorUid, status, error,
+  });
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'notify.broadcast',
+    targetType: 'notification',
+    targetId: audience,
+    after: { audience, title },
+  });
+  return json({ ok: true, status }, 200, cors);
+}
+
+/**
+ * `/admin/notify/user` — sends to one user's saved FCM token. No token on
+ * file is `skipped`, not an error (the console's history/resend flow treats
+ * it distinctly from `failed`).
+ */
+async function handleNotifyUser(request, env, cors, auth) {
+  const { uid: actorUid, accessToken } = auth;
+  const body = await readBody(request);
+  const { uid, title, body: msgBody } = body ?? {};
+  if (!isValidStr(uid, true) || !isValidStr(title, true) || !isValidStr(msgBody, true)) {
+    return json({ error: 'bad_request' }, 400, cors);
+  }
+
+  const target = await firestoreGetFields(env, accessToken, `users/${uid}`);
+  const fcmToken = target?.fcmToken;
+
+  let status;
+  let error = null;
+  if (!fcmToken) {
+    status = 'skipped';
+  } else {
+    try {
+      await sendFcm(env, accessToken, { token: fcmToken, title, body: msgBody });
+      status = 'sent';
+    } catch (e) {
+      console.error('[admin] direct send failed', e);
+      status = 'failed';
+      error = String(e);
+    }
+  }
+
+  await writeNotificationHistory(env, accessToken, {
+    kind: 'direct', targetUid: uid, title, body: msgBody, sentBy: actorUid, status, error,
+  });
+  await writeAudit(env, accessToken, {
+    actorUid,
+    action: 'notify.direct',
+    targetType: 'notification',
+    targetId: uid,
+    after: { title },
+  });
+  return json({ ok: true, status }, 200, cors);
+}
+
 /**
  * Dispatch table for `/admin/*`. `perm: null` still requires an ACTIVE staff
  * doc (any staff), a string requires that permission (or `'*'`). Later
@@ -770,6 +881,8 @@ export async function handleAdmin(request, env, cors) {
     '/admin/orders/force-status': { perm: 'orders.forceStatus', fn: handleForceStatus },
     '/admin/orders/reassign-driver': { perm: 'orders.assignDriver', fn: handleReassignDriver },
     '/admin/orders/cancel': { perm: 'orders.cancel', fn: handleCancelOrder },
+    '/admin/notify/broadcast': { perm: 'notifications.send', fn: handleNotifyBroadcast },
+    '/admin/notify/user': { perm: 'notifications.send', fn: handleNotifyUser },
   };
   const route = routes[path];
   if (!route) return json({ error: 'not_found' }, 404, cors);

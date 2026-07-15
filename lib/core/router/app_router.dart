@@ -14,6 +14,7 @@ import '../../presentation/console/dashboard/pages/dashboard_page.dart';
 import '../../presentation/console/drivers/pages/driver_detail_page.dart';
 import '../../presentation/console/drivers/pages/drivers_board_page.dart';
 import '../../presentation/console/geo/pages/geo_board_page.dart';
+import '../../presentation/console/notifications/pages/notifications_page.dart';
 import '../../presentation/console/orders/pages/orders_board_page.dart';
 import '../../presentation/console/settings/pages/settings_page.dart';
 import '../../presentation/console/shell/console_sections.dart';
@@ -237,6 +238,12 @@ class AppRouter {
           GoRoute(
             path: '/console/settings',
             builder: (context, state) => const SettingsPage(),
+          ),
+          // Notification center (FILE_13). Gated by `notifications.send` in
+          // the console menu + Firestore rules.
+          GoRoute(
+            path: '/console/notifications',
+            builder: (context, state) => const NotificationsPage(),
           ),
         ],
       ),

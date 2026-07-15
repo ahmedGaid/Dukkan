@@ -1025,6 +1025,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dashboardPendingShops => 'دكاكين مستنية موافقة';
 
   @override
+  String get dashboardFailedNotifications => 'إشعارات فشلت (٧ أيام)';
+
+  @override
   String get dashboardChartTitle => 'طلبات آخر ٧ أيام';
 
   @override
@@ -1713,6 +1716,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get consoleNavSettings => 'الإعدادات';
 
   @override
+  String get consoleNavNotifications => 'الإشعارات';
+
+  @override
   String get settingsSaveOk => 'تم الحفظ';
 
   @override
@@ -1810,4 +1816,116 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get updateRequiredBody =>
       'حدّث تطبيق دكان من متجر Google Play عشان تكمل تستخدمه.';
+
+  @override
+  String get notificationsTabSend => 'إرسال';
+
+  @override
+  String get notificationsTabHistory => 'السجل';
+
+  @override
+  String get notificationsLoadError =>
+      'مش قادرين نفتح مركز الإشعارات دلوقتي — جرب تاني.';
+
+  @override
+  String get notificationsSendFailed => 'الإرسال فشل — جرب تاني.';
+
+  @override
+  String get notificationsSendOk => 'اتبعت';
+
+  @override
+  String get notificationsAudienceLabel => 'الفئة المستهدفة';
+
+  @override
+  String get notificationsAudienceCustomers => 'العملاء';
+
+  @override
+  String get notificationsAudienceOwners => 'أصحاب الدكاكين';
+
+  @override
+  String get notificationsAudienceCouriers => 'المناديب';
+
+  @override
+  String get notificationsAudienceAll => 'الكل';
+
+  @override
+  String get notificationsAudienceSpecificUser => 'مستخدم محدد';
+
+  @override
+  String get notificationsTargetSearchLabel => 'دور بالإيميل أو الرقم بالظبط';
+
+  @override
+  String get notificationsTargetSearchHint => 'زي user@email.com أو ٠١٠…';
+
+  @override
+  String get notificationsTargetNotFound => 'مفيش مستخدم بالإيميل/الرقم ده.';
+
+  @override
+  String get notificationsTemplatesLabel => 'القوالب';
+
+  @override
+  String get notificationsTitleLabel => 'العنوان';
+
+  @override
+  String get notificationsBodyLabel => 'النص';
+
+  @override
+  String get notificationsSaveTemplateAction => 'احفظ كقالب';
+
+  @override
+  String get notificationsTemplateNameLabel => 'اسم القالب';
+
+  @override
+  String get notificationsTemplateRename => 'تغيير الاسم';
+
+  @override
+  String get notificationsTemplateDelete => 'حذف';
+
+  @override
+  String get notificationsPreviewLabel => 'معاينة';
+
+  @override
+  String get notificationsSendAction => 'إرسال';
+
+  @override
+  String get notificationsConfirmTitle => 'تبعت الإشعار ده؟';
+
+  @override
+  String notificationsConfirmDirectBody(Object name) {
+    return 'هيتبعت لـ $name دلوقتي.';
+  }
+
+  @override
+  String notificationsConfirmBroadcastBody(Object audience) {
+    return 'هيتبعت لكل اللي في \"$audience\" دلوقتي. مش هنقدر نقولك عددهم كام — الإشعار العام معندوش معاينة لعدد المستقبلين.';
+  }
+
+  @override
+  String get notificationsHistoryEmptyTitle => 'معدش اتبعت حاجة';
+
+  @override
+  String get notificationsHistoryEmptyBody =>
+      'الإشعارات العامة والمباشرة هتظهر هنا.';
+
+  @override
+  String get notificationsResendAction => 'إعادة الإرسال';
+
+  @override
+  String get notificationsStatusSent => 'اتبعت';
+
+  @override
+  String get notificationsStatusFailed => 'فشل';
+
+  @override
+  String get notificationsStatusSkipped => 'اتجاهل';
+
+  @override
+  String notificationsStatsSent(Object count) {
+    return '$count اتبعتوا';
+  }
+
+  @override
+  String notificationsStatsFailed(Object count) {
+    return '$count فشلوا';
+  }
 }

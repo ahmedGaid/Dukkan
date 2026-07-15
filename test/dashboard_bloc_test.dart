@@ -62,6 +62,7 @@ DashboardSummary _summary() => DashboardSummary(
         for (var i = 0; i < 7; i++)
           DailyOrderCount(day: DateTime(2026, 7, 7 + i), count: i),
       ],
+      failedNotifications7d: 0,
     );
 
 void main() {

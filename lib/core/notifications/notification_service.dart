@@ -52,10 +52,26 @@ class NotificationService {
     }
   }
 
+  /// The three persona push topics (FC13, Task A) — broadcast content is
+  /// Arabic-only v1 (per-locale topics deferred), so there is exactly one
+  /// topic per role, not per role+locale.
+  static const _roleTopics = ['role-customer', 'role-owner', 'role-courier'];
+
   Future<void> _onAuthChanged(AuthState state) async {
-    if (state.session != SessionStatus.authenticated) return;
+    if (state.session != SessionStatus.authenticated) {
+      // Sign-out: leave every role topic. A shared device switching users
+      // must never keep hearing the previous user's role broadcasts.
+      if (state.session == SessionStatus.unauthenticated) {
+        for (final topic in _roleTopics) {
+          unawaited(_messaging.unsubscribeFromTopic(topic));
+        }
+      }
+      return;
+    }
     final token = await _messaging.getToken();
     if (token != null) await _saveToken(token);
+    final role = state.user?.role;
+    if (role != null) await _messaging.subscribeToTopic('role-${role.wire}');
   }
 
   Future<void> _saveToken(String token) async {

@@ -67,7 +67,7 @@ class _DashboardView extends StatelessWidget {
             DashboardStatus.loading => ListView(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 children: const [
-                  GridShimmer(count: 8, columns: 2, aspectRatio: 1.25),
+                  GridShimmer(count: 9, columns: 2, aspectRatio: 1.25),
                   SizedBox(height: AppSpacing.md),
                   ListShimmer(count: 1, itemHeight: 148),
                 ],
@@ -222,6 +222,11 @@ class _StatGrid extends StatelessWidget {
         icon: Icons.pending_actions_outlined,
         label: l10n.dashboardPendingShops,
         valueText: '${summary.pendingShops}',
+      ),
+      StatTile(
+        icon: Icons.notifications_off_outlined,
+        label: l10n.dashboardFailedNotifications,
+        valueText: '${summary.failedNotifications7d}',
       ),
     ];
 

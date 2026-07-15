@@ -2042,6 +2042,12 @@ abstract class AppLocalizations {
   /// **'دكاكين مستنية موافقة'**
   String get dashboardPendingShops;
 
+  /// No description provided for @dashboardFailedNotifications.
+  ///
+  /// In ar, this message translates to:
+  /// **'إشعارات فشلت (٧ أيام)'**
+  String get dashboardFailedNotifications;
+
   /// No description provided for @dashboardChartTitle.
   ///
   /// In ar, this message translates to:
@@ -3308,6 +3314,12 @@ abstract class AppLocalizations {
   /// **'الإعدادات'**
   String get consoleNavSettings;
 
+  /// No description provided for @consoleNavNotifications.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإشعارات'**
+  String get consoleNavNotifications;
+
   /// No description provided for @settingsSaveOk.
   ///
   /// In ar, this message translates to:
@@ -3487,6 +3499,210 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'حدّث تطبيق دكان من متجر Google Play عشان تكمل تستخدمه.'**
   String get updateRequiredBody;
+
+  /// No description provided for @notificationsTabSend.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال'**
+  String get notificationsTabSend;
+
+  /// No description provided for @notificationsTabHistory.
+  ///
+  /// In ar, this message translates to:
+  /// **'السجل'**
+  String get notificationsTabHistory;
+
+  /// No description provided for @notificationsLoadError.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نفتح مركز الإشعارات دلوقتي — جرب تاني.'**
+  String get notificationsLoadError;
+
+  /// No description provided for @notificationsSendFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإرسال فشل — جرب تاني.'**
+  String get notificationsSendFailed;
+
+  /// No description provided for @notificationsSendOk.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتبعت'**
+  String get notificationsSendOk;
+
+  /// No description provided for @notificationsAudienceLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الفئة المستهدفة'**
+  String get notificationsAudienceLabel;
+
+  /// No description provided for @notificationsAudienceCustomers.
+  ///
+  /// In ar, this message translates to:
+  /// **'العملاء'**
+  String get notificationsAudienceCustomers;
+
+  /// No description provided for @notificationsAudienceOwners.
+  ///
+  /// In ar, this message translates to:
+  /// **'أصحاب الدكاكين'**
+  String get notificationsAudienceOwners;
+
+  /// No description provided for @notificationsAudienceCouriers.
+  ///
+  /// In ar, this message translates to:
+  /// **'المناديب'**
+  String get notificationsAudienceCouriers;
+
+  /// No description provided for @notificationsAudienceAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكل'**
+  String get notificationsAudienceAll;
+
+  /// No description provided for @notificationsAudienceSpecificUser.
+  ///
+  /// In ar, this message translates to:
+  /// **'مستخدم محدد'**
+  String get notificationsAudienceSpecificUser;
+
+  /// No description provided for @notificationsTargetSearchLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'دور بالإيميل أو الرقم بالظبط'**
+  String get notificationsTargetSearchLabel;
+
+  /// No description provided for @notificationsTargetSearchHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'زي user@email.com أو ٠١٠…'**
+  String get notificationsTargetSearchHint;
+
+  /// No description provided for @notificationsTargetNotFound.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش مستخدم بالإيميل/الرقم ده.'**
+  String get notificationsTargetNotFound;
+
+  /// No description provided for @notificationsTemplatesLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'القوالب'**
+  String get notificationsTemplatesLabel;
+
+  /// No description provided for @notificationsTitleLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'العنوان'**
+  String get notificationsTitleLabel;
+
+  /// No description provided for @notificationsBodyLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'النص'**
+  String get notificationsBodyLabel;
+
+  /// No description provided for @notificationsSaveTemplateAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'احفظ كقالب'**
+  String get notificationsSaveTemplateAction;
+
+  /// No description provided for @notificationsTemplateNameLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم القالب'**
+  String get notificationsTemplateNameLabel;
+
+  /// No description provided for @notificationsTemplateRename.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير الاسم'**
+  String get notificationsTemplateRename;
+
+  /// No description provided for @notificationsTemplateDelete.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف'**
+  String get notificationsTemplateDelete;
+
+  /// No description provided for @notificationsPreviewLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'معاينة'**
+  String get notificationsPreviewLabel;
+
+  /// No description provided for @notificationsSendAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال'**
+  String get notificationsSendAction;
+
+  /// No description provided for @notificationsConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تبعت الإشعار ده؟'**
+  String get notificationsConfirmTitle;
+
+  /// No description provided for @notificationsConfirmDirectBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيتبعت لـ {name} دلوقتي.'**
+  String notificationsConfirmDirectBody(Object name);
+
+  /// No description provided for @notificationsConfirmBroadcastBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيتبعت لكل اللي في \"{audience}\" دلوقتي. مش هنقدر نقولك عددهم كام — الإشعار العام معندوش معاينة لعدد المستقبلين.'**
+  String notificationsConfirmBroadcastBody(Object audience);
+
+  /// No description provided for @notificationsHistoryEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'معدش اتبعت حاجة'**
+  String get notificationsHistoryEmptyTitle;
+
+  /// No description provided for @notificationsHistoryEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإشعارات العامة والمباشرة هتظهر هنا.'**
+  String get notificationsHistoryEmptyBody;
+
+  /// No description provided for @notificationsResendAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة الإرسال'**
+  String get notificationsResendAction;
+
+  /// No description provided for @notificationsStatusSent.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتبعت'**
+  String get notificationsStatusSent;
+
+  /// No description provided for @notificationsStatusFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'فشل'**
+  String get notificationsStatusFailed;
+
+  /// No description provided for @notificationsStatusSkipped.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتجاهل'**
+  String get notificationsStatusSkipped;
+
+  /// No description provided for @notificationsStatsSent.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} اتبعتوا'**
+  String notificationsStatsSent(Object count);
+
+  /// No description provided for @notificationsStatsFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} فشلوا'**
+  String notificationsStatsFailed(Object count);
 }
 
 class _AppLocalizationsDelegate

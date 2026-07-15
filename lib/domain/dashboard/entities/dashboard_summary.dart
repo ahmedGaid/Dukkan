@@ -23,6 +23,7 @@ class DashboardSummary extends Equatable {
     required this.driversOnline,
     required this.pendingShops,
     required this.last7Days,
+    required this.failedNotifications7d,
   });
 
   final int ordersToday;
@@ -44,6 +45,11 @@ class DashboardSummary extends Equatable {
   /// Seven daily order counts, oldest-first, the last bucket being today.
   final List<DailyOrderCount> last7Days;
 
+  /// `/notifications` where `status == 'failed'` in the last 7 days (FC13) —
+  /// a founder-visible early-warning tile, not just the notification
+  /// center's own history stats.
+  final int failedNotifications7d;
+
   @override
   List<Object?> get props => [
         ordersToday,
@@ -56,5 +62,6 @@ class DashboardSummary extends Equatable {
         driversOnline,
         pendingShops,
         last7Days,
+        failedNotifications7d,
       ];
 }

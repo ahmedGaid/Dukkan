@@ -40,9 +40,14 @@ class DashboardRemoteDataSource {
           .where('isOnline', isEqualTo: true)
           .where('isSuspended', isEqualTo: false);
       final pendingShops = shops.where('status', isEqualTo: 'pending');
+      final failedNotifications = _firestore
+          .collection('notifications')
+          .where('status', isEqualTo: 'failed')
+          .where('sentAt', isGreaterThanOrEqualTo: Timestamp.fromDate(days.first));
 
       // Order matters: results are read back by index below. The 7 per-day
-      // counts occupy indices 7..13; the optional users count is last.
+      // counts occupy indices 7..13; failed notifications is 14; the
+      // optional users count is last.
       final futures = <Future<AggregateQuerySnapshot>>[
         ordersToday.count().get(), // 0
         deliveredToday
@@ -60,7 +65,8 @@ class DashboardRemoteDataSource {
                   isLessThan: Timestamp.fromDate(nextDay(d)))
               .count()
               .get(),
-        if (includeUsers) _firestore.collection('users').count().get(), // 14
+        failedNotifications.count().get(), // 14
+        if (includeUsers) _firestore.collection('users').count().get(), // 15
       ];
 
       final r = await Future.wait(futures);
@@ -78,7 +84,8 @@ class DashboardRemoteDataSource {
           for (var i = 0; i < days.length; i++)
             DailyOrderCount(day: days[i], count: r[7 + i].count ?? 0),
         ],
-        totalUsers: includeUsers ? (r[7 + days.length].count ?? 0) : null,
+        failedNotifications7d: r[7 + days.length].count ?? 0,
+        totalUsers: includeUsers ? (r[8 + days.length].count ?? 0) : null,
       );
     } on FirebaseException catch (e) {
       throw ServerFailure(e.message ?? e.code);

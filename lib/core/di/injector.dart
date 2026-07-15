@@ -47,6 +47,8 @@ import '../../data/finance/datasources/finance_remote_datasource.dart';
 import '../../data/finance/repositories/finance_repository_impl.dart';
 import '../../data/notifications/datasources/notification_remote_datasource.dart';
 import '../../data/notifications/repositories/notification_repository_impl.dart';
+import '../../data/notifications_admin/datasources/admin_notifications_remote_datasource.dart';
+import '../../data/notifications_admin/repositories/admin_notifications_repository_impl.dart';
 import '../../data/order/datasources/order_remote_datasource.dart';
 import '../../data/order/repositories/order_repository_impl.dart';
 import '../../data/product/datasources/product_local_datasource.dart';
@@ -174,6 +176,14 @@ import '../../domain/finance/repositories/finance_repository.dart';
 import '../../domain/finance/usecases/get_finance_summary.dart';
 import '../../domain/notifications/repositories/notification_repository.dart';
 import '../../domain/notifications/usecases/notify_order_event.dart';
+import '../../domain/notifications_admin/repositories/admin_notifications_repository.dart';
+import '../../domain/notifications_admin/usecases/delete_notification_template.dart';
+import '../../domain/notifications_admin/usecases/get_notification_history.dart';
+import '../../domain/notifications_admin/usecases/get_notification_stats.dart';
+import '../../domain/notifications_admin/usecases/get_notification_templates.dart';
+import '../../domain/notifications_admin/usecases/save_notification_template.dart';
+import '../../domain/notifications_admin/usecases/send_broadcast_notification.dart';
+import '../../domain/notifications_admin/usecases/send_direct_notification.dart';
 import '../../domain/order/repositories/order_repository.dart';
 import '../../domain/order/usecases/cancel_order.dart';
 import '../../domain/order/usecases/place_order.dart';
@@ -210,6 +220,7 @@ import '../../presentation/console/dashboard/bloc/dashboard_bloc.dart';
 import '../../presentation/console/drivers/bloc/driver_detail_bloc.dart';
 import '../../presentation/console/drivers/bloc/drivers_board_bloc.dart';
 import '../../presentation/console/geo/bloc/geo_board_bloc.dart';
+import '../../presentation/console/notifications/bloc/notifications_bloc.dart';
 import '../../presentation/console/orders/bloc/orders_board_bloc.dart';
 import '../../presentation/console/products/bloc/products_board_bloc.dart';
 import '../../presentation/console/settings/bloc/settings_bloc.dart';
@@ -499,6 +510,37 @@ Future<void> initDependencies() async {
         updateSettingsFields: sl(),
         setFeatureFlag: sl(),
         deleteFeatureFlag: sl(),
+      ));
+
+  // Notification center (Founder Console session 13). Sends are
+  // Worker-routed (`/admin/notify/*`); history reads + template CRUD are
+  // Firestore-direct, gated by `notifications.send` — same shape as
+  // AdminOrdersRepository's mixed read/write contract.
+  sl.registerLazySingleton(() => AdminNotificationsRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<AdminNotificationsRepository>(
+    () => AdminNotificationsRepositoryImpl(sl(), sl()),
+  );
+  sl.registerLazySingleton(() => SendBroadcastNotification(sl()));
+  sl.registerLazySingleton(() => SendDirectNotification(sl()));
+  sl.registerLazySingleton(() => GetNotificationHistory(sl()));
+  sl.registerLazySingleton(() => GetNotificationStats(sl()));
+  sl.registerLazySingleton(() => GetNotificationTemplates(sl()));
+  sl.registerLazySingleton(() => SaveNotificationTemplate(sl()));
+  sl.registerLazySingleton(() => DeleteNotificationTemplate(sl()));
+
+  // Notification center — bloc (page-scoped: one load per
+  // /console/notifications open; reuses the Session 6 exact email/phone
+  // lookups for the compose tab's "مستخدم محدد" target).
+  sl.registerFactory(() => NotificationsBloc(
+        getTemplates: sl(),
+        getStats: sl(),
+        getHistory: sl(),
+        sendBroadcast: sl(),
+        sendDirect: sl(),
+        saveTemplate: sl(),
+        deleteTemplate: sl(),
+        getUserByEmail: sl(),
+        getUserByPhone: sl(),
       ));
 
   // Auth — bloc (app lifetime; createDriverProfile only fires for a courier

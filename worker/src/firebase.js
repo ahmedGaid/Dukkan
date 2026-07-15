@@ -290,13 +290,19 @@ export async function identityToolkitCall(env, accessToken, method, body) {
 // FCM
 // ---------------------------------------------------------------------------
 
-export async function sendFcm(env, accessToken, { token, title, body, data }) {
+/**
+ * Sends one FCM v1 message to a [token] (direct) OR a [topic] (broadcast) —
+ * exactly one must be given; the message envelope differs only in that field
+ * (Session 13 / FILE_13, Task B).
+ */
+export async function sendFcm(env, accessToken, { token, topic, title, body, data }) {
+  const target = topic ? { topic } : { token };
   const res = await fetch(
     `https://fcm.googleapis.com/v1/projects/${env.PROJECT_ID}/messages:send`,
     {
       method: 'POST',
       headers: { authorization: `Bearer ${accessToken}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ message: { token, notification: { title, body }, data } }),
+      body: JSON.stringify({ message: { ...target, notification: { title, body }, data } }),
     },
   );
   if (!res.ok) throw new Error(`fcm_send_${res.status}: ${await res.text()}`);

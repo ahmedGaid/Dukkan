@@ -15,5 +15,6 @@ class DashboardSummaryModel extends DashboardSummary {
     required super.driversOnline,
     required super.pendingShops,
     required super.last7Days,
+    required super.failedNotifications7d,
   });
 }

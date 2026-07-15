@@ -85,6 +85,12 @@ const consoleSections = <ConsoleSection>[
     labelKey: 'consoleNavSettings',
     requiredPerm: Permissions.settingsEdit,
   ),
+  ConsoleSection(
+    route: '/console/notifications',
+    icon: Icons.campaign_outlined,
+    labelKey: 'consoleNavNotifications',
+    requiredPerm: Permissions.notificationsSend,
+  ),
 ];
 
 /// The sections a given staff member may see, in order. Empty for a non-staff

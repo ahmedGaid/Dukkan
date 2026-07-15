@@ -332,6 +332,19 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Notification center (Founder Console session 13). History is
+    // Worker-written only (broadcast/direct send both go through
+    // `/admin/notify/*`, same immutability shape as `/auditLogs`).
+    // Templates are a small console convenience — Firestore-direct, no
+    // Worker route needed, same shape as `/config`.
+    match /notifications/{id} {
+      allow read: if hasPerm('notifications.send');
+      allow write: if false;
+    }
+    match /notificationTemplates/{id} {
+      allow read, write: if hasPerm('notifications.send');
+    }
+
     // Deny anything without an explicit rule above.
     match /{document=**} {
       allow read, write: if false;
