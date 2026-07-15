@@ -19,6 +19,9 @@ class _FakeConfigRepository implements PlatformConfigRepository {
         deliveryFeeMinor: 3000,
         driverDeliveryShareMinor: 2500,
       );
+
+  @override
+  Future<PlatformConfig> refresh() => getConfig();
 }
 
 class _FakeAreasRepository implements AreasRepository {

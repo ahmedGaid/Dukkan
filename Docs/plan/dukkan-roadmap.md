@@ -608,8 +608,28 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       indexes deploy + a live device smoke test (activate/suspend ripple to the M9 assignment
       sheet + courier suspended banner, ID-doc upload lands in R2, performance numbers vs. seed
       data) still owed — not run this session. **Next: FC12 (FILE_12) — platform settings.**
-- [ ] **FC12–FC15 — Platform ops.** Settings/flags/maintenance+version gates · notification
+- [~] **FC12–FC15 — Platform ops.** Settings/flags/maintenance+version gates · notification
       center (topics) · media library (R2) · impersonation + dev tools. (FILE_12–15)
+      **FC12 DONE (code) 2026-07-15** (FILE_12) — platform settings. `PlatformConfig` gained
+      additive fields (`minOrderMinor`, `vatBps`, `supportPhone`, `supportWhatsApp`,
+      `businessHoursNote`, `maintenanceMode`, `minSupportedBuild`) + `refresh()`; new
+      `FeatureFlags`/`FlagsRepository` for `/config/flags` (same one-shot+memoized contract).
+      `firestore.rules` `/config` moved from `write: false` to `update: hasPerm('settings.edit')`
+      (create/delete stay false — docs are seeded once). New `AdminSettingsRepository`
+      (+impl+datasource, no Worker route — Firestore-direct + best-effort audit, same shape as
+      `AdminTaxonomyRepositoryImpl`) writing `settings.update`/`flags.update` audit entries with
+      before/after diffs. `console/settings` page: 3 save-group cards (rates+delivery incl.
+      driverShare≤deliveryFee validation, contact, app gates with confirm dialogs on
+      maintenance/min-build) + a feature-flags card (toggle/add/delete), each showing "آخر
+      تعديل" from the newest matching audit entry. App boot gates added to `AppRouter._redirect`
+      (maintenance + minSupportedBuild vs. new `AppConfig.buildNumber`; fail-open on fetch
+      error; staff bypass maintenance) routing to new designed `/maintenance` +
+      `/update-required` pages. Lexicon: وضع الصيانة / خاصية تجريبية added to BRAND.md. 33 i18n
+      keys ×2. `platform_config_test.dart` extended with the FC12 live-shaped-doc parse case.
+      Gates green (analyze 0, test 194/194, parity 565). Rules deploy + a live device smoke
+      test (commission edit → new order snapshots it, maintenance toggle blocks/restores,
+      minSupportedBuild update screen, non-settings.edit staff sees section hidden + rules-
+      denied) still owed — not run this session. **Next: FC13 (FILE_13) — notification center.**
 - [ ] **FC16–FC18 — Growth + close.** Promotions (coupons/banners/featured) · global search +
       CSV exports + reports · acceptance + security matrix + regression. (FILE_16–18)
 

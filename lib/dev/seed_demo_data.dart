@@ -273,9 +273,10 @@ final _shopCollections = <Map<String, dynamic>>[
   {'id': 'col_essentials', 'nameAr': 'أساسيات', 'nameEn': 'Essentials', 'sort': 2},
 ];
 
-/// `/config/platform` (M12) — founder-managed commission/fee rates;
-/// `firestore.rules` denies all client writes (`allow write: if false`),
-/// same relax-then-restore trick as `_seedTaxonomy`. 5% commission, 30 EGP
+/// `/config/platform` + `/config/flags` (M12) — founder-managed rates and
+/// feature switches; `firestore.rules` only allows `settings.edit` staff to
+/// update either (never create/delete), same relax-then-restore trick as
+/// `_seedTaxonomy` for this one-time seed write. 5% commission, 30 EGP
 /// delivery fee with 25 EGP going to the driver (5 EGP platform share).
 Future<void> _seedPlatformConfig(FirebaseFirestore firestore) async {
   await _retryAuthSettle(
@@ -283,7 +284,17 @@ Future<void> _seedPlatformConfig(FirebaseFirestore firestore) async {
       'commissionBps': 500,
       'deliveryFeeMinor': 3000,
       'driverDeliveryShareMinor': 2500,
+      'minOrderMinor': 0,
+      'vatBps': 0,
+      'supportPhone': '',
+      'supportWhatsApp': '',
+      'businessHoursNote': '',
+      'maintenanceMode': false,
+      'minSupportedBuild': 0,
     }),
+  );
+  await _retryAuthSettle(
+    () => firestore.collection('config').doc('flags').set({'flags': {}}),
   );
 }
 

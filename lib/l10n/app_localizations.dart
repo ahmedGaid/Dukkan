@@ -3301,6 +3301,192 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'مفيش طلبات معاه دلوقتي.'**
   String get driverDetailNoAssignedOrders;
+
+  /// No description provided for @consoleNavSettings.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإعدادات'**
+  String get consoleNavSettings;
+
+  /// No description provided for @settingsSaveOk.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم الحفظ'**
+  String get settingsSaveOk;
+
+  /// No description provided for @settingsSaveFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'حصلت مشكلة في الحفظ — جرّب تاني'**
+  String get settingsSaveFailed;
+
+  /// No description provided for @settingsLoadError.
+  ///
+  /// In ar, this message translates to:
+  /// **'مش قادرين نجيب الإعدادات دلوقتي — جرّب تاني'**
+  String get settingsLoadError;
+
+  /// No description provided for @settingsLastEdited.
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر تعديل {when}'**
+  String settingsLastEdited(Object when);
+
+  /// No description provided for @settingsFooterNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'التغييرات بتتطبق على الطلبات الجديدة وأول ما التطبيق يتفتح تاني'**
+  String get settingsFooterNote;
+
+  /// No description provided for @settingsRatesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'العمولة والتوصيل'**
+  String get settingsRatesTitle;
+
+  /// No description provided for @settingsCommissionLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'العمولة (%)'**
+  String get settingsCommissionLabel;
+
+  /// No description provided for @settingsVatLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الضريبة (%)'**
+  String get settingsVatLabel;
+
+  /// No description provided for @settingsDeliveryFeeLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'رسوم التوصيل (جنيه)'**
+  String get settingsDeliveryFeeLabel;
+
+  /// No description provided for @settingsDriverShareLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'نصيب السائق (جنيه)'**
+  String get settingsDriverShareLabel;
+
+  /// No description provided for @settingsMinOrderLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'أقل قيمة للطلب (جنيه)'**
+  String get settingsMinOrderLabel;
+
+  /// No description provided for @settingsDriverShareTooHigh.
+  ///
+  /// In ar, this message translates to:
+  /// **'نصيب السائق مينفعش يبقى أكتر من رسوم التوصيل'**
+  String get settingsDriverShareTooHigh;
+
+  /// No description provided for @settingsContactTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'التواصل'**
+  String get settingsContactTitle;
+
+  /// No description provided for @settingsSupportPhoneLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'تليفون الدعم'**
+  String get settingsSupportPhoneLabel;
+
+  /// No description provided for @settingsSupportWhatsAppLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'واتساب الدعم'**
+  String get settingsSupportWhatsAppLabel;
+
+  /// No description provided for @settingsBusinessHoursLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'مواعيد العمل'**
+  String get settingsBusinessHoursLabel;
+
+  /// No description provided for @settingsAppGatesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'التطبيق'**
+  String get settingsAppGatesTitle;
+
+  /// No description provided for @settingsMaintenanceSwitch.
+  ///
+  /// In ar, this message translates to:
+  /// **'وضع الصيانة'**
+  String get settingsMaintenanceSwitch;
+
+  /// No description provided for @settingsMaintenanceSwitchHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'بيوقف التطبيق لأي حد غير فريق العمل'**
+  String get settingsMaintenanceSwitchHint;
+
+  /// No description provided for @settingsMinBuildLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'أقل نسخة مدعومة'**
+  String get settingsMinBuildLabel;
+
+  /// No description provided for @settingsAppGatesConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'متأكد؟'**
+  String get settingsAppGatesConfirmTitle;
+
+  /// No description provided for @settingsMaintenanceConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفعيل وضع الصيانة هيوقف التطبيق دلوقتي لكل عميل وسائق. فريق العمل بس هيقدر يدخل.'**
+  String get settingsMaintenanceConfirmBody;
+
+  /// No description provided for @settingsMinBuildConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'أي حد بنسخة أقدم هيتطلب منه يحدّث التطبيق الأول عشان يقدر يستخدمه.'**
+  String get settingsMinBuildConfirmBody;
+
+  /// No description provided for @settingsFlagsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'خصائص تجريبية'**
+  String get settingsFlagsTitle;
+
+  /// No description provided for @settingsFlagsEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش خصائص'**
+  String get settingsFlagsEmpty;
+
+  /// No description provided for @settingsAddFlagLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم خاصية جديدة'**
+  String get settingsAddFlagLabel;
+
+  /// No description provided for @maintenanceTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'نرجع لكم حالًا'**
+  String get maintenanceTitle;
+
+  /// No description provided for @maintenanceBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'دكان بياخد نفسه شوية. جرّب تاني بعد كام دقيقة.'**
+  String get maintenanceBody;
+
+  /// No description provided for @updateRequiredTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'محتاجين تحدّث التطبيق'**
+  String get updateRequiredTitle;
+
+  /// No description provided for @updateRequiredBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'حدّث تطبيق دكان من متجر Google Play عشان تكمل تستخدمه.'**
+  String get updateRequiredBody;
 }
 
 class _AppLocalizationsDelegate

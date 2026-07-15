@@ -79,6 +79,12 @@ const consoleSections = <ConsoleSection>[
     labelKey: 'consoleNavDrivers',
     requiredPerm: Permissions.driversManage,
   ),
+  ConsoleSection(
+    route: '/console/settings',
+    icon: Icons.settings_outlined,
+    labelKey: 'consoleNavSettings',
+    requiredPerm: Permissions.settingsEdit,
+  ),
 ];
 
 /// The sections a given staff member may see, in order. Empty for a non-staff

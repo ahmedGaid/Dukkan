@@ -1708,4 +1708,106 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get driverDetailNoAssignedOrders => 'مفيش طلبات معاه دلوقتي.';
+
+  @override
+  String get consoleNavSettings => 'الإعدادات';
+
+  @override
+  String get settingsSaveOk => 'تم الحفظ';
+
+  @override
+  String get settingsSaveFailed => 'حصلت مشكلة في الحفظ — جرّب تاني';
+
+  @override
+  String get settingsLoadError => 'مش قادرين نجيب الإعدادات دلوقتي — جرّب تاني';
+
+  @override
+  String settingsLastEdited(Object when) {
+    return 'آخر تعديل $when';
+  }
+
+  @override
+  String get settingsFooterNote =>
+      'التغييرات بتتطبق على الطلبات الجديدة وأول ما التطبيق يتفتح تاني';
+
+  @override
+  String get settingsRatesTitle => 'العمولة والتوصيل';
+
+  @override
+  String get settingsCommissionLabel => 'العمولة (%)';
+
+  @override
+  String get settingsVatLabel => 'الضريبة (%)';
+
+  @override
+  String get settingsDeliveryFeeLabel => 'رسوم التوصيل (جنيه)';
+
+  @override
+  String get settingsDriverShareLabel => 'نصيب السائق (جنيه)';
+
+  @override
+  String get settingsMinOrderLabel => 'أقل قيمة للطلب (جنيه)';
+
+  @override
+  String get settingsDriverShareTooHigh =>
+      'نصيب السائق مينفعش يبقى أكتر من رسوم التوصيل';
+
+  @override
+  String get settingsContactTitle => 'التواصل';
+
+  @override
+  String get settingsSupportPhoneLabel => 'تليفون الدعم';
+
+  @override
+  String get settingsSupportWhatsAppLabel => 'واتساب الدعم';
+
+  @override
+  String get settingsBusinessHoursLabel => 'مواعيد العمل';
+
+  @override
+  String get settingsAppGatesTitle => 'التطبيق';
+
+  @override
+  String get settingsMaintenanceSwitch => 'وضع الصيانة';
+
+  @override
+  String get settingsMaintenanceSwitchHint =>
+      'بيوقف التطبيق لأي حد غير فريق العمل';
+
+  @override
+  String get settingsMinBuildLabel => 'أقل نسخة مدعومة';
+
+  @override
+  String get settingsAppGatesConfirmTitle => 'متأكد؟';
+
+  @override
+  String get settingsMaintenanceConfirmBody =>
+      'تفعيل وضع الصيانة هيوقف التطبيق دلوقتي لكل عميل وسائق. فريق العمل بس هيقدر يدخل.';
+
+  @override
+  String get settingsMinBuildConfirmBody =>
+      'أي حد بنسخة أقدم هيتطلب منه يحدّث التطبيق الأول عشان يقدر يستخدمه.';
+
+  @override
+  String get settingsFlagsTitle => 'خصائص تجريبية';
+
+  @override
+  String get settingsFlagsEmpty => 'لسه مفيش خصائص';
+
+  @override
+  String get settingsAddFlagLabel => 'اسم خاصية جديدة';
+
+  @override
+  String get maintenanceTitle => 'نرجع لكم حالًا';
+
+  @override
+  String get maintenanceBody =>
+      'دكان بياخد نفسه شوية. جرّب تاني بعد كام دقيقة.';
+
+  @override
+  String get updateRequiredTitle => 'محتاجين تحدّث التطبيق';
+
+  @override
+  String get updateRequiredBody =>
+      'حدّث تطبيق دكان من متجر Google Play عشان تكمل تستخدمه.';
 }

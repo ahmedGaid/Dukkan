@@ -6,4 +6,8 @@ import '../entities/platform_config.dart';
 /// app session so a checkout never pays a round-trip for it.
 abstract class PlatformConfigRepository {
   Future<PlatformConfig> getConfig();
+
+  /// Clears the memo and refetches — called after a console save so the same
+  /// app process sees its own write immediately, without a restart.
+  Future<PlatformConfig> refresh();
 }

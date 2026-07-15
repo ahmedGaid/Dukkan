@@ -20,6 +20,11 @@ class AppConfig {
   /// (kept lean), so the two are synced by hand.
   static const String version = '1.0.0';
 
+  /// The `+N` build number from pubspec `version: x.y.z+N` (currently `+1`).
+  /// Compared against `PlatformConfig.minSupportedBuild` at boot (M12 Task D)
+  /// — same hand-sync note as [version].
+  static const int buildNumber = 1;
+
   static const String _stub = 'https://REPLACE-ME.workers.dev';
 
   static const String workerBaseUrl =

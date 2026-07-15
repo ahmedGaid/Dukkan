@@ -10,6 +10,7 @@ import '../../data/admin/datasources/admin_drivers_remote_datasource.dart';
 import '../../data/admin/datasources/admin_geo_remote_datasource.dart';
 import '../../data/admin/datasources/admin_orders_remote_datasource.dart';
 import '../../data/admin/datasources/admin_products_remote_datasource.dart';
+import '../../data/admin/datasources/admin_settings_remote_datasource.dart';
 import '../../data/admin/datasources/admin_shops_remote_datasource.dart';
 import '../../data/admin/datasources/admin_taxonomy_remote_datasource.dart';
 import '../../data/admin/datasources/admin_users_remote_datasource.dart';
@@ -18,6 +19,7 @@ import '../../data/admin/repositories/admin_geo_repository_impl.dart';
 import '../../data/admin/repositories/admin_orders_repository_impl.dart';
 import '../../data/admin/repositories/admin_products_repository_impl.dart';
 import '../../data/admin/repositories/admin_repository_impl.dart';
+import '../../data/admin/repositories/admin_settings_repository_impl.dart';
 import '../../data/admin/repositories/admin_shops_repository_impl.dart';
 import '../../data/admin/repositories/admin_taxonomy_repository_impl.dart';
 import '../../data/admin/repositories/admin_user_actions_impl.dart';
@@ -33,7 +35,9 @@ import '../../data/auth/datasources/auth_remote_datasource.dart';
 import '../../data/auth/repositories/auth_repository_impl.dart';
 import '../../data/collections/datasources/collections_remote_datasource.dart';
 import '../../data/collections/repositories/collections_repository_impl.dart';
+import '../../data/config/datasources/flags_remote_datasource.dart';
 import '../../data/config/datasources/platform_config_remote_datasource.dart';
+import '../../data/config/repositories/flags_repository_impl.dart';
 import '../../data/config/repositories/platform_config_repository_impl.dart';
 import '../../data/driver/datasources/driver_remote_datasource.dart';
 import '../../data/driver/repositories/driver_repository_impl.dart';
@@ -61,6 +65,7 @@ import '../../domain/admin/repositories/admin_geo_repository.dart';
 import '../../domain/admin/repositories/admin_orders_repository.dart';
 import '../../domain/admin/repositories/admin_products_repository.dart';
 import '../../domain/admin/repositories/admin_repository.dart';
+import '../../domain/admin/repositories/admin_settings_repository.dart';
 import '../../domain/admin/repositories/admin_shops_repository.dart';
 import '../../domain/admin/repositories/admin_taxonomy_repository.dart';
 import '../../domain/admin/repositories/admin_user_actions.dart';
@@ -100,6 +105,9 @@ import '../../domain/admin/usecases/hard_delete_product.dart';
 import '../../domain/admin/usecases/lookup_user_auth.dart';
 import '../../domain/admin/usecases/reassign_order_driver.dart';
 import '../../domain/admin/usecases/remove_admin.dart';
+import '../../domain/admin/usecases/delete_feature_flag.dart';
+import '../../domain/admin/usecases/set_feature_flag.dart';
+import '../../domain/admin/usecases/update_settings_fields.dart';
 import '../../domain/admin/usecases/reset_admin_profile.dart';
 import '../../domain/admin/usecases/restore_product.dart';
 import '../../domain/admin/usecases/restore_shop.dart';
@@ -144,8 +152,12 @@ import '../../domain/collections/usecases/delete_collection.dart';
 import '../../domain/collections/usecases/get_collections.dart';
 import '../../domain/collections/usecases/rename_collection.dart';
 import '../../domain/collections/usecases/watch_collections.dart';
+import '../../domain/config/repositories/flags_repository.dart';
 import '../../domain/config/repositories/platform_config_repository.dart';
+import '../../domain/config/usecases/get_feature_flags.dart';
 import '../../domain/config/usecases/get_platform_config.dart';
+import '../../domain/config/usecases/refresh_feature_flags.dart';
+import '../../domain/config/usecases/refresh_platform_config.dart';
 import '../../domain/driver/entities/driver.dart';
 import '../../domain/driver/repositories/driver_repository.dart';
 import '../../domain/driver/usecases/assign_driver.dart';
@@ -200,6 +212,7 @@ import '../../presentation/console/drivers/bloc/drivers_board_bloc.dart';
 import '../../presentation/console/geo/bloc/geo_board_bloc.dart';
 import '../../presentation/console/orders/bloc/orders_board_bloc.dart';
 import '../../presentation/console/products/bloc/products_board_bloc.dart';
+import '../../presentation/console/settings/bloc/settings_bloc.dart';
 import '../../presentation/console/shops/bloc/shop_detail_bloc.dart';
 import '../../presentation/console/shops/bloc/shops_board_bloc.dart';
 import '../../presentation/console/taxonomy/bloc/taxonomy_board_bloc.dart';
@@ -461,6 +474,33 @@ Future<void> initDependencies() async {
     ),
   );
 
+  // Platform settings admin (Founder Console session 12). Both
+  // `/config/platform` and `/config/flags` writes are Firestore-direct,
+  // gated by the `settings.edit` rules branch — same shape as
+  // AdminTaxonomyRepository.
+  sl.registerLazySingleton(
+    () => AdminSettingsRemoteDataSource(firestore: sl()),
+  );
+  sl.registerLazySingleton<AdminSettingsRepository>(
+    () => AdminSettingsRepositoryImpl(sl(), sl()),
+  );
+  sl.registerLazySingleton(() => UpdateSettingsFields(sl()));
+  sl.registerLazySingleton(() => SetFeatureFlag(sl()));
+  sl.registerLazySingleton(() => DeleteFeatureFlag(sl()));
+
+  // Platform settings — bloc (page-scoped: one load per /console/settings
+  // open).
+  sl.registerFactory(() => SettingsBloc(
+        getPlatformConfig: sl(),
+        refreshPlatformConfig: sl(),
+        getFeatureFlags: sl(),
+        refreshFeatureFlags: sl(),
+        getAuditEntries: sl(),
+        updateSettingsFields: sl(),
+        setFeatureFlag: sl(),
+        deleteFeatureFlag: sl(),
+      ));
+
   // Auth — bloc (app lifetime; createDriverProfile only fires for a courier
   // signup, see AuthBloc._onSignUpRequested; getAdminProfile enriches the
   // session with the staff profile, resetAdminProfile clears it on sign-out)
@@ -599,8 +639,16 @@ Future<void> initDependencies() async {
     () => PlatformConfigRepositoryImpl(sl()),
   );
 
-  // Platform config — use case
+  // Platform config — use cases
   sl.registerLazySingleton(() => GetPlatformConfig(sl()));
+  sl.registerLazySingleton(() => RefreshPlatformConfig(sl()));
+
+  // Feature flags — data (`/config/flags`, M12; same one-shot + memoized
+  // contract as platform config).
+  sl.registerLazySingleton(() => FlagsRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<FlagsRepository>(() => FlagsRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => GetFeatureFlags(sl()));
+  sl.registerLazySingleton(() => RefreshFeatureFlags(sl()));
 
   // Finance — data (founder-only cross-shop aggregate reads, M13; always a
   // fresh remote read, no cache — mirrors Order's no-offline-branch contract).

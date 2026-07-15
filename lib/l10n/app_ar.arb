@@ -610,5 +610,44 @@
   "driverDetailDeliveredThisMonth": "التوصيلات الشهر ده",
   "driverDetailDeliveredTotal": "إجمالي التوصيلات",
   "driverDetailAssignedOrdersTitle": "الطلبات الحالية",
-  "driverDetailNoAssignedOrders": "مفيش طلبات معاه دلوقتي."
+  "driverDetailNoAssignedOrders": "مفيش طلبات معاه دلوقتي.",
+
+  "consoleNavSettings": "الإعدادات",
+
+  "settingsSaveOk": "تم الحفظ",
+  "settingsSaveFailed": "حصلت مشكلة في الحفظ — جرّب تاني",
+  "settingsLoadError": "مش قادرين نجيب الإعدادات دلوقتي — جرّب تاني",
+  "settingsLastEdited": "آخر تعديل {when}",
+  "settingsFooterNote": "التغييرات بتتطبق على الطلبات الجديدة وأول ما التطبيق يتفتح تاني",
+
+  "settingsRatesTitle": "العمولة والتوصيل",
+  "settingsCommissionLabel": "العمولة (%)",
+  "settingsVatLabel": "الضريبة (%)",
+  "settingsDeliveryFeeLabel": "رسوم التوصيل (جنيه)",
+  "settingsDriverShareLabel": "نصيب السائق (جنيه)",
+  "settingsMinOrderLabel": "أقل قيمة للطلب (جنيه)",
+  "settingsDriverShareTooHigh": "نصيب السائق مينفعش يبقى أكتر من رسوم التوصيل",
+
+  "settingsContactTitle": "التواصل",
+  "settingsSupportPhoneLabel": "تليفون الدعم",
+  "settingsSupportWhatsAppLabel": "واتساب الدعم",
+  "settingsBusinessHoursLabel": "مواعيد العمل",
+
+  "settingsAppGatesTitle": "التطبيق",
+  "settingsMaintenanceSwitch": "وضع الصيانة",
+  "settingsMaintenanceSwitchHint": "بيوقف التطبيق لأي حد غير فريق العمل",
+  "settingsMinBuildLabel": "أقل نسخة مدعومة",
+  "settingsAppGatesConfirmTitle": "متأكد؟",
+  "settingsMaintenanceConfirmBody": "تفعيل وضع الصيانة هيوقف التطبيق دلوقتي لكل عميل وسائق. فريق العمل بس هيقدر يدخل.",
+  "settingsMinBuildConfirmBody": "أي حد بنسخة أقدم هيتطلب منه يحدّث التطبيق الأول عشان يقدر يستخدمه.",
+
+  "settingsFlagsTitle": "خصائص تجريبية",
+  "settingsFlagsEmpty": "لسه مفيش خصائص",
+  "settingsAddFlagLabel": "اسم خاصية جديدة",
+
+  "maintenanceTitle": "نرجع لكم حالًا",
+  "maintenanceBody": "دكان بياخد نفسه شوية. جرّب تاني بعد كام دقيقة.",
+
+  "updateRequiredTitle": "محتاجين تحدّث التطبيق",
+  "updateRequiredBody": "حدّث تطبيق دكان من متجر Google Play عشان تكمل تستخدمه."
 }

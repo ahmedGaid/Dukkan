@@ -15,6 +15,7 @@ import '../../presentation/console/drivers/pages/driver_detail_page.dart';
 import '../../presentation/console/drivers/pages/drivers_board_page.dart';
 import '../../presentation/console/geo/pages/geo_board_page.dart';
 import '../../presentation/console/orders/pages/orders_board_page.dart';
+import '../../presentation/console/settings/pages/settings_page.dart';
 import '../../presentation/console/shell/console_sections.dart';
 import '../../presentation/console/shell/console_shell.dart';
 import '../../presentation/console/products/pages/products_board_page.dart';
@@ -25,9 +26,13 @@ import '../../presentation/console/taxonomy/pages/taxonomy_board_page.dart';
 import '../../presentation/console/users/pages/user_detail_page.dart';
 import '../../presentation/console/users/pages/users_list_page.dart';
 import '../../presentation/finance/pages/finance_page.dart';
+import '../../presentation/gates/pages/maintenance_page.dart';
+import '../../presentation/gates/pages/update_required_page.dart';
 import '../../domain/admin/entities/admin_profile.dart';
 import '../../domain/admin/entities/permissions.dart';
 import '../../domain/auth/entities/user_role.dart';
+import '../../domain/config/entities/platform_config.dart';
+import '../../domain/config/usecases/get_platform_config.dart';
 import '../../domain/order/entities/order.dart';
 import '../../domain/driver/entities/driver.dart';
 import '../../domain/product/entities/product.dart';
@@ -136,6 +141,14 @@ class AppRouter {
         path: '/finance',
         builder: (context, state) => const FinancePage(),
       ),
+      GoRoute(
+        path: '/maintenance',
+        builder: (context, state) => const MaintenancePage(),
+      ),
+      GoRoute(
+        path: '/update-required',
+        builder: (context, state) => const UpdateRequiredPage(),
+      ),
       // Founder Console (Phase 7). Desktop-first back office behind an admin
       // guard (see `_redirect`). The shell hosts one child per vertical; routes
       // land across sessions 03–17.
@@ -219,6 +232,12 @@ class AppRouter {
             builder: (context, state) =>
                 DriverDetailPage(seed: state.extra as Driver?),
           ),
+          // Platform settings (FILE_12). Gated by `settings.edit` in the
+          // console menu + Firestore rules.
+          GoRoute(
+            path: '/console/settings',
+            builder: (context, state) => const SettingsPage(),
+          ),
         ],
       ),
       GoRoute(
@@ -249,6 +268,31 @@ class AppRouter {
       case SessionStatus.unauthenticated:
         return _authPages.contains(location) ? null : '/login';
       case SessionStatus.authenticated:
+        // Boot gates (M12 Task D) — maintenance + minimum supported build,
+        // checked once per redirect (not on every rebuild). Fail-open: any
+        // config fetch error skips both gates rather than ever locking users
+        // out on a network blip. Staff bypass maintenance — they need the
+        // app working DURING maintenance to fix things; order matters:
+        // maintenance is checked first, then version.
+        PlatformConfig? gateConfig;
+        try {
+          gateConfig = await sl<GetPlatformConfig>()();
+        } catch (_) {
+          gateConfig = null;
+        }
+        if (gateConfig != null) {
+          final gateAdmin = _authBloc.state.adminProfile;
+          final isStaff = gateAdmin != null && gateAdmin.isActive;
+          if (gateConfig.maintenanceMode && !isStaff) {
+            return location == '/maintenance' ? null : '/maintenance';
+          }
+          if (AppConfig.buildNumber < gateConfig.minSupportedBuild) {
+            return location == '/update-required' ? null : '/update-required';
+          }
+        }
+        if (location == '/maintenance' || location == '/update-required') {
+          return '/home';
+        }
         // Finance summary (M13) — permission-gated (Founder Console RBAC).
         // Bounces anyone without `finance.read`; the founder uid stays as a
         // break-glass fallback until `/admins` seeding is verified on device.

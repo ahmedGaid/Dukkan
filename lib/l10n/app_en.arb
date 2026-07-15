@@ -583,5 +583,44 @@
   "driverDetailDeliveredThisMonth": "Delivered this month",
   "driverDetailDeliveredTotal": "Total delivered",
   "driverDetailAssignedOrdersTitle": "Current orders",
-  "driverDetailNoAssignedOrders": "No orders assigned right now."
+  "driverDetailNoAssignedOrders": "No orders assigned right now.",
+
+  "consoleNavSettings": "Settings",
+
+  "settingsSaveOk": "Saved",
+  "settingsSaveFailed": "We couldn't save — try again.",
+  "settingsLoadError": "We can't load settings right now — try again.",
+  "settingsLastEdited": "Last edited {when}",
+  "settingsFooterNote": "Changes take effect for new orders and the next app open.",
+
+  "settingsRatesTitle": "Commission & delivery",
+  "settingsCommissionLabel": "Commission (%)",
+  "settingsVatLabel": "VAT (%)",
+  "settingsDeliveryFeeLabel": "Delivery fee (EGP)",
+  "settingsDriverShareLabel": "Driver's share (EGP)",
+  "settingsMinOrderLabel": "Minimum order (EGP)",
+  "settingsDriverShareTooHigh": "Driver's share can't be more than the delivery fee.",
+
+  "settingsContactTitle": "Contact",
+  "settingsSupportPhoneLabel": "Support phone",
+  "settingsSupportWhatsAppLabel": "Support WhatsApp",
+  "settingsBusinessHoursLabel": "Business hours note",
+
+  "settingsAppGatesTitle": "App",
+  "settingsMaintenanceSwitch": "Maintenance mode",
+  "settingsMaintenanceSwitchHint": "Blocks the app for everyone except staff.",
+  "settingsMinBuildLabel": "Minimum supported build",
+  "settingsAppGatesConfirmTitle": "Are you sure?",
+  "settingsMaintenanceConfirmBody": "Turning maintenance mode on blocks the app for every customer and courier right now. Staff can still get in.",
+  "settingsMinBuildConfirmBody": "Anyone on an older build will be asked to update before they can use the app.",
+
+  "settingsFlagsTitle": "Feature flags",
+  "settingsFlagsEmpty": "No flags yet.",
+  "settingsAddFlagLabel": "New flag key",
+
+  "maintenanceTitle": "We'll be right back",
+  "maintenanceBody": "Dukkan is getting a quick tune-up. Try again in a few minutes.",
+
+  "updateRequiredTitle": "Update needed",
+  "updateRequiredBody": "Please update Dukkan from the Play Store to keep using the app."
 }

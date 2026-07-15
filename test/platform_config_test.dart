@@ -1,7 +1,29 @@
+import 'package:dukkan/data/config/models/platform_config_model.dart';
 import 'package:dukkan/domain/config/entities/platform_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('PlatformConfigModel.fromFirestore (M12 Task A, additive fields)', () {
+    test('a live doc with only the 3 original M12 fields parses with defaults', () {
+      final config = PlatformConfigModel.fromFirestore({
+        'commissionBps': 500,
+        'deliveryFeeMinor': 3000,
+        'driverDeliveryShareMinor': 2500,
+      });
+
+      expect(config.commissionBps, 500);
+      expect(config.deliveryFeeMinor, 3000);
+      expect(config.driverDeliveryShareMinor, 2500);
+      expect(config.minOrderMinor, 0);
+      expect(config.vatBps, 0);
+      expect(config.supportPhone, '');
+      expect(config.supportWhatsApp, '');
+      expect(config.businessHoursNote, '');
+      expect(config.maintenanceMode, false);
+      expect(config.minSupportedBuild, 0);
+    });
+  });
+
   group('PlatformConfig.commissionForSubtotal (M12, round-half-up)', () {
     const config = PlatformConfig(
       commissionBps: 500, // 5%

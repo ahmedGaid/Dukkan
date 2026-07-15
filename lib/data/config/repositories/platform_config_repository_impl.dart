@@ -19,6 +19,11 @@ class PlatformConfigRepositoryImpl implements PlatformConfigRepository {
   Future<PlatformConfig> getConfig() async {
     final cached = _cached;
     if (cached != null) return cached;
+    return refresh();
+  }
+
+  @override
+  Future<PlatformConfig> refresh() async {
     final config = await _remote.getConfig();
     _cached = config;
     return config;

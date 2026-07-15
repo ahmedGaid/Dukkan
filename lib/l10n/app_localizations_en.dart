@@ -1743,4 +1743,107 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get driverDetailNoAssignedOrders => 'No orders assigned right now.';
+
+  @override
+  String get consoleNavSettings => 'Settings';
+
+  @override
+  String get settingsSaveOk => 'Saved';
+
+  @override
+  String get settingsSaveFailed => 'We couldn\'t save — try again.';
+
+  @override
+  String get settingsLoadError =>
+      'We can\'t load settings right now — try again.';
+
+  @override
+  String settingsLastEdited(Object when) {
+    return 'Last edited $when';
+  }
+
+  @override
+  String get settingsFooterNote =>
+      'Changes take effect for new orders and the next app open.';
+
+  @override
+  String get settingsRatesTitle => 'Commission & delivery';
+
+  @override
+  String get settingsCommissionLabel => 'Commission (%)';
+
+  @override
+  String get settingsVatLabel => 'VAT (%)';
+
+  @override
+  String get settingsDeliveryFeeLabel => 'Delivery fee (EGP)';
+
+  @override
+  String get settingsDriverShareLabel => 'Driver\'s share (EGP)';
+
+  @override
+  String get settingsMinOrderLabel => 'Minimum order (EGP)';
+
+  @override
+  String get settingsDriverShareTooHigh =>
+      'Driver\'s share can\'t be more than the delivery fee.';
+
+  @override
+  String get settingsContactTitle => 'Contact';
+
+  @override
+  String get settingsSupportPhoneLabel => 'Support phone';
+
+  @override
+  String get settingsSupportWhatsAppLabel => 'Support WhatsApp';
+
+  @override
+  String get settingsBusinessHoursLabel => 'Business hours note';
+
+  @override
+  String get settingsAppGatesTitle => 'App';
+
+  @override
+  String get settingsMaintenanceSwitch => 'Maintenance mode';
+
+  @override
+  String get settingsMaintenanceSwitchHint =>
+      'Blocks the app for everyone except staff.';
+
+  @override
+  String get settingsMinBuildLabel => 'Minimum supported build';
+
+  @override
+  String get settingsAppGatesConfirmTitle => 'Are you sure?';
+
+  @override
+  String get settingsMaintenanceConfirmBody =>
+      'Turning maintenance mode on blocks the app for every customer and courier right now. Staff can still get in.';
+
+  @override
+  String get settingsMinBuildConfirmBody =>
+      'Anyone on an older build will be asked to update before they can use the app.';
+
+  @override
+  String get settingsFlagsTitle => 'Feature flags';
+
+  @override
+  String get settingsFlagsEmpty => 'No flags yet.';
+
+  @override
+  String get settingsAddFlagLabel => 'New flag key';
+
+  @override
+  String get maintenanceTitle => 'We\'ll be right back';
+
+  @override
+  String get maintenanceBody =>
+      'Dukkan is getting a quick tune-up. Try again in a few minutes.';
+
+  @override
+  String get updateRequiredTitle => 'Update needed';
+
+  @override
+  String get updateRequiredBody =>
+      'Please update Dukkan from the Play Store to keep using the app.';
 }
