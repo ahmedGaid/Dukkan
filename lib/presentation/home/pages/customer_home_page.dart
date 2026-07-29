@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/di/injector.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../domain/promos/entities/promo_banner.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/common/cart_icon_button.dart';
 import '../../widgets/common/empty_state.dart';
@@ -151,13 +152,14 @@ class _HomeContent extends StatelessWidget {
           AppSpacing.xl,
         ),
         children: [
-          if (state.promoProducts.isNotEmpty)
+          if (state.carouselItems.isNotEmpty)
             PromoCarousel(
-              products: state.promoProducts,
-              onTap: (product) => context.push(
+              items: state.carouselItems,
+              onProductTap: (product) => context.push(
                 '/shop/${product.shopId}/product/${product.id}',
                 extra: product,
               ),
+              onBannerTap: (banner) => _openBanner(context, banner),
             ),
           if (state.categories.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.lg),
@@ -168,6 +170,18 @@ class _HomeContent extends StatelessWidget {
               selected: state.selectedCategory,
               onSelect: (c) => bloc.add(ShopsCategorySelected(c)),
             ),
+          ],
+          if (state.featuredShops.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.lg),
+            _SectionTitle(l10n.sectionFeaturedShops),
+            const SizedBox(height: AppSpacing.md),
+            for (final shop in state.featuredShops) ...[
+              ShopCard(
+                shop: shop,
+                onTap: () => context.push('/shop/${shop.id}'),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
           ],
           const SizedBox(height: AppSpacing.lg),
           _SectionTitle(l10n.sectionNearbyShops),
@@ -188,6 +202,25 @@ class _HomeContent extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// FC16 Task B — a `shop`/`product` banner navigates using its denormalized
+/// target ids (no extra lookup); `none` is unreachable since the card itself
+/// is untappable for that target type (see `_BannerCard`).
+void _openBanner(BuildContext context, PromoBanner banner) {
+  switch (banner.targetType) {
+    case BannerTargetType.shop:
+      final shopId = banner.targetId;
+      if (shopId != null) context.push('/shop/$shopId');
+    case BannerTargetType.product:
+      final productId = banner.targetId;
+      final shopId = banner.targetShopId;
+      if (productId != null && shopId != null) {
+        context.push('/shop/$shopId/product/$productId');
+      }
+    case BannerTargetType.none:
+      break;
   }
 }
 

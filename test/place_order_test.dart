@@ -8,6 +8,8 @@ import 'package:dukkan/domain/order/entities/order_item.dart';
 import 'package:dukkan/domain/order/entities/order_status.dart';
 import 'package:dukkan/domain/order/repositories/order_repository.dart';
 import 'package:dukkan/domain/order/usecases/place_order.dart';
+import 'package:dukkan/domain/promos/entities/coupon.dart';
+import 'package:dukkan/domain/promos/repositories/coupon_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _FakeConfigRepository implements PlatformConfigRepository {
@@ -52,11 +54,16 @@ class _CapturingOrderRepository implements OrderRepository {
     required int platformDeliveryShareMinor,
     required int totalMinor,
     String? notes,
+    String? couponCode,
+    int discountMinor = 0,
   }) async {
     lastCall = {
       'deliveryFeeMinor': deliveryFeeMinor,
       'totalMinor': totalMinor,
       'subtotalMinor': subtotalMinor,
+      'commissionMinor': commissionMinor,
+      'couponCode': couponCode,
+      'discountMinor': discountMinor,
     };
     return Order(
       id: 'o1',
@@ -92,6 +99,18 @@ class _CapturingOrderRepository implements OrderRepository {
   }) async {}
 }
 
+class _FakeCouponRepository implements CouponRepository {
+  String? redeemedCode;
+
+  @override
+  Future<Coupon?> getByCode(String code) async => null;
+
+  @override
+  Future<void> redeem(String code) async {
+    redeemedCode = code;
+  }
+}
+
 void main() {
   const items = [
     OrderItem(productId: 'p1', name: 'Item', nameAr: 'منتج', priceMinor: 1000, quantity: 2),
@@ -99,7 +118,12 @@ void main() {
 
   test('no areaId falls back to the platform default fee', () async {
     final repo = _CapturingOrderRepository();
-    final placeOrder = PlaceOrder(repo, const _FakeConfigRepository(), const _FakeAreasRepository([]));
+    final placeOrder = PlaceOrder(
+      repo,
+      const _FakeConfigRepository(),
+      const _FakeAreasRepository([]),
+      _FakeCouponRepository(),
+    );
 
     await placeOrder(
       shopId: 's1',
@@ -115,7 +139,12 @@ void main() {
   test('an area with no override falls back to the platform default fee', () async {
     final repo = _CapturingOrderRepository();
     final areas = [const Area(id: 'abu-atwa', nameAr: 'أبو عطوة', nameEn: 'Abu Atwa', sort: 1)];
-    final placeOrder = PlaceOrder(repo, const _FakeConfigRepository(), _FakeAreasRepository(areas));
+    final placeOrder = PlaceOrder(
+      repo,
+      const _FakeConfigRepository(),
+      _FakeAreasRepository(areas),
+      _FakeCouponRepository(),
+    );
 
     await placeOrder(
       shopId: 's1',
@@ -138,7 +167,12 @@ void main() {
         deliveryFeeMinorOverride: 5000,
       ),
     ];
-    final placeOrder = PlaceOrder(repo, const _FakeConfigRepository(), _FakeAreasRepository(areas));
+    final placeOrder = PlaceOrder(
+      repo,
+      const _FakeConfigRepository(),
+      _FakeAreasRepository(areas),
+      _FakeCouponRepository(),
+    );
 
     await placeOrder(
       shopId: 's1',
@@ -153,7 +187,12 @@ void main() {
 
   test('an unknown areaId falls back to the platform default fee', () async {
     final repo = _CapturingOrderRepository();
-    final placeOrder = PlaceOrder(repo, const _FakeConfigRepository(), const _FakeAreasRepository([]));
+    final placeOrder = PlaceOrder(
+      repo,
+      const _FakeConfigRepository(),
+      const _FakeAreasRepository([]),
+      _FakeCouponRepository(),
+    );
 
     await placeOrder(
       shopId: 's1',
@@ -163,5 +202,86 @@ void main() {
     );
 
     expect(repo.lastCall!['deliveryFeeMinor'], 3000);
+  });
+
+  test('a percent coupon discounts pre-commission, redeems after order create (FC16)', () async {
+    final repo = _CapturingOrderRepository();
+    final coupons = _FakeCouponRepository();
+    final placeOrder = PlaceOrder(
+      repo,
+      const _FakeConfigRepository(),
+      const _FakeAreasRepository([]),
+      coupons,
+    );
+    // subtotal 2000, 10% (1000 bps) -> round-half-up(2000*1000+5000)/10000 = 200.
+    const coupon = Coupon(
+      code: 'SAVE10',
+      type: CouponType.percent,
+      valueBps: 1000,
+      minOrderMinor: 0,
+    );
+
+    await placeOrder(
+      shopId: 's1',
+      customerUid: 'u1',
+      items: items,
+      deliveryAddress: const Address(line1: 'Street 1', city: 'Cairo'),
+      coupon: coupon,
+    );
+
+    expect(repo.lastCall!['discountMinor'], 200);
+    expect(repo.lastCall!['couponCode'], 'SAVE10');
+    expect(repo.lastCall!['commissionMinor'], 100); // 5% of the 2000 subtotal, unaffected
+    expect(repo.lastCall!['totalMinor'], 2000 + 3000 - 200);
+    expect(coupons.redeemedCode, 'SAVE10');
+  });
+
+  test('a fixed coupon larger than the subtotal clamps to the subtotal (FC16)', () async {
+    final repo = _CapturingOrderRepository();
+    final placeOrder = PlaceOrder(
+      repo,
+      const _FakeConfigRepository(),
+      const _FakeAreasRepository([]),
+      _FakeCouponRepository(),
+    );
+    const coupon = Coupon(
+      code: 'BIG',
+      type: CouponType.fixed,
+      valueMinor: 999999,
+      minOrderMinor: 0,
+    );
+
+    await placeOrder(
+      shopId: 's1',
+      customerUid: 'u1',
+      items: items,
+      deliveryAddress: const Address(line1: 'Street 1', city: 'Cairo'),
+      coupon: coupon,
+    );
+
+    expect(repo.lastCall!['discountMinor'], 2000);
+    expect(repo.lastCall!['totalMinor'], 3000); // subtotal fully discounted, only delivery fee left
+  });
+
+  test('no coupon leaves discountMinor/couponCode untouched', () async {
+    final repo = _CapturingOrderRepository();
+    final coupons = _FakeCouponRepository();
+    final placeOrder = PlaceOrder(
+      repo,
+      const _FakeConfigRepository(),
+      const _FakeAreasRepository([]),
+      coupons,
+    );
+
+    await placeOrder(
+      shopId: 's1',
+      customerUid: 'u1',
+      items: items,
+      deliveryAddress: const Address(line1: 'Street 1', city: 'Cairo'),
+    );
+
+    expect(repo.lastCall!['discountMinor'], 0);
+    expect(repo.lastCall!['couponCode'], isNull);
+    expect(coupons.redeemedCode, isNull);
   });
 }

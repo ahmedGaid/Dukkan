@@ -16,6 +16,9 @@ import '../../../domain/notifications/usecases/notify_order_event.dart';
 import '../../../domain/order/entities/address.dart';
 import '../../../domain/order/entities/order_item.dart';
 import '../../../domain/order/usecases/place_order.dart';
+import '../../../domain/promos/coupon_discount.dart';
+import '../../../domain/promos/entities/coupon.dart';
+import '../../../domain/promos/usecases/get_coupon_by_code.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../widgets/common/app_button.dart';
@@ -42,15 +45,72 @@ class _CheckoutPageState extends State<CheckoutPage> {
   final _notesController = TextEditingController();
   late Future<List<Area>> _areasFuture = sl<GetAreas>()();
   final Future<PlatformConfig> _configFuture = sl<GetPlatformConfig>()();
+  final _couponController = TextEditingController();
   String? _areaId;
   bool _submitting = false;
+
+  Coupon? _appliedCoupon;
+  int _discountMinor = 0;
+  bool _couponChecking = false;
+  String? _couponErrorKey;
 
   @override
   void dispose() {
     _addressController.dispose();
     _cityController.dispose();
     _notesController.dispose();
+    _couponController.dispose();
     super.dispose();
+  }
+
+  Future<void> _applyCoupon(int subtotalMinor) async {
+    final code = _couponController.text.trim().toUpperCase();
+    if (code.isEmpty) return;
+    setState(() {
+      _couponChecking = true;
+      _couponErrorKey = null;
+    });
+    try {
+      final coupon = await sl<GetCouponByCode>()(code);
+      if (coupon == null) {
+        setState(() {
+          _couponErrorKey = 'notFound';
+          _couponChecking = false;
+        });
+        return;
+      }
+      final reason = CouponDiscount.validate(
+        coupon,
+        subtotalMinor: subtotalMinor,
+        now: DateTime.now(),
+      );
+      if (reason != null) {
+        setState(() {
+          _couponErrorKey = reason.name;
+          _couponChecking = false;
+        });
+        return;
+      }
+      setState(() {
+        _appliedCoupon = coupon;
+        _discountMinor = CouponDiscount.computeDiscountMinor(coupon, subtotalMinor);
+        _couponChecking = false;
+      });
+    } catch (_) {
+      setState(() {
+        _couponErrorKey = 'unknown';
+        _couponChecking = false;
+      });
+    }
+  }
+
+  void _removeCoupon() {
+    setState(() {
+      _appliedCoupon = null;
+      _discountMinor = 0;
+      _couponController.clear();
+      _couponErrorKey = null;
+    });
   }
 
   Future<void> _submit(CartState cart) async {
@@ -81,6 +141,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           notes: notes.isEmpty ? null : notes,
           areaId: _areaId,
         ),
+        coupon: _appliedCoupon,
       );
       _notifyShopOwner(order.id);
       if (!mounted) return;
@@ -156,9 +217,25 @@ class _CheckoutPageState extends State<CheckoutPage> {
               textInputAction: TextInputAction.done,
             ),
             const SizedBox(height: AppSpacing.md),
+            Text(l10n.checkoutCouponSection, style: text.titleSmall),
+            const SizedBox(height: AppSpacing.sm),
+            _CouponField(
+              controller: _couponController,
+              applied: _appliedCoupon,
+              discountMinor: _discountMinor,
+              checking: _couponChecking,
+              errorKey: _couponErrorKey,
+              onApply: () => _applyCoupon(cart.totalMinor),
+              onRemove: _removeCoupon,
+            ),
+            const SizedBox(height: AppSpacing.md),
             Text(l10n.checkoutSummary, style: text.titleSmall),
             const SizedBox(height: AppSpacing.sm),
-            _SummaryCard(cart: cart, configFuture: _configFuture),
+            _SummaryCard(
+              cart: cart,
+              configFuture: _configFuture,
+              discountMinor: _discountMinor,
+            ),
             const SizedBox(height: AppSpacing.lg),
             AppButton(
               label: l10n.actionPlaceOrder,
@@ -173,10 +250,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
 }
 
 class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({required this.cart, required this.configFuture});
+  const _SummaryCard({
+    required this.cart,
+    required this.configFuture,
+    this.discountMinor = 0,
+  });
 
   final CartState cart;
   final Future<PlatformConfig> configFuture;
+  final int discountMinor;
 
   @override
   Widget build(BuildContext context) {
@@ -239,11 +321,21 @@ class _SummaryCard extends StatelessWidget {
                     l10n.orderDeliveryFeeLabel,
                     PriceTag(feeMinor),
                   ),
+                  if (discountMinor > 0) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    totalsRow(
+                      l10n.checkoutDiscountLabel,
+                      PriceTag(
+                        -discountMinor,
+                        style: text.titleSmall?.copyWith(color: scheme.tertiary),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: AppSpacing.xs),
                   totalsRow(
                     l10n.cartTotal,
                     PriceTag(
-                      cart.totalMinor + feeMinor,
+                      cart.totalMinor + feeMinor - discountMinor,
                       style: text.titleMedium?.copyWith(
                         color: scheme.primary,
                         fontWeight: FontWeight.w700,
@@ -358,6 +450,117 @@ class _AreaField extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Coupon apply/remove row (FC16 Task A). Driven entirely by the parent's
+/// state — no bloc, matching `_AreaField`'s no-bloc `FutureBuilder` style
+/// (a coupon lookup is a single doc read, not worth a whole bloc).
+class _CouponField extends StatelessWidget {
+  const _CouponField({
+    required this.controller,
+    required this.applied,
+    required this.discountMinor,
+    required this.checking,
+    required this.errorKey,
+    required this.onApply,
+    required this.onRemove,
+  });
+
+  final TextEditingController controller;
+  final Coupon? applied;
+  final int discountMinor;
+  final bool checking;
+  final String? errorKey;
+  final VoidCallback onApply;
+  final VoidCallback onRemove;
+
+  String? _errorMessage(AppLocalizations l10n) {
+    return switch (errorKey) {
+      'notFound' => l10n.couponErrorNotFound,
+      'inactive' => l10n.couponErrorInactive,
+      'expired' => l10n.couponErrorExpired,
+      'belowMinOrder' => l10n.couponErrorBelowMinOrder,
+      'maxedOut' => l10n.couponErrorMaxedOut,
+      null => null,
+      _ => l10n.errorBody,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final coupon = applied;
+
+    if (coupon != null) {
+      return Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.mdAll,
+          border: Border.all(color: scheme.tertiary),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.local_offer_outlined, size: 18, color: scheme.tertiary),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                l10n.couponAppliedLabel(coupon.code),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+            TextButton(onPressed: onRemove, child: Text(l10n.actionRemove)),
+          ],
+        ),
+      );
+    }
+
+    final errorMessage = _errorMessage(l10n);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+          child: TextFormField(
+            controller: controller,
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => onApply(),
+            decoration: InputDecoration(
+              labelText: l10n.couponFieldLabel,
+              prefixIcon: const Icon(Icons.local_offer_outlined),
+              suffixIcon: checking
+                  ? const Padding(
+                      padding: EdgeInsets.all(AppSpacing.sm),
+                      child: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : TextButton(
+                      onPressed: onApply,
+                      child: Text(l10n.couponApplyAction),
+                    ),
+            ),
+          ),
+        ),
+        if (errorMessage != null)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(top: AppSpacing.xs),
+            child: Text(
+              errorMessage,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: scheme.error),
+            ),
+          ),
+      ],
     );
   }
 }

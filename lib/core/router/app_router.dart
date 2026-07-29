@@ -18,6 +18,7 @@ import '../../presentation/console/devtools/pages/devtools_page.dart';
 import '../../presentation/console/media/pages/media_page.dart';
 import '../../presentation/console/notifications/pages/notifications_page.dart';
 import '../../presentation/console/orders/pages/orders_board_page.dart';
+import '../../presentation/console/promos/pages/promos_page.dart';
 import '../../presentation/console/settings/pages/settings_page.dart';
 import '../../presentation/console/shell/console_sections.dart';
 import '../../presentation/console/shell/console_shell.dart';
@@ -240,6 +241,12 @@ class AppRouter {
           GoRoute(
             path: '/console/settings',
             builder: (context, state) => const SettingsPage(),
+          ),
+          // Promotions (FILE_16). Gated by `promos.edit` in the console menu +
+          // Firestore rules.
+          GoRoute(
+            path: '/console/promos',
+            builder: (context, state) => const PromosPage(),
           ),
           // Notification center (FILE_13). Gated by `notifications.send` in
           // the console menu + Firestore rules.

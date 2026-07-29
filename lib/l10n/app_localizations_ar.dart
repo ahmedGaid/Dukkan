@@ -2194,4 +2194,211 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get devtoolsMigrationRerun => 'إعادة تشغيل';
+
+  @override
+  String get actionActivate => 'تفعيل';
+
+  @override
+  String get actionDeactivate => 'إيقاف';
+
+  @override
+  String get actionRemove => 'إزالة';
+
+  @override
+  String get sectionFeaturedShops => 'دكاكين مميزة';
+
+  @override
+  String get featuredBadge => 'مميز';
+
+  @override
+  String get checkoutCouponSection => 'كوبون';
+
+  @override
+  String get couponFieldLabel => 'كود الكوبون';
+
+  @override
+  String get couponApplyAction => 'تطبيق';
+
+  @override
+  String get checkoutDiscountLabel => 'الخصم';
+
+  @override
+  String couponAppliedLabel(Object code) {
+    return 'اتطبّق كوبون $code';
+  }
+
+  @override
+  String get couponErrorNotFound => 'كود الكوبون ده مش موجود';
+
+  @override
+  String get couponErrorInactive => 'الكوبون ده مبقاش شغّال';
+
+  @override
+  String get couponErrorExpired => 'الكوبون ده انتهت صلاحيته';
+
+  @override
+  String get couponErrorBelowMinOrder => 'طلبك أقل من الحد الأدنى للكوبون ده';
+
+  @override
+  String get couponErrorMaxedOut => 'الكوبون ده وصل لحد الاستخدام';
+
+  @override
+  String get consoleNavPromos => 'العروض';
+
+  @override
+  String get promosActionFailed => 'الحركة دي معملتش — جرّب تاني.';
+
+  @override
+  String get promosTabCoupons => 'الكوبونات';
+
+  @override
+  String get promosTabBanners => 'البانرات';
+
+  @override
+  String get promosSearchHint => 'بحث';
+
+  @override
+  String get promosSearchEmpty => 'مفيش نتائج';
+
+  @override
+  String get promosCouponsHint =>
+      'أكواد خصم يقدر العميل يطبّقها وقت إتمام الطلب.';
+
+  @override
+  String get promosCouponsAddAction => 'كوبون جديد';
+
+  @override
+  String get promosCouponsErrorBody =>
+      'معرفناش نجيب الكوبونات دلوقتي — جرّب تاني.';
+
+  @override
+  String get promosCouponsEmptyTitle => 'لسه مفيش كوبونات';
+
+  @override
+  String promosCouponPercentValue(Object percent) {
+    return '$percent٪';
+  }
+
+  @override
+  String promosCouponUsageUnlimited(Object used) {
+    return 'اتستخدم $used مرة';
+  }
+
+  @override
+  String promosCouponUsage(Object max, Object used) {
+    return 'اتستخدم $used/$max';
+  }
+
+  @override
+  String promosCouponExpires(Object date) {
+    return 'بينتهي في $date';
+  }
+
+  @override
+  String get promosCouponDeleteConfirmTitle => 'حذف الكوبون ده؟';
+
+  @override
+  String promosCouponDeleteConfirmBody(Object code) {
+    return 'هيتم حذف كوبون $code نهائيًا.';
+  }
+
+  @override
+  String get promosCouponEditTitle => 'تعديل الكوبون';
+
+  @override
+  String get promosCouponCodeLabel => 'الكود';
+
+  @override
+  String get promosCouponTypePercent => 'نسبة %';
+
+  @override
+  String get promosCouponTypeFixed => 'مبلغ ثابت';
+
+  @override
+  String get promosCouponValuePercentLabel => 'نسبة الخصم';
+
+  @override
+  String get promosCouponValueFixedLabel => 'قيمة الخصم (جنيه)';
+
+  @override
+  String get promosCouponMinOrderLabel => 'الحد الأدنى للطلب (جنيه)';
+
+  @override
+  String get promosCouponMaxUsesLabel => 'الحد الأقصى للاستخدام';
+
+  @override
+  String get promosCouponMaxUsesHint => 'اتركه فاضي لاستخدام مش محدود';
+
+  @override
+  String get promosCouponNoExpiry => 'بدون تاريخ انتهاء';
+
+  @override
+  String get promosCouponPickExpiry => 'تحديد تاريخ الانتهاء';
+
+  @override
+  String get promosBannersHint =>
+      'بانرات تسويقية بتظهر في أول الكاروسيل بالصفحة الرئيسية.';
+
+  @override
+  String get promosBannersAddAction => 'بانر جديد';
+
+  @override
+  String get promosBannersErrorBody =>
+      'معرفناش نجيب البانرات دلوقتي — جرّب تاني.';
+
+  @override
+  String get promosBannersEmptyTitle => 'لسه مفيش بانرات';
+
+  @override
+  String get promosBannerTargetShop => 'دكان';
+
+  @override
+  String get promosBannerTargetProduct => 'منتج';
+
+  @override
+  String get promosBannerTargetNone => 'بدون';
+
+  @override
+  String promosBannerWindow(Object end, Object start) {
+    return '$start – $end';
+  }
+
+  @override
+  String get promosBannerDeleteConfirmTitle => 'حذف البانر ده؟';
+
+  @override
+  String get promosBannerDeleteConfirmBody => 'هيتم حذف البانر ده نهائيًا.';
+
+  @override
+  String get promosBannerEditTitle => 'تعديل البانر';
+
+  @override
+  String get promosBannerPickImage => 'اختيار صورة';
+
+  @override
+  String get promosBannerTargetLabel => 'وجهة الضغط';
+
+  @override
+  String get promosBannerPickTarget => 'اختيار الوجهة';
+
+  @override
+  String get promosBannerTargetAlreadySet => 'الوجهة محددة — اضغط للتغيير';
+
+  @override
+  String get promosBannerWindowLabel => 'تواريخ الظهور (اختياري)';
+
+  @override
+  String get promosBannerStartsAt => 'تاريخ البداية';
+
+  @override
+  String get promosBannerEndsAt => 'تاريخ النهاية';
+
+  @override
+  String get promosBannerTargetRequired => 'اختار وجهة للبانر ده';
+
+  @override
+  String get promosBannerImageRequired => 'اختار صورة للبانر ده';
+
+  @override
+  String get promosBannerUploadErrorBody => 'معرفناش نرفع الصورة — جرّب تاني.';
 }

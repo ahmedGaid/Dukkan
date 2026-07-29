@@ -345,6 +345,27 @@ service cloud.firestore {
       allow read, write: if hasPerm('notifications.send');
     }
 
+    // Discount codes (Founder Console session 16). Doc id IS the uppercase
+    // code — checkout reads it directly and validates client-side (honesty
+    // note: FILE_16_PROMOTIONS.md Task A). The second `allow update` is the
+    // redemption bump — any signed-in user, `usedCount` only, exactly +1 —
+    // same shape as the `/shops` rating bump.
+    match /coupons/{code} {
+      allow read: if isSignedIn();
+      allow create, delete: if hasPerm('promos.edit');
+      allow update: if hasPerm('promos.edit')
+        || (isSignedIn()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedCount'])
+          && request.resource.data.usedCount == resource.data.usedCount + 1);
+    }
+
+    // Marketing banners (Founder Console session 16) — home carousel reads
+    // realtime; console is the only write path.
+    match /banners/{id} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if hasPerm('promos.edit');
+    }
+
     // Deny anything without an explicit rule above.
     match /{document=**} {
       allow read, write: if false;

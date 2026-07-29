@@ -49,6 +49,17 @@ class _ShopsProductsUpdated extends ShopsEvent {
   List<Object?> get props => [products];
 }
 
+/// Internal: a new active-banner list arrived (FC16 Task B) — non-critical,
+/// never blocks `loaded` the way shops/products readiness does.
+class _ShopsBannersUpdated extends ShopsEvent {
+  const _ShopsBannersUpdated(this.banners);
+
+  final List<PromoBanner> banners;
+
+  @override
+  List<Object?> get props => [banners];
+}
+
 /// Internal: the stream errored.
 class _ShopsFailed extends ShopsEvent {
   const _ShopsFailed(this.error);

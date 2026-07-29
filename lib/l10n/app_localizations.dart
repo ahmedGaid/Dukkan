@@ -4201,6 +4201,384 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'إعادة تشغيل'**
   String get devtoolsMigrationRerun;
+
+  /// No description provided for @actionActivate.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفعيل'**
+  String get actionActivate;
+
+  /// No description provided for @actionDeactivate.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيقاف'**
+  String get actionDeactivate;
+
+  /// No description provided for @actionRemove.
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة'**
+  String get actionRemove;
+
+  /// No description provided for @sectionFeaturedShops.
+  ///
+  /// In ar, this message translates to:
+  /// **'دكاكين مميزة'**
+  String get sectionFeaturedShops;
+
+  /// No description provided for @featuredBadge.
+  ///
+  /// In ar, this message translates to:
+  /// **'مميز'**
+  String get featuredBadge;
+
+  /// No description provided for @checkoutCouponSection.
+  ///
+  /// In ar, this message translates to:
+  /// **'كوبون'**
+  String get checkoutCouponSection;
+
+  /// No description provided for @couponFieldLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'كود الكوبون'**
+  String get couponFieldLabel;
+
+  /// No description provided for @couponApplyAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'تطبيق'**
+  String get couponApplyAction;
+
+  /// No description provided for @checkoutDiscountLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخصم'**
+  String get checkoutDiscountLabel;
+
+  /// No description provided for @couponAppliedLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتطبّق كوبون {code}'**
+  String couponAppliedLabel(Object code);
+
+  /// No description provided for @couponErrorNotFound.
+  ///
+  /// In ar, this message translates to:
+  /// **'كود الكوبون ده مش موجود'**
+  String get couponErrorNotFound;
+
+  /// No description provided for @couponErrorInactive.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكوبون ده مبقاش شغّال'**
+  String get couponErrorInactive;
+
+  /// No description provided for @couponErrorExpired.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكوبون ده انتهت صلاحيته'**
+  String get couponErrorExpired;
+
+  /// No description provided for @couponErrorBelowMinOrder.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبك أقل من الحد الأدنى للكوبون ده'**
+  String get couponErrorBelowMinOrder;
+
+  /// No description provided for @couponErrorMaxedOut.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكوبون ده وصل لحد الاستخدام'**
+  String get couponErrorMaxedOut;
+
+  /// No description provided for @consoleNavPromos.
+  ///
+  /// In ar, this message translates to:
+  /// **'العروض'**
+  String get consoleNavPromos;
+
+  /// No description provided for @promosActionFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحركة دي معملتش — جرّب تاني.'**
+  String get promosActionFailed;
+
+  /// No description provided for @promosTabCoupons.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكوبونات'**
+  String get promosTabCoupons;
+
+  /// No description provided for @promosTabBanners.
+  ///
+  /// In ar, this message translates to:
+  /// **'البانرات'**
+  String get promosTabBanners;
+
+  /// No description provided for @promosSearchHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'بحث'**
+  String get promosSearchHint;
+
+  /// No description provided for @promosSearchEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش نتائج'**
+  String get promosSearchEmpty;
+
+  /// No description provided for @promosCouponsHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكواد خصم يقدر العميل يطبّقها وقت إتمام الطلب.'**
+  String get promosCouponsHint;
+
+  /// No description provided for @promosCouponsAddAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'كوبون جديد'**
+  String get promosCouponsAddAction;
+
+  /// No description provided for @promosCouponsErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نجيب الكوبونات دلوقتي — جرّب تاني.'**
+  String get promosCouponsErrorBody;
+
+  /// No description provided for @promosCouponsEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش كوبونات'**
+  String get promosCouponsEmptyTitle;
+
+  /// No description provided for @promosCouponPercentValue.
+  ///
+  /// In ar, this message translates to:
+  /// **'{percent}٪'**
+  String promosCouponPercentValue(Object percent);
+
+  /// No description provided for @promosCouponUsageUnlimited.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتستخدم {used} مرة'**
+  String promosCouponUsageUnlimited(Object used);
+
+  /// No description provided for @promosCouponUsage.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتستخدم {used}/{max}'**
+  String promosCouponUsage(Object max, Object used);
+
+  /// No description provided for @promosCouponExpires.
+  ///
+  /// In ar, this message translates to:
+  /// **'بينتهي في {date}'**
+  String promosCouponExpires(Object date);
+
+  /// No description provided for @promosCouponDeleteConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف الكوبون ده؟'**
+  String get promosCouponDeleteConfirmTitle;
+
+  /// No description provided for @promosCouponDeleteConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيتم حذف كوبون {code} نهائيًا.'**
+  String promosCouponDeleteConfirmBody(Object code);
+
+  /// No description provided for @promosCouponEditTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل الكوبون'**
+  String get promosCouponEditTitle;
+
+  /// No description provided for @promosCouponCodeLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكود'**
+  String get promosCouponCodeLabel;
+
+  /// No description provided for @promosCouponTypePercent.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسبة %'**
+  String get promosCouponTypePercent;
+
+  /// No description provided for @promosCouponTypeFixed.
+  ///
+  /// In ar, this message translates to:
+  /// **'مبلغ ثابت'**
+  String get promosCouponTypeFixed;
+
+  /// No description provided for @promosCouponValuePercentLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسبة الخصم'**
+  String get promosCouponValuePercentLabel;
+
+  /// No description provided for @promosCouponValueFixedLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيمة الخصم (جنيه)'**
+  String get promosCouponValueFixedLabel;
+
+  /// No description provided for @promosCouponMinOrderLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الأدنى للطلب (جنيه)'**
+  String get promosCouponMinOrderLabel;
+
+  /// No description provided for @promosCouponMaxUsesLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الأقصى للاستخدام'**
+  String get promosCouponMaxUsesLabel;
+
+  /// No description provided for @promosCouponMaxUsesHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتركه فاضي لاستخدام مش محدود'**
+  String get promosCouponMaxUsesHint;
+
+  /// No description provided for @promosCouponNoExpiry.
+  ///
+  /// In ar, this message translates to:
+  /// **'بدون تاريخ انتهاء'**
+  String get promosCouponNoExpiry;
+
+  /// No description provided for @promosCouponPickExpiry.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديد تاريخ الانتهاء'**
+  String get promosCouponPickExpiry;
+
+  /// No description provided for @promosBannersHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانرات تسويقية بتظهر في أول الكاروسيل بالصفحة الرئيسية.'**
+  String get promosBannersHint;
+
+  /// No description provided for @promosBannersAddAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانر جديد'**
+  String get promosBannersAddAction;
+
+  /// No description provided for @promosBannersErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نجيب البانرات دلوقتي — جرّب تاني.'**
+  String get promosBannersErrorBody;
+
+  /// No description provided for @promosBannersEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لسه مفيش بانرات'**
+  String get promosBannersEmptyTitle;
+
+  /// No description provided for @promosBannerTargetShop.
+  ///
+  /// In ar, this message translates to:
+  /// **'دكان'**
+  String get promosBannerTargetShop;
+
+  /// No description provided for @promosBannerTargetProduct.
+  ///
+  /// In ar, this message translates to:
+  /// **'منتج'**
+  String get promosBannerTargetProduct;
+
+  /// No description provided for @promosBannerTargetNone.
+  ///
+  /// In ar, this message translates to:
+  /// **'بدون'**
+  String get promosBannerTargetNone;
+
+  /// No description provided for @promosBannerWindow.
+  ///
+  /// In ar, this message translates to:
+  /// **'{start} – {end}'**
+  String promosBannerWindow(Object end, Object start);
+
+  /// No description provided for @promosBannerDeleteConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف البانر ده؟'**
+  String get promosBannerDeleteConfirmTitle;
+
+  /// No description provided for @promosBannerDeleteConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'هيتم حذف البانر ده نهائيًا.'**
+  String get promosBannerDeleteConfirmBody;
+
+  /// No description provided for @promosBannerEditTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل البانر'**
+  String get promosBannerEditTitle;
+
+  /// No description provided for @promosBannerPickImage.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختيار صورة'**
+  String get promosBannerPickImage;
+
+  /// No description provided for @promosBannerTargetLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'وجهة الضغط'**
+  String get promosBannerTargetLabel;
+
+  /// No description provided for @promosBannerPickTarget.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختيار الوجهة'**
+  String get promosBannerPickTarget;
+
+  /// No description provided for @promosBannerTargetAlreadySet.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوجهة محددة — اضغط للتغيير'**
+  String get promosBannerTargetAlreadySet;
+
+  /// No description provided for @promosBannerWindowLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'تواريخ الظهور (اختياري)'**
+  String get promosBannerWindowLabel;
+
+  /// No description provided for @promosBannerStartsAt.
+  ///
+  /// In ar, this message translates to:
+  /// **'تاريخ البداية'**
+  String get promosBannerStartsAt;
+
+  /// No description provided for @promosBannerEndsAt.
+  ///
+  /// In ar, this message translates to:
+  /// **'تاريخ النهاية'**
+  String get promosBannerEndsAt;
+
+  /// No description provided for @promosBannerTargetRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختار وجهة للبانر ده'**
+  String get promosBannerTargetRequired;
+
+  /// No description provided for @promosBannerImageRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختار صورة للبانر ده'**
+  String get promosBannerImageRequired;
+
+  /// No description provided for @promosBannerUploadErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نرفع الصورة — جرّب تاني.'**
+  String get promosBannerUploadErrorBody;
 }
 
 class _AppLocalizationsDelegate

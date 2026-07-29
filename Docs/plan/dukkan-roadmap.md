@@ -647,8 +647,42 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       wrangler dev smoke test (list/delete against real R2, stats cross-check, live
       orphan/broken detection) still owed — not run this session, no device/Worker access
       here. **Next: FC15 (FILE_15) — impersonation + dev tools.**
-- [ ] **FC16–FC18 — Growth + close.** Promotions (coupons/banners/featured) · global search +
+- [~] **FC16–FC18 — Growth + close.** Promotions (coupons/banners/featured) · global search +
       CSV exports + reports · acceptance + security matrix + regression. (FILE_16–18)
+      **FC16 DONE (code) 2026-07-29** (FILE_16) — promotions. **Task A** `/coupons/{CODE}` (doc id
+      = uppercase code) — `Coupon`/`CouponType` entity, pure `CouponDiscount` (round-half-up
+      percent via the M12 idiom, fixed clamps to subtotal, `validate()` returns a
+      `CouponRejectReason?`); `firestore.rules` read-signed-in + `promos.edit` write + an
+      any-signed-in `usedCount +1` redemption bump (mirrors the shop rating bump).
+      `PlaceOrder` gained an optional `Coupon? coupon` param — derives `discountMinor` itself
+      (never trusts a caller amount), commission stays computed on the PRE-discount subtotal
+      (locked, commented), `totalMinor = subtotal + fee - discount`, best-effort `redeem()`
+      fire-and-forget after order create. Checkout gained a coupon field (apply/remove,
+      designed per-reason error copy) + a discount line in the summary. **Task B**
+      `/banners/{id}` (`imageUrl`, `targetType: shop|product|none`, `targetId`, denormalized
+      `targetShopId` for product targets — no extra lookup on tap, `sort`, `isActive`,
+      `startsAt`/`endsAt`); `BannerRepository.watchActiveBanners()` realtime (date-window
+      filtered client-side), prepended before promo product cards in the home carousel — the
+      carousel widget now takes a `List<PromoCarouselItem>` sealed union
+      (`ProductCarouselItem`/`BannerCarouselItem`) instead of raw products. **Task C**: home
+      «دكاكين مميزة» section (shops `isFeatured`, existing `ShopCard`, capped at 5, independent
+      of the category filter) + featured products appended to the carousel tail (deduped
+      against promo, whole carousel capped at 10). `ShopsBloc` gained a third non-critical
+      banner stream (failure swallowed, mirrors `ProductsBloc`'s `WatchCollections` addition).
+      **Task D**: `/console/promos` (perm `promos.edit`) — two tabs (الكوبونات/البانرات), each
+      its own bloc following `TaxonomyBoardBloc`'s reload-whole-list contract; coupon sheet
+      (code uppercase-locked once created, %/EGP value toggle mirrors the products board's
+      bulk-price UX, expiry date picker, max-uses); banner sheet (image upload to the
+      `banners` R2 folder, target picker with shop/product search sheets reusing
+      `AdminShopsRepository.getAllShops()`/`AdminProductsRepository.getAllMatching()`,
+      Arabic-folded client-side filter, up/down reorder). Audit codes `coupon.*`/`banner.*`.
+      Lexicon: Coupon→كوبون, Banner→بانر. 90 i18n keys ×2 (checked into both ARBs + regenerated
+      via `flutter gen-l10n`). New `coupon_discount_test.dart` + `promo_banner_test.dart`,
+      `place_order_test.dart`/`shops_bloc_test.dart` extended. Gates green (analyze 0, test
+      219/219 — up from 198, parity 747 — up from 684). Rules deploy (`/coupons`+`/banners`)
+      + a live device smoke test (real coupon at checkout, banner tap-through, featured
+      shop/product visibility) still owed — not run this session. **Next: FC17 (FILE_17) —
+      global search + CSV exports + reports.**
 
 ## Standing regression (added 2026-07-10)
 

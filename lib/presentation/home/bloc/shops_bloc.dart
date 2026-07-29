@@ -5,8 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../domain/product/entities/product.dart';
 import '../../../domain/product/usecases/watch_all_products.dart';
+import '../../../domain/promos/entities/promo_banner.dart';
+import '../../../domain/promos/usecases/watch_active_banners.dart';
 import '../../../domain/shop/entities/shop.dart';
 import '../../../domain/shop/usecases/watch_shops.dart';
+import '../widgets/promo_carousel.dart';
 
 part 'shops_event.dart';
 part 'shops_state.dart';
@@ -14,26 +17,35 @@ part 'shops_state.dart';
 /// Drives the customer Home. Subscribes to [WatchShops] (realtime online, one
 /// cached snapshot offline) and holds the selected category filter locally, so
 /// tapping a category re-derives the visible list without re-hitting the stream.
-/// Also subscribes to [WatchAllProducts] to feed the promo carousel with real
-/// `isPromo` products (P1) — `loaded` is reached only once both feeds have
-/// delivered a first value, matching [SearchBloc]'s dual-stream readiness.
+/// Also subscribes to [WatchAllProducts] to feed the promo/featured carousel
+/// slots (P1/FC16) — `loaded` is reached only once both feeds have delivered a
+/// first value, matching [SearchBloc]'s dual-stream readiness. [WatchActiveBanners]
+/// is a third, non-critical stream (FC16 Task B) — mirrors [ProductsBloc]'s
+/// `WatchCollections` addition: a failure is swallowed, never blocks `loaded`.
 class ShopsBloc extends Bloc<ShopsEvent, ShopsState> {
-  ShopsBloc({required WatchShops watchShops, required WatchAllProducts watchAllProducts})
-      : _watchShops = watchShops,
+  ShopsBloc({
+    required WatchShops watchShops,
+    required WatchAllProducts watchAllProducts,
+    required WatchActiveBanners watchActiveBanners,
+  })  : _watchShops = watchShops,
         _watchAllProducts = watchAllProducts,
+        _watchActiveBanners = watchActiveBanners,
         super(const ShopsState()) {
     on<ShopsStarted>(_onStarted);
     on<ShopsCategorySelected>(_onCategorySelected);
     on<ShopsRetryRequested>(_onStarted);
     on<_ShopsUpdated>(_onUpdated);
     on<_ShopsProductsUpdated>(_onProductsUpdated);
+    on<_ShopsBannersUpdated>(_onBannersUpdated);
     on<_ShopsFailed>(_onFailed);
   }
 
   final WatchShops _watchShops;
   final WatchAllProducts _watchAllProducts;
+  final WatchActiveBanners _watchActiveBanners;
   StreamSubscription<List<Shop>>? _sub;
   StreamSubscription<List<Product>>? _productsSub;
+  StreamSubscription<List<PromoBanner>>? _bannersSub;
   bool _shopsReady = false;
   bool _productsReady = false;
 
@@ -43,6 +55,7 @@ class ShopsBloc extends Bloc<ShopsEvent, ShopsState> {
     _productsReady = false;
     await _sub?.cancel();
     await _productsSub?.cancel();
+    await _bannersSub?.cancel();
     _sub = _watchShops().listen(
       (shops) => add(_ShopsUpdated(shops)),
       onError: (Object error) => add(_ShopsFailed(error)),
@@ -50,6 +63,10 @@ class ShopsBloc extends Bloc<ShopsEvent, ShopsState> {
     _productsSub = _watchAllProducts().listen(
       (products) => add(_ShopsProductsUpdated(products)),
       onError: (Object error) => add(_ShopsFailed(error)),
+    );
+    _bannersSub = _watchActiveBanners().listen(
+      (banners) => add(_ShopsBannersUpdated(banners)),
+      onError: (_) => add(const _ShopsBannersUpdated([])),
     );
   }
 
@@ -74,7 +91,13 @@ class ShopsBloc extends Bloc<ShopsEvent, ShopsState> {
     emit(state.copyWith(
       status: _readyStatus,
       promoProducts: event.products.where((p) => p.isPromo).take(8).toList(),
+      featuredProducts:
+          event.products.where((p) => p.isFeatured).take(6).toList(),
     ));
+  }
+
+  void _onBannersUpdated(_ShopsBannersUpdated event, Emitter<ShopsState> emit) {
+    emit(state.copyWith(banners: event.banners));
   }
 
   ShopsStatus get _readyStatus =>
@@ -113,6 +136,7 @@ class ShopsBloc extends Bloc<ShopsEvent, ShopsState> {
   Future<void> close() {
     _sub?.cancel();
     _productsSub?.cancel();
+    _bannersSub?.cancel();
     return super.close();
   }
 }

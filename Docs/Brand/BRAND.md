@@ -102,6 +102,8 @@ Rules:
 | Feature flag (console settings) | خاصية تجريبية | فيتشر، علم |
 | Broadcast (console notification center) | إشعار عام | برودكاست، تعميم |
 | Media library (console image/document store) | مكتبة الصور | جاليري، ميديا |
+| Coupon (discount code) | كوبون | خصم، برومو كود |
+| Banner (home carousel marketing card) | بانر | إعلان، لافتة |
 
 - Human statuses ("جارٍ تجهيز طلبك"), blame-free errors ("حصلت مشكلة — جرّب تاني").
 - RTL is the default layout. LTR (English) must read identically well.

@@ -19,6 +19,8 @@ abstract class OrderRepository {
     required int platformDeliveryShareMinor,
     required int totalMinor,
     String? notes,
+    String? couponCode,
+    int discountMinor = 0,
   });
 
   Stream<List<Order>> watchCustomerOrders(String customerUid);

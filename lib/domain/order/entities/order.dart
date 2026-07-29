@@ -29,6 +29,8 @@ class Order extends Equatable {
     this.driverDeliveryShareMinor = 0,
     this.platformDeliveryShareMinor = 0,
     this.commissionPayable = false,
+    this.couponCode,
+    this.discountMinor = 0,
   }) : subtotalMinor = subtotalMinor ?? totalMinor;
 
   final String id;
@@ -84,6 +86,13 @@ class Order extends Equatable {
   final String? driverPhone;
   final DateTime? assignedAt;
 
+  /// Coupon applied at checkout (FC16 Task A), snapshotted at creation time —
+  /// null if none. Commission is computed on the pre-discount [subtotalMinor]
+  /// (the platform earns on goods value, locked); [totalMinor] already has
+  /// the discount subtracted.
+  final String? couponCode;
+  final int discountMinor;
+
   @override
   List<Object?> get props => [
         id,
@@ -108,5 +117,7 @@ class Order extends Equatable {
         driverDeliveryShareMinor,
         platformDeliveryShareMinor,
         commissionPayable,
+        couponCode,
+        discountMinor,
       ];
 }

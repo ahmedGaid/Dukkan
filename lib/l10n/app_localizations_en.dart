@@ -2234,4 +2234,214 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get devtoolsMigrationRerun => 'Re-run';
+
+  @override
+  String get actionActivate => 'Activate';
+
+  @override
+  String get actionDeactivate => 'Deactivate';
+
+  @override
+  String get actionRemove => 'Remove';
+
+  @override
+  String get sectionFeaturedShops => 'Featured shops';
+
+  @override
+  String get featuredBadge => 'Featured';
+
+  @override
+  String get checkoutCouponSection => 'Coupon';
+
+  @override
+  String get couponFieldLabel => 'Coupon code';
+
+  @override
+  String get couponApplyAction => 'Apply';
+
+  @override
+  String get checkoutDiscountLabel => 'Discount';
+
+  @override
+  String couponAppliedLabel(Object code) {
+    return 'Coupon $code applied';
+  }
+
+  @override
+  String get couponErrorNotFound => 'This coupon code doesn\'t exist';
+
+  @override
+  String get couponErrorInactive => 'This coupon isn\'t active anymore';
+
+  @override
+  String get couponErrorExpired => 'This coupon has expired';
+
+  @override
+  String get couponErrorBelowMinOrder =>
+      'Your order is below this coupon\'s minimum';
+
+  @override
+  String get couponErrorMaxedOut => 'This coupon has reached its usage limit';
+
+  @override
+  String get consoleNavPromos => 'Promotions';
+
+  @override
+  String get promosActionFailed => 'That didn\'t go through — try again.';
+
+  @override
+  String get promosTabCoupons => 'Coupons';
+
+  @override
+  String get promosTabBanners => 'Banners';
+
+  @override
+  String get promosSearchHint => 'Search';
+
+  @override
+  String get promosSearchEmpty => 'No results';
+
+  @override
+  String get promosCouponsHint =>
+      'Discount codes customers can apply at checkout.';
+
+  @override
+  String get promosCouponsAddAction => 'Add coupon';
+
+  @override
+  String get promosCouponsErrorBody =>
+      'We can\'t load coupons right now — try again.';
+
+  @override
+  String get promosCouponsEmptyTitle => 'No coupons yet';
+
+  @override
+  String promosCouponPercentValue(Object percent) {
+    return '$percent%';
+  }
+
+  @override
+  String promosCouponUsageUnlimited(Object used) {
+    return 'Used $used time(s)';
+  }
+
+  @override
+  String promosCouponUsage(Object max, Object used) {
+    return 'Used $used/$max';
+  }
+
+  @override
+  String promosCouponExpires(Object date) {
+    return 'Expires $date';
+  }
+
+  @override
+  String get promosCouponDeleteConfirmTitle => 'Delete this coupon?';
+
+  @override
+  String promosCouponDeleteConfirmBody(Object code) {
+    return 'Coupon $code will be permanently removed.';
+  }
+
+  @override
+  String get promosCouponEditTitle => 'Edit coupon';
+
+  @override
+  String get promosCouponCodeLabel => 'Code';
+
+  @override
+  String get promosCouponTypePercent => 'Percent';
+
+  @override
+  String get promosCouponTypeFixed => 'Fixed amount';
+
+  @override
+  String get promosCouponValuePercentLabel => 'Discount percent';
+
+  @override
+  String get promosCouponValueFixedLabel => 'Discount amount (EGP)';
+
+  @override
+  String get promosCouponMinOrderLabel => 'Minimum order (EGP)';
+
+  @override
+  String get promosCouponMaxUsesLabel => 'Max uses';
+
+  @override
+  String get promosCouponMaxUsesHint => 'Leave empty for unlimited';
+
+  @override
+  String get promosCouponNoExpiry => 'No expiry';
+
+  @override
+  String get promosCouponPickExpiry => 'Set expiry';
+
+  @override
+  String get promosBannersHint =>
+      'Marketing cards shown at the head of the home carousel.';
+
+  @override
+  String get promosBannersAddAction => 'Add banner';
+
+  @override
+  String get promosBannersErrorBody =>
+      'We can\'t load banners right now — try again.';
+
+  @override
+  String get promosBannersEmptyTitle => 'No banners yet';
+
+  @override
+  String get promosBannerTargetShop => 'Shop';
+
+  @override
+  String get promosBannerTargetProduct => 'Product';
+
+  @override
+  String get promosBannerTargetNone => 'None';
+
+  @override
+  String promosBannerWindow(Object end, Object start) {
+    return '$start – $end';
+  }
+
+  @override
+  String get promosBannerDeleteConfirmTitle => 'Delete this banner?';
+
+  @override
+  String get promosBannerDeleteConfirmBody =>
+      'This banner will be permanently removed.';
+
+  @override
+  String get promosBannerEditTitle => 'Edit banner';
+
+  @override
+  String get promosBannerPickImage => 'Choose image';
+
+  @override
+  String get promosBannerTargetLabel => 'Tap target';
+
+  @override
+  String get promosBannerPickTarget => 'Pick target';
+
+  @override
+  String get promosBannerTargetAlreadySet => 'Target set — tap to change';
+
+  @override
+  String get promosBannerWindowLabel => 'Active dates (optional)';
+
+  @override
+  String get promosBannerStartsAt => 'Start date';
+
+  @override
+  String get promosBannerEndsAt => 'End date';
+
+  @override
+  String get promosBannerTargetRequired => 'Pick a target for this banner';
+
+  @override
+  String get promosBannerImageRequired => 'Choose an image for this banner';
+
+  @override
+  String get promosBannerUploadErrorBody =>
+      'Couldn\'t upload the image — try again.';
 }

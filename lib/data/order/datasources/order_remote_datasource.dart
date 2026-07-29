@@ -40,6 +40,8 @@ class OrderRemoteDataSource {
     required int platformDeliveryShareMinor,
     required int totalMinor,
     String? notes,
+    String? couponCode,
+    int discountMinor = 0,
   }) async {
     try {
       final now = DateTime.now();
@@ -55,6 +57,8 @@ class OrderRemoteDataSource {
         commissionMinor: commissionMinor,
         driverDeliveryShareMinor: driverDeliveryShareMinor,
         platformDeliveryShareMinor: platformDeliveryShareMinor,
+        couponCode: couponCode,
+        discountMinor: discountMinor,
         status: OrderStatus.pending,
         createdAt: now,
         deliveryAddress: deliveryAddress,

@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import '../../areas/repositories/areas_repository.dart';
 import '../../config/repositories/platform_config_repository.dart';
+import '../../promos/coupon_discount.dart';
+import '../../promos/entities/coupon.dart';
+import '../../promos/repositories/coupon_repository.dart';
 import '../entities/address.dart';
 import '../entities/order.dart';
 import '../entities/order_item.dart';
@@ -7,24 +12,37 @@ import '../repositories/order_repository.dart';
 
 /// Places the order and snapshots the commission/fee rates onto it (M12).
 /// `totalMinor` is no longer caller-supplied — it's items subtotal + the
-/// resolved delivery fee, computed here so a stale/tampered client total can
-/// never land on the doc. Fee resolution order (FC9 Task C): the delivery
-/// area's `deliveryFeeMinorOverride` if set, else the platform default;
-/// commission rate resolution stays platform-default-only for now — see the
-/// shop-override/campaign note this class carried for when that lands.
+/// resolved delivery fee minus any coupon discount, computed here so a
+/// stale/tampered client total can never land on the doc. Fee resolution
+/// order (FC9 Task C): the delivery area's `deliveryFeeMinorOverride` if set,
+/// else the platform default; commission rate resolution stays
+/// platform-default-only for now — see the shop-override/campaign note this
+/// class carried for when that lands.
 class PlaceOrder {
-  const PlaceOrder(this._repository, this._configRepository, this._areasRepository);
+  const PlaceOrder(
+    this._repository,
+    this._configRepository,
+    this._areasRepository,
+    this._couponRepository,
+  );
 
   final OrderRepository _repository;
   final PlatformConfigRepository _configRepository;
   final AreasRepository _areasRepository;
+  final CouponRepository _couponRepository;
 
+  /// [coupon] is the already-validated coupon the checkout screen applied
+  /// (see `CouponDiscount.validate`) — this call re-derives the discount from
+  /// it rather than trusting a caller-supplied amount. Commission is always
+  /// computed on the PRE-discount subtotal (the platform earns on goods
+  /// value, locked — never move this below the discount line).
   Future<Order> call({
     required String shopId,
     required String customerUid,
     required List<OrderItem> items,
     required Address deliveryAddress,
     String? notes,
+    Coupon? coupon,
   }) async {
     final config = await _configRepository.getConfig();
     final subtotalMinor =
@@ -34,8 +52,11 @@ class PlaceOrder {
       areaId: deliveryAddress.areaId,
       defaultFeeMinor: config.deliveryFeeMinor,
     );
+    final discountMinor = coupon == null
+        ? 0
+        : CouponDiscount.computeDiscountMinor(coupon, subtotalMinor);
 
-    return _repository.placeOrder(
+    final order = await _repository.placeOrder(
       shopId: shopId,
       customerUid: customerUid,
       items: items,
@@ -47,8 +68,18 @@ class PlaceOrder {
       commissionMinor: commissionMinor,
       driverDeliveryShareMinor: config.driverDeliveryShareMinor,
       platformDeliveryShareMinor: config.platformDeliveryShareMinor,
-      totalMinor: subtotalMinor + deliveryFeeMinor,
+      totalMinor: subtotalMinor + deliveryFeeMinor - discountMinor,
+      couponCode: coupon?.code,
+      discountMinor: discountMinor,
     );
+
+    if (coupon != null) {
+      // Best-effort — the order already stands even if this write fails
+      // (FILE_16_PROMOTIONS.md Task A tolerance note).
+      unawaited(_couponRepository.redeem(coupon.code));
+    }
+
+    return order;
   }
 
   /// The area list is tiny and already one-shot/cached (`AreasRepository`

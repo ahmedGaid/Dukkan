@@ -11,6 +11,7 @@ import '../../data/admin/datasources/admin_drivers_remote_datasource.dart';
 import '../../data/admin/datasources/admin_geo_remote_datasource.dart';
 import '../../data/admin/datasources/admin_orders_remote_datasource.dart';
 import '../../data/admin/datasources/admin_products_remote_datasource.dart';
+import '../../data/admin/datasources/admin_promos_remote_datasource.dart';
 import '../../data/admin/datasources/admin_settings_remote_datasource.dart';
 import '../../data/admin/datasources/admin_shops_remote_datasource.dart';
 import '../../data/admin/datasources/admin_taxonomy_remote_datasource.dart';
@@ -19,6 +20,7 @@ import '../../data/admin/repositories/admin_drivers_repository_impl.dart';
 import '../../data/admin/repositories/admin_geo_repository_impl.dart';
 import '../../data/admin/repositories/admin_orders_repository_impl.dart';
 import '../../data/admin/repositories/admin_products_repository_impl.dart';
+import '../../data/admin/repositories/admin_promos_repository_impl.dart';
 import '../../data/admin/repositories/admin_repository_impl.dart';
 import '../../data/admin/repositories/admin_settings_repository_impl.dart';
 import '../../data/admin/repositories/admin_shops_repository_impl.dart';
@@ -55,6 +57,10 @@ import '../../data/notifications_admin/datasources/admin_notifications_remote_da
 import '../../data/notifications_admin/repositories/admin_notifications_repository_impl.dart';
 import '../../data/order/datasources/order_remote_datasource.dart';
 import '../../data/order/repositories/order_repository_impl.dart';
+import '../../data/promos/datasources/banner_remote_datasource.dart';
+import '../../data/promos/datasources/coupon_remote_datasource.dart';
+import '../../data/promos/repositories/banner_repository_impl.dart';
+import '../../data/promos/repositories/coupon_repository_impl.dart';
 import '../../data/product/datasources/product_local_datasource.dart';
 import '../../data/product/datasources/product_remote_datasource.dart';
 import '../../data/product/repositories/product_repository_impl.dart';
@@ -70,6 +76,7 @@ import '../../domain/admin/repositories/admin_drivers_repository.dart';
 import '../../domain/admin/repositories/admin_geo_repository.dart';
 import '../../domain/admin/repositories/admin_orders_repository.dart';
 import '../../domain/admin/repositories/admin_products_repository.dart';
+import '../../domain/admin/repositories/admin_promos_repository.dart';
 import '../../domain/admin/repositories/admin_repository.dart';
 import '../../domain/admin/repositories/admin_settings_repository.dart';
 import '../../domain/admin/repositories/admin_shops_repository.dart';
@@ -84,15 +91,21 @@ import '../../domain/admin/usecases/count_orders_in_area.dart';
 import '../../domain/admin/usecases/count_products_in_category.dart';
 import '../../domain/admin/usecases/create_area.dart';
 import '../../domain/admin/usecases/create_category.dart';
+import '../../domain/admin/usecases/create_banner.dart';
+import '../../domain/admin/usecases/create_coupon.dart';
 import '../../domain/admin/usecases/create_shop_as_staff.dart';
 import '../../domain/admin/usecases/create_user.dart';
 import '../../domain/admin/usecases/delete_area.dart';
+import '../../domain/admin/usecases/delete_banner.dart';
 import '../../domain/admin/usecases/delete_category.dart';
+import '../../domain/admin/usecases/delete_coupon.dart';
 import '../../domain/admin/usecases/duplicate_product.dart';
 import '../../domain/admin/usecases/force_order_status.dart';
 import '../../domain/admin/usecases/get_admin_profile.dart';
 import '../../domain/admin/usecases/get_all_areas.dart';
+import '../../domain/admin/usecases/get_all_banners.dart';
 import '../../domain/admin/usecases/get_all_categories.dart';
+import '../../domain/admin/usecases/get_all_coupons.dart';
 import '../../domain/admin/usecases/get_all_shops.dart';
 import '../../domain/admin/usecases/get_console_order_by_id.dart';
 import '../../domain/admin/usecases/get_driver_assigned_orders.dart';
@@ -121,7 +134,9 @@ import '../../domain/admin/usecases/restore_user.dart';
 import '../../domain/admin/usecases/search_products.dart';
 import '../../domain/admin/usecases/set_admin.dart';
 import '../../domain/admin/usecases/set_area_active.dart';
+import '../../domain/admin/usecases/set_banner_active.dart';
 import '../../domain/admin/usecases/set_category_visible.dart';
+import '../../domain/admin/usecases/set_coupon_active.dart';
 import '../../domain/admin/usecases/set_driver_suspended.dart';
 import '../../domain/admin/usecases/set_driver_verified.dart';
 import '../../domain/admin/usecases/set_shop_featured.dart';
@@ -133,10 +148,13 @@ import '../../domain/admin/usecases/set_user_persona_role.dart';
 import '../../domain/admin/usecases/soft_delete_shop.dart';
 import '../../domain/admin/usecases/watch_order_notes.dart';
 import '../../domain/admin/usecases/soft_delete_user.dart';
+import '../../domain/admin/usecases/swap_banner_sort.dart';
 import '../../domain/admin/usecases/swap_category_sort.dart';
 import '../../domain/admin/usecases/transfer_shop_ownership.dart';
 import '../../domain/admin/usecases/update_area.dart';
+import '../../domain/admin/usecases/update_banner.dart';
 import '../../domain/admin/usecases/update_category.dart';
+import '../../domain/admin/usecases/update_coupon.dart';
 import '../../domain/admin/usecases/update_driver.dart';
 import '../../domain/admin/usecases/update_shop_details.dart';
 import '../../domain/areas/repositories/areas_repository.dart';
@@ -213,6 +231,11 @@ import '../../domain/order/usecases/watch_driver_active_orders.dart';
 import '../../domain/order/usecases/watch_driver_order_history.dart';
 import '../../domain/order/usecases/watch_order.dart';
 import '../../domain/order/usecases/watch_shop_orders.dart';
+import '../../domain/promos/repositories/banner_repository.dart';
+import '../../domain/promos/repositories/coupon_repository.dart';
+import '../../domain/promos/usecases/get_coupon_by_code.dart';
+import '../../domain/promos/usecases/redeem_coupon.dart';
+import '../../domain/promos/usecases/watch_active_banners.dart';
 import '../../domain/product/repositories/product_repository.dart';
 import '../../domain/product/usecases/create_product.dart';
 import '../../domain/product/usecases/delete_product.dart';
@@ -244,6 +267,8 @@ import '../../presentation/console/media/bloc/media_bloc.dart';
 import '../../presentation/console/notifications/bloc/notifications_bloc.dart';
 import '../../presentation/console/orders/bloc/orders_board_bloc.dart';
 import '../../presentation/console/products/bloc/products_board_bloc.dart';
+import '../../presentation/console/promos/bloc/banners_board_bloc.dart';
+import '../../presentation/console/promos/bloc/coupons_board_bloc.dart';
 import '../../presentation/console/settings/bloc/settings_bloc.dart';
 import '../../presentation/console/shops/bloc/shop_detail_bloc.dart';
 import '../../presentation/console/shops/bloc/shops_board_bloc.dart';
@@ -690,7 +715,11 @@ Future<void> initDependencies() async {
 
   // Shop — bloc (page-scoped: a fresh subscription per Home open; also feeds
   // the promo carousel from WatchAllProducts, see ShopsBloc doc)
-  sl.registerFactory(() => ShopsBloc(watchShops: sl(), watchAllProducts: sl()));
+  sl.registerFactory(() => ShopsBloc(
+        watchShops: sl(),
+        watchAllProducts: sl(),
+        watchActiveBanners: sl(),
+      ));
 
   // Product — data
   sl.registerLazySingleton(() => ProductRemoteDataSource(firestore: sl()));
@@ -850,6 +879,52 @@ Future<void> initDependencies() async {
     () => DashboardBloc(getDashboardSummary: sl(), getAuditEntries: sl()),
   );
 
+  // Promotions (FC16) — customer-facing coupon lookup/redeem + realtime
+  // active-banners feed for the home carousel.
+  sl.registerLazySingleton(() => CouponRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<CouponRepository>(() => CouponRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => GetCouponByCode(sl()));
+  sl.registerLazySingleton(() => RedeemCoupon(sl()));
+  sl.registerLazySingleton(() => BannerRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<BannerRepository>(() => BannerRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => WatchActiveBanners(sl()));
+
+  // Promotions — console (FC16). Reads/writes are all direct (gated by the
+  // `promos.edit` rules branch), mirrors `AdminTaxonomyRepository`.
+  sl.registerLazySingleton(() => AdminPromosRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<AdminPromosRepository>(
+    () => AdminPromosRepositoryImpl(sl(), sl()),
+  );
+  sl.registerLazySingleton(() => GetAllCoupons(sl()));
+  sl.registerLazySingleton(() => CreateCoupon(sl()));
+  sl.registerLazySingleton(() => UpdateCoupon(sl()));
+  sl.registerLazySingleton(() => SetCouponActive(sl()));
+  sl.registerLazySingleton(() => DeleteCoupon(sl()));
+  sl.registerLazySingleton(() => GetAllBanners(sl()));
+  sl.registerLazySingleton(() => CreateBanner(sl()));
+  sl.registerLazySingleton(() => UpdateBanner(sl()));
+  sl.registerLazySingleton(() => SetBannerActive(sl()));
+  sl.registerLazySingleton(() => SwapBannerSort(sl()));
+  sl.registerLazySingleton(() => DeleteBanner(sl()));
+
+  // Promotions — console blocs (page-scoped tabs of `/console/promos`, same
+  // reload-whole-list-after-mutation contract as `TaxonomyBoardBloc`).
+  sl.registerFactory(() => CouponsBoardBloc(
+        getAllCoupons: sl(),
+        createCoupon: sl(),
+        updateCoupon: sl(),
+        setCouponActive: sl(),
+        deleteCoupon: sl(),
+      ));
+  sl.registerFactory(() => BannersBoardBloc(
+        getAllBanners: sl(),
+        createBanner: sl(),
+        updateBanner: sl(),
+        setBannerActive: sl(),
+        swapBannerSort: sl(),
+        deleteBanner: sl(),
+      ));
+
   // Order — data
   sl.registerLazySingleton(
     () => OrderRemoteDataSource(firestore: sl(), auth: sl()),
@@ -857,7 +932,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<OrderRepository>(() => OrderRepositoryImpl(sl()));
 
   // Order — use cases
-  sl.registerLazySingleton(() => PlaceOrder(sl(), sl(), sl()));
+  sl.registerLazySingleton(() => PlaceOrder(sl(), sl(), sl(), sl()));
   sl.registerLazySingleton(() => WatchCustomerOrders(sl()));
   sl.registerLazySingleton(() => WatchShopOrders(sl()));
   sl.registerLazySingleton(() => WatchOrder(sl()));

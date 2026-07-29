@@ -4,10 +4,14 @@ import 'package:dukkan/domain/product/entities/product.dart';
 import 'package:dukkan/domain/product/entities/stock_status.dart';
 import 'package:dukkan/domain/product/repositories/product_repository.dart';
 import 'package:dukkan/domain/product/usecases/watch_all_products.dart';
+import 'package:dukkan/domain/promos/entities/promo_banner.dart';
+import 'package:dukkan/domain/promos/repositories/banner_repository.dart';
+import 'package:dukkan/domain/promos/usecases/watch_active_banners.dart';
 import 'package:dukkan/domain/shop/entities/shop.dart';
 import 'package:dukkan/domain/shop/repositories/shop_repository.dart';
 import 'package:dukkan/domain/shop/usecases/watch_shops.dart';
 import 'package:dukkan/presentation/home/bloc/shops_bloc.dart';
+import 'package:dukkan/presentation/home/widgets/promo_carousel.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Drives the shops stream by hand so the bloc can be tested without Firebase.
@@ -72,6 +76,14 @@ class _FakeProductRepository implements ProductRepository {
   Future<void> deleteProduct(String productId) => throw UnimplementedError();
 }
 
+/// Drives the active-banners stream by hand (FC16 Task B).
+class _FakeBannerRepository implements BannerRepository {
+  final controller = StreamController<List<PromoBanner>>();
+
+  @override
+  Stream<List<PromoBanner>> watchActiveBanners() => controller.stream;
+}
+
 Shop _shop(String id, List<String> categories) => Shop(
       id: id,
       ownerUid: 'owner-$id',
@@ -85,14 +97,17 @@ Shop _shop(String id, List<String> categories) => Shop(
 void main() {
   late _FakeShopRepository shopRepo;
   late _FakeProductRepository productRepo;
+  late _FakeBannerRepository bannerRepo;
   late ShopsBloc bloc;
 
   setUp(() {
     shopRepo = _FakeShopRepository();
     productRepo = _FakeProductRepository();
+    bannerRepo = _FakeBannerRepository();
     bloc = ShopsBloc(
       watchShops: WatchShops(shopRepo),
       watchAllProducts: WatchAllProducts(productRepo),
+      watchActiveBanners: WatchActiveBanners(bannerRepo),
     );
   });
 
@@ -100,6 +115,7 @@ void main() {
     await bloc.close();
     await shopRepo.controller.close();
     await productRepo.controller.close();
+    await bannerRepo.controller.close();
   });
 
   test('loads shops and derives the category union in first-seen order',
@@ -204,5 +220,77 @@ void main() {
     expect(bloc.state.status, ShopsStatus.loaded);
     expect(bloc.state.promoProducts.length, 8);
     expect(bloc.state.promoProducts.every((p) => p.isPromo), isTrue);
+  });
+
+  test('carousel prepends banners, then promo, then deduped featured (FC16)',
+      () async {
+    bloc.add(const ShopsStarted());
+    await Future<void>.delayed(Duration.zero);
+
+    shopRepo.controller.add(const []);
+    productRepo.controller.add([
+      Product(
+        id: 'promo-and-featured',
+        shopId: 'a',
+        name: 'Both',
+        nameAr: 'كلاهما',
+        priceMinor: 100,
+        category: 'General',
+        stockStatus: StockStatus.inStock,
+        isPromo: true,
+        isFeatured: true,
+      ),
+      Product(
+        id: 'featured-only',
+        shopId: 'a',
+        name: 'Featured',
+        nameAr: 'مميز',
+        priceMinor: 100,
+        category: 'General',
+        stockStatus: StockStatus.inStock,
+        isPromo: false,
+        isFeatured: true,
+      ),
+    ]);
+    bannerRepo.controller.add(const [
+      PromoBanner(
+        id: 'b1',
+        imageUrl: 'https://example.com/b1.png',
+        targetType: BannerTargetType.none,
+        sort: 0,
+      ),
+    ]);
+    await Future<void>.delayed(Duration.zero);
+
+    final items = bloc.state.carouselItems;
+    expect(items.length, 3); // 1 banner + 1 promo(+featured, deduped) + 1 featured-only
+    expect(items[0], isA<BannerCarouselItem>());
+    expect((items[1] as ProductCarouselItem).product.id, 'promo-and-featured');
+    expect((items[2] as ProductCarouselItem).product.id, 'featured-only');
+  });
+
+  test('featuredShops filters isFeatured and caps at 5 (FC16)', () async {
+    bloc.add(const ShopsStarted());
+    await Future<void>.delayed(Duration.zero);
+
+    shopRepo.controller.add([
+      for (var i = 0; i < 7; i++)
+        Shop(
+          id: 'f$i',
+          ownerUid: 'owner-f$i',
+          name: 'Shop $i',
+          nameAr: 'دكان $i',
+          address: 'Cairo',
+          isOpen: true,
+          categories: const [],
+          isFeatured: true,
+        ),
+      _shop('not-featured', const []),
+    ]);
+    productRepo.controller.add(const []);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(bloc.state.featuredShops.length, 5);
+    expect(bloc.state.featuredShops.every((s) => s.isFeatured), isTrue);
   });
 }

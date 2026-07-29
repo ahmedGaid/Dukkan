@@ -26,6 +26,8 @@ class OrderRepositoryImpl implements OrderRepository {
     required int platformDeliveryShareMinor,
     required int totalMinor,
     String? notes,
+    String? couponCode,
+    int discountMinor = 0,
   }) {
     return _remote.placeOrder(
       shopId: shopId,
@@ -40,6 +42,8 @@ class OrderRepositoryImpl implements OrderRepository {
       platformDeliveryShareMinor: platformDeliveryShareMinor,
       totalMinor: totalMinor,
       notes: notes,
+      couponCode: couponCode,
+      discountMinor: discountMinor,
     );
   }
 

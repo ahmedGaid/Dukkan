@@ -86,6 +86,12 @@ const consoleSections = <ConsoleSection>[
     requiredPerm: Permissions.settingsEdit,
   ),
   ConsoleSection(
+    route: '/console/promos',
+    icon: Icons.local_offer_outlined,
+    labelKey: 'consoleNavPromos',
+    requiredPerm: Permissions.promosEdit,
+  ),
+  ConsoleSection(
     route: '/console/notifications',
     icon: Icons.campaign_outlined,
     labelKey: 'consoleNavNotifications',

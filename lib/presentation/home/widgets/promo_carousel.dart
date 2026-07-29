@@ -6,18 +6,43 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../domain/product/entities/product.dart';
+import '../../../domain/promos/entities/promo_banner.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/common/price_tag.dart';
 import '../../widgets/common/shimmer_image.dart';
 
-/// Calm mint-gradient-scrimmed banners with a dot indicator, one real
-/// `isPromo` product each (P1 — replaces the static brand-welcome copy from
-/// C2a). Auto-advances gently unless reduced-motion is on (then swipe-only).
-class PromoCarousel extends StatefulWidget {
-  const PromoCarousel({super.key, required this.products, required this.onTap});
+/// One carousel slot — either a real `isPromo`/`isFeatured` product card, or a
+/// console-managed marketing banner (FC16 Task B/C). The bloc builds this
+/// ordered, capped list; the widget only renders it.
+sealed class PromoCarouselItem {
+  const PromoCarouselItem();
+}
 
-  final List<Product> products;
-  final ValueChanged<Product> onTap;
+class ProductCarouselItem extends PromoCarouselItem {
+  const ProductCarouselItem(this.product);
+  final Product product;
+}
+
+class BannerCarouselItem extends PromoCarouselItem {
+  const BannerCarouselItem(this.banner);
+  final PromoBanner banner;
+}
+
+/// Calm mint-gradient-scrimmed cards with a dot indicator (P1). Banners (FC16)
+/// prepend before product cards — order is decided by the bloc, this widget
+/// just renders whatever list it's given. Auto-advances gently unless
+/// reduced-motion is on (then swipe-only).
+class PromoCarousel extends StatefulWidget {
+  const PromoCarousel({
+    super.key,
+    required this.items,
+    required this.onProductTap,
+    required this.onBannerTap,
+  });
+
+  final List<PromoCarouselItem> items;
+  final ValueChanged<Product> onProductTap;
+  final ValueChanged<PromoBanner> onBannerTap;
 
   @override
   State<PromoCarousel> createState() => _PromoCarouselState();
@@ -36,14 +61,14 @@ class _PromoCarouselState extends State<PromoCarousel> {
   }
 
   void _maybeAutoAdvance(bool reduceMotion) {
-    if (reduceMotion || widget.products.length < 2) {
+    if (reduceMotion || widget.items.length < 2) {
       _timer?.cancel();
       _timer = null;
       return;
     }
     _timer ??= Timer.periodic(const Duration(seconds: 5), (_) {
       if (!mounted || !_controller.hasClients) return;
-      final next = (_page + 1) % widget.products.length;
+      final next = (_page + 1) % widget.items.length;
       _controller.animateToPage(
         next,
         duration: const Duration(milliseconds: 400),
@@ -63,26 +88,35 @@ class _PromoCarouselState extends State<PromoCarousel> {
           height: 132,
           child: PageView.builder(
             controller: _controller,
-            itemCount: widget.products.length,
+            itemCount: widget.items.length,
             onPageChanged: (i) => setState(() => _page = i),
-            itemBuilder: (context, i) => Padding(
-              padding: const EdgeInsetsDirectional.only(end: AppSpacing.xs),
-              child: _Banner(
-                product: widget.products[i],
-                onTap: () => widget.onTap(widget.products[i]),
-              ),
-            ),
+            itemBuilder: (context, i) {
+              final item = widget.items[i];
+              return Padding(
+                padding: const EdgeInsetsDirectional.only(end: AppSpacing.xs),
+                child: switch (item) {
+                  ProductCarouselItem() => _ProductCard(
+                      product: item.product,
+                      onTap: () => widget.onProductTap(item.product),
+                    ),
+                  BannerCarouselItem() => _BannerCard(
+                      banner: item.banner,
+                      onTap: () => widget.onBannerTap(item.banner),
+                    ),
+                },
+              );
+            },
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        _Dots(count: widget.products.length, active: _page),
+        _Dots(count: widget.items.length, active: _page),
       ],
     );
   }
 }
 
-class _Banner extends StatelessWidget {
-  const _Banner({required this.product, required this.onTap});
+class _ProductCard extends StatelessWidget {
+  const _ProductCard({required this.product, required this.onTap});
 
   final Product product;
   final VoidCallback onTap;
@@ -133,7 +167,7 @@ class _Banner extends StatelessWidget {
                   borderRadius: AppRadius.roundAll,
                 ),
                 child: Text(
-                  l10n.promoBadge,
+                  product.isPromo ? l10n.promoBadge : l10n.featuredBadge,
                   style: text.labelSmall?.copyWith(
                     color: AppColors.surface,
                     fontWeight: FontWeight.w600,
@@ -167,6 +201,32 @@ class _Banner extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A console-managed banner is its own creative — no name/price overlay, just
+/// the image, clipped to the same shape as a product card.
+class _BannerCard extends StatelessWidget {
+  const _BannerCard({required this.banner, required this.onTap});
+
+  final PromoBanner banner;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: AppRadius.xlAll,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: banner.targetType == BannerTargetType.none ? null : onTap,
+        child: ShimmerImage(
+          url: banner.imageUrl,
+          radius: BorderRadius.zero,
+          fallbackIcon: Icons.campaign_outlined,
         ),
       ),
     );

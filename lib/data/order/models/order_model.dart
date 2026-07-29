@@ -32,6 +32,8 @@ class OrderModel extends Order {
     super.driverDeliveryShareMinor,
     super.platformDeliveryShareMinor,
     super.commissionPayable,
+    super.couponCode,
+    super.discountMinor,
   });
 
   factory OrderModel.fromFirestore(String id, Map<String, dynamic> data) {
@@ -76,6 +78,8 @@ class OrderModel extends Order {
       platformDeliveryShareMinor:
           (data['platformDeliveryShareMinor'] as num?)?.toInt() ?? 0,
       commissionPayable: data['commissionPayable'] as bool? ?? false,
+      couponCode: data['couponCode'] as String?,
+      discountMinor: (data['discountMinor'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -122,6 +126,8 @@ class OrderModel extends Order {
         'driverDeliveryShareMinor': driverDeliveryShareMinor,
         'platformDeliveryShareMinor': platformDeliveryShareMinor,
         'commissionPayable': commissionPayable,
+        if (couponCode != null) 'couponCode': couponCode,
+        if (discountMinor != 0) 'discountMinor': discountMinor,
         'status': status.wire,
         'createdAt': FieldValue.serverTimestamp(),
         'deliveryAddress': {

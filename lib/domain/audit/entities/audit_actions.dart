@@ -56,6 +56,13 @@ class AuditActions {
     // Impersonation (session 15)
     'impersonation.start',
     'impersonation.stop',
+    // Promotions (session 16)
+    'coupon.create',
+    'coupon.update',
+    'coupon.delete',
+    'banner.create',
+    'banner.update',
+    'banner.delete',
   ];
 
   /// The kinds of thing an action targets.
@@ -71,5 +78,7 @@ class AuditActions {
     'media',
     'notification',
     'admin',
+    'coupon',
+    'banner',
   ];
 }

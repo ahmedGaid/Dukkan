@@ -59,6 +59,8 @@ class _FakeOrderRepository implements OrderRepository {
     required int platformDeliveryShareMinor,
     required int totalMinor,
     String? notes,
+    String? couponCode,
+    int discountMinor = 0,
   }) async =>
       _order('unused', OrderStatus.pending);
 }
