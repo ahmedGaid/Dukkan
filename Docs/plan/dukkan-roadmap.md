@@ -630,6 +630,23 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       test (commission edit → new order snapshots it, maintenance toggle blocks/restores,
       minSupportedBuild update screen, non-settings.edit staff sees section hidden + rules-
       denied) still owed — not run this session. **Next: FC13 (FILE_13) — notification center.**
+      **FC14 DONE (code) 2026-07-15** (FILE_14) — media library. Worker `/admin/media/
+      {list,stats,delete}` (perm `images.delete`, `media.delete` audited); `'banners'` added
+      to `ALLOWED_FOLDERS`. New `lib/domain/media` + `lib/data/media`: `MediaRepository`
+      wraps the Worker for browse/stats/delete (R2 isn't Firestore — no client-direct path,
+      unlike every other section) + `MediaReferenceRemoteDataSource` scans
+      shops.logoUrl/products.imageUrl (incl. soft-deleted)/drivers.idDocUrl/banners.imageUrl
+      for the finder tabs — banners has no rules entry until Session 16, handled as an empty
+      result rather than a permission-denied crash. `console/media` page (FILE_14 spec):
+      folder-chip browse grid with cursor pagination + multi-select hard-delete (only other
+      hard-delete surface besides founder product delete-forever) + folder-scoped upload +
+      lazily-loaded unused/broken finder tabs (pure `findOrphanMedia`/`findBrokenReferences`
+      set-difference in `lib/domain/media/media_diff.dart`, 4 new unit tests). No
+      `firestore.rules`/index changes needed (shops/products/drivers already publicly/
+      staff-readable). 30 i18n keys ×2. Gates green (analyze 0, test 198/198, parity 633).
+      wrangler dev smoke test (list/delete against real R2, stats cross-check, live
+      orphan/broken detection) still owed — not run this session, no device/Worker access
+      here. **Next: FC15 (FILE_15) — impersonation + dev tools.**
 - [ ] **FC16–FC18 — Growth + close.** Promotions (coupons/banners/featured) · global search +
       CSV exports + reports · acceptance + security matrix + regression. (FILE_16–18)
 
