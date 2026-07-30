@@ -19,4 +19,8 @@ class AdminUsersRepositoryImpl implements AdminUsersRepository {
 
   @override
   Future<ManagedUser?> getByPhone(String phone) => _remote.getByPhone(phone);
+
+  @override
+  Future<List<ManagedUser>> searchByNamePrefix(String prefix, {int limit = 5}) =>
+      _remote.searchByNamePrefix(prefix, limit: limit);
 }

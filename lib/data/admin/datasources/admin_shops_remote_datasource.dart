@@ -73,7 +73,11 @@ class AdminShopsRemoteDataSource {
 
   Future<ShopModel> createShop(ShopModel shop) async {
     try {
-      final doc = await _shops.add(shop.toFirestore());
+      // `createdAt` (FC17, additive) — see `ShopRemoteDataSource.createShop`.
+      final doc = await _shops.add({
+        ...shop.toFirestore(),
+        'createdAt': FieldValue.serverTimestamp(),
+      });
       return ShopModel.fromFirestore(doc.id, shop.toFirestore());
     } on FirebaseException catch (e) {
       throw ServerFailure(e.message ?? e.code);

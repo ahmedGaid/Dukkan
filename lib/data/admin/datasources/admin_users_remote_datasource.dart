@@ -40,6 +40,32 @@ class AdminUsersRemoteDataSource {
 
   Future<ManagedUserModel?> getByPhone(String phone) => _getByField('phone', phone);
 
+  /// Literal (non-folded) name-prefix match for the console global search
+  /// (FC17) — `orderBy('name')` is a single-field query, auto-indexed by
+  /// Firestore, so no `firestore.indexes.json` entry is needed. Unlike the
+  /// shops/products fold-search, this doesn't fetch-all-then-filter (users
+  /// can outgrow "small marketplace" scale) — a real bounded range query.
+  /// The upper bound appends U+F8FF (built via `String.fromCharCode`, never
+  /// a raw unicode glyph in source) — the standard Firestore trick for "any
+  /// string starting with prefix".
+  Future<List<ManagedUserModel>> searchByNamePrefix(String prefix, {int limit = 5}) async {
+    try {
+      final upperBound = prefix + String.fromCharCode(0xF8FF);
+      final snap = await _firestore
+          .collection('users')
+          .orderBy('name')
+          .startAt([prefix])
+          .endAt([upperBound])
+          .limit(limit)
+          .get();
+      return snap.docs
+          .map((d) => ManagedUserModel.fromFirestore(d.id, d.data()))
+          .toList(growable: false);
+    } on FirebaseException catch (e) {
+      throw ServerFailure(e.message ?? e.code);
+    }
+  }
+
   Future<ManagedUserModel?> _getByField(String field, String value) async {
     try {
       final snap = await _firestore

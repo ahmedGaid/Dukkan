@@ -4579,6 +4579,234 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'معرفناش نرفع الصورة — جرّب تاني.'**
   String get promosBannerUploadErrorBody;
+
+  /// No description provided for @consoleSearchHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'بحث في الكل'**
+  String get consoleSearchHint;
+
+  /// No description provided for @consoleSearchPromptTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'دوّر في كل حاجة'**
+  String get consoleSearchPromptTitle;
+
+  /// No description provided for @consoleSearchPromptBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب اسم، إيميل، رقم تليفون، أو رقم طلب'**
+  String get consoleSearchPromptBody;
+
+  /// No description provided for @consoleSearchEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش نتائج'**
+  String get consoleSearchEmptyTitle;
+
+  /// No description provided for @consoleSearchEmptyBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرّب كلمة تانية'**
+  String get consoleSearchEmptyBody;
+
+  /// No description provided for @consoleExportAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصدير CSV'**
+  String get consoleExportAction;
+
+  /// No description provided for @consoleExportInProgress.
+  ///
+  /// In ar, this message translates to:
+  /// **'جاري التصدير…'**
+  String get consoleExportInProgress;
+
+  /// No description provided for @consoleExportSavedTo.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتحفظ في: {path}'**
+  String consoleExportSavedTo(Object path);
+
+  /// No description provided for @consoleExportCapped.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تصدير أول 1000'**
+  String get consoleExportCapped;
+
+  /// No description provided for @exportColId.
+  ///
+  /// In ar, this message translates to:
+  /// **'المعرّف'**
+  String get exportColId;
+
+  /// No description provided for @exportColName.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم'**
+  String get exportColName;
+
+  /// No description provided for @exportColNameAr.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم بالعربي'**
+  String get exportColNameAr;
+
+  /// No description provided for @exportColOwner.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالك'**
+  String get exportColOwner;
+
+  /// No description provided for @exportColStatus.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالة'**
+  String get exportColStatus;
+
+  /// No description provided for @exportColAddress.
+  ///
+  /// In ar, this message translates to:
+  /// **'العنوان'**
+  String get exportColAddress;
+
+  /// No description provided for @exportColPrice.
+  ///
+  /// In ar, this message translates to:
+  /// **'السعر'**
+  String get exportColPrice;
+
+  /// No description provided for @exportColEmail.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإيميل'**
+  String get exportColEmail;
+
+  /// No description provided for @exportColDate.
+  ///
+  /// In ar, this message translates to:
+  /// **'التاريخ'**
+  String get exportColDate;
+
+  /// No description provided for @consoleNavReports.
+  ///
+  /// In ar, this message translates to:
+  /// **'التقارير'**
+  String get consoleNavReports;
+
+  /// No description provided for @reportsErrorBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'معرفناش نجيب التقرير دلوقتي — جرّب تاني.'**
+  String get reportsErrorBody;
+
+  /// No description provided for @reportsPeriod7.
+  ///
+  /// In ar, this message translates to:
+  /// **'٧ أيام'**
+  String get reportsPeriod7;
+
+  /// No description provided for @reportsPeriod30.
+  ///
+  /// In ar, this message translates to:
+  /// **'٣٠ يوم'**
+  String get reportsPeriod30;
+
+  /// No description provided for @reportsPeriod90.
+  ///
+  /// In ar, this message translates to:
+  /// **'٩٠ يوم'**
+  String get reportsPeriod90;
+
+  /// No description provided for @reportsChartOrders.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات'**
+  String get reportsChartOrders;
+
+  /// No description provided for @reportsChartRevenue.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإيرادات'**
+  String get reportsChartRevenue;
+
+  /// No description provided for @reportsChartCommission.
+  ///
+  /// In ar, this message translates to:
+  /// **'العمولة'**
+  String get reportsChartCommission;
+
+  /// No description provided for @reportsColDay.
+  ///
+  /// In ar, this message translates to:
+  /// **'اليوم'**
+  String get reportsColDay;
+
+  /// No description provided for @reportsColCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'العدد'**
+  String get reportsColCount;
+
+  /// No description provided for @reportsExportDaily.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصدير الجدول اليومي'**
+  String get reportsExportDaily;
+
+  /// No description provided for @reportsExportSection.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصدير'**
+  String get reportsExportSection;
+
+  /// No description provided for @reportsGrowthTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'النمو'**
+  String get reportsGrowthTitle;
+
+  /// No description provided for @reportsGrowthCaption.
+  ///
+  /// In ar, this message translates to:
+  /// **'قبل بدء التتبّع غير مشمول'**
+  String get reportsGrowthCaption;
+
+  /// No description provided for @reportsNewUsers.
+  ///
+  /// In ar, this message translates to:
+  /// **'مستخدمون جدد'**
+  String get reportsNewUsers;
+
+  /// No description provided for @reportsNewShops.
+  ///
+  /// In ar, this message translates to:
+  /// **'متاجر جديدة'**
+  String get reportsNewShops;
+
+  /// No description provided for @reportsDistributionByArea.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات حسب المنطقة'**
+  String get reportsDistributionByArea;
+
+  /// No description provided for @reportsDistributionByCategory.
+  ///
+  /// In ar, this message translates to:
+  /// **'المنتجات حسب التصنيف'**
+  String get reportsDistributionByCategory;
+
+  /// No description provided for @reportsDistributionByShop.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات حسب الدكان (أعلى ١٠)'**
+  String get reportsDistributionByShop;
+
+  /// No description provided for @reportsDistributionEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفيش بيانات'**
+  String get reportsDistributionEmpty;
 }
 
 class _AppLocalizationsDelegate

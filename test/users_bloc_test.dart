@@ -38,6 +38,9 @@ class _FakeUsersRepository implements AdminUsersRepository {
 
   @override
   Future<ManagedUser?> getByPhone(String phone) async => byPhoneResult;
+
+  @override
+  Future<List<ManagedUser>> searchByNamePrefix(String prefix, {int limit = 5}) async => const [];
 }
 
 class _FakeUserActions implements AdminUserActions {

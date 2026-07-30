@@ -87,6 +87,7 @@ Rules:
 | Courier delivered the order | تم التوصيل | تم الشحن |
 | Courier online/offline switch | أونلاين / أوفلاين | متاح / غير متاح |
 | Finance (founder-only summary) | المالية | الحسابات، التقارير المالية |
+| Report (console analytics page, FC17) | تقرير (pl. تقارير) | إحصائيات |
 | Permission (staff capability) | صلاحية | إذن، تصريح |
 | Activity / audit log (console) | سجل العمليات | سجل التدقيق، اللوج |
 | Console (founder back office) | لوحة التحكم | لوحة الإدارة، الأدمن |

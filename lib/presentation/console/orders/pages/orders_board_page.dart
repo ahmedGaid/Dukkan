@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/di/injector.dart';
+import '../../../../core/money.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../domain/admin/usecases/get_orders_page.dart';
 import '../../../../domain/areas/entities/area.dart';
 import '../../../../domain/order/entities/order.dart';
 import '../../../../domain/order/entities/order_status.dart';
@@ -17,6 +19,8 @@ import '../../../widgets/common/empty_state.dart';
 import '../../../widgets/common/price_tag.dart';
 import '../../../widgets/common/skeletons.dart';
 import '../../../widgets/common/status_chip.dart';
+import '../../util/export_action.dart';
+import '../../util/export_icon_button.dart';
 import '../bloc/orders_board_bloc.dart';
 
 /// The Founder Console order board (`/console/orders`, FC10). Status filter
@@ -128,27 +132,35 @@ class _FilterBarState extends State<_FilterBar> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 44,
-            child: TextField(
-              controller: _searchCtrl,
-              textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                isDense: true,
-                labelText: l10n.ordersBoardSearchLabel,
-                prefixIcon: const Icon(Icons.search, size: 18),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.close, size: 18),
-                  onPressed: () {
-                    _searchCtrl.clear();
-                    context.read<OrdersBoardBloc>().add(const OrdersBoardSearchCleared());
-                  },
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 44,
+                  child: TextField(
+                    controller: _searchCtrl,
+                    textInputAction: TextInputAction.search,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      labelText: l10n.ordersBoardSearchLabel,
+                      prefixIcon: const Icon(Icons.search, size: 18),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.close, size: 18),
+                        onPressed: () {
+                          _searchCtrl.clear();
+                          context.read<OrdersBoardBloc>().add(const OrdersBoardSearchCleared());
+                        },
+                      ),
+                      border: OutlineInputBorder(borderRadius: AppRadius.mdAll),
+                    ),
+                    onSubmitted: (v) =>
+                        context.read<OrdersBoardBloc>().add(OrdersBoardSearchSubmitted(v)),
+                  ),
                 ),
-                border: OutlineInputBorder(borderRadius: AppRadius.mdAll),
               ),
-              onSubmitted: (v) =>
-                  context.read<OrdersBoardBloc>().add(OrdersBoardSearchSubmitted(v)),
-            ),
+              const SizedBox(width: AppSpacing.sm),
+              ExportIconButton(onExport: _exportOrders),
+            ],
           ),
           const SizedBox(height: AppSpacing.sm),
           BlocSelector<OrdersBoardBloc, OrdersBoardState, String?>(
@@ -258,6 +270,66 @@ class _FilterBarState extends State<_FilterBar> {
       ),
     );
   }
+}
+
+/// Exports the CURRENT filter result — the exact search hit(s) when a search
+/// is active; else a fresh paginated fetch for [OrdersBoardState.statusFilter]
+/// (the server facet) up to 1000 docs, then the SAME shop/area/date-range
+/// client refine `OrdersBoardState.filtered` already applies (reused via a
+/// throwaway state rather than duplicating the predicate).
+Future<void> _exportOrders(BuildContext context) async {
+  final l10n = AppLocalizations.of(context)!;
+  final locale = Localizations.localeOf(context).languageCode;
+  final state = context.read<OrdersBoardBloc>().state;
+
+  List<Order> all;
+  if (state.searchResults != null) {
+    all = state.searchResults!;
+  } else {
+    final getOrdersPage = sl<GetOrdersPage>();
+    final collected = <Order>[];
+    DateTime? cursor;
+    while (collected.length < 1000) {
+      final page = await getOrdersPage(status: state.statusFilter, cursor: cursor);
+      collected.addAll(page.orders);
+      if (!page.hasMore || page.orders.isEmpty) break;
+      cursor = page.orders.last.createdAt;
+    }
+    all = OrdersBoardState(
+      orders: collected,
+      shopFilter: state.shopFilter,
+      areaFilter: state.areaFilter,
+      dateFrom: state.dateFrom,
+      dateTo: state.dateTo,
+    ).filtered;
+  }
+
+  final shopsById = {for (final s in state.shops) s.id: s};
+  final rows = all.take(1000).toList(growable: false);
+  if (!context.mounted) return;
+  await exportCsv(
+    context,
+    filenameBase: 'orders',
+    auditTargetType: 'order',
+    capped: all.length > 1000,
+    rows: [
+      [
+        l10n.exportColId,
+        l10n.consoleNavShops,
+        l10n.exportColStatus,
+        l10n.exportColPrice,
+        l10n.exportColDate,
+      ],
+      for (final o in rows)
+        [
+          o.id,
+          shopsById[o.shopId]?.name ?? o.shopId,
+          orderStatusView(l10n, o.status).label,
+          Money.format(o.totalMinor, languageCode: locale),
+          o.createdAt.toIso8601String(),
+        ],
+    ],
+  );
 }
 
 class _StatusChoiceChip extends StatelessWidget {

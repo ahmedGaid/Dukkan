@@ -12,6 +12,8 @@ import '../../../widgets/common/empty_state.dart';
 import '../../../widgets/common/shimmer_image.dart';
 import '../../../widgets/common/skeletons.dart';
 import '../../../widgets/common/status_chip.dart';
+import '../../util/export_action.dart';
+import '../../util/export_icon_button.dart';
 import '../bloc/shops_board_bloc.dart';
 
 /// The Founder Console shop management board (`/console/shops`, FC7). Status
@@ -132,6 +134,8 @@ class _SearchAndFilterBarState extends State<_SearchAndFilterBar> {
                   ),
                 ),
               ),
+              const SizedBox(width: AppSpacing.sm),
+              ExportIconButton(onExport: _exportShops),
               const SizedBox(width: AppSpacing.sm),
               FilledButton.icon(
                 onPressed: () => context.push('/console/shops/new'),
@@ -313,6 +317,32 @@ class _ShopRow extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Exports the board's CURRENT filter result (`state.filtered`, already
+/// client-loaded in full — see `ShopsBoardBloc` doc), capped at 1000.
+Future<void> _exportShops(BuildContext context) async {
+  final l10n = AppLocalizations.of(context)!;
+  final all = context.read<ShopsBoardBloc>().state.filtered;
+  final rows = all.take(1000).toList(growable: false);
+  await exportCsv(
+    context,
+    filenameBase: 'shops',
+    auditTargetType: 'shop',
+    capped: all.length > 1000,
+    rows: [
+      [
+        l10n.exportColId,
+        l10n.exportColName,
+        l10n.exportColNameAr,
+        l10n.exportColOwner,
+        l10n.exportColStatus,
+        l10n.exportColAddress,
+      ],
+      for (final s in rows)
+        [s.id, s.name, s.nameAr, s.ownerUid, _statusLabel(l10n, s.status), s.address],
+    ],
+  );
 }
 
 String _statusLabel(AppLocalizations l10n, String status) => switch (status) {

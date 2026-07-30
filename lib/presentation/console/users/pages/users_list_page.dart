@@ -6,12 +6,15 @@ import '../../../../core/di/injector.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../domain/admin/entities/managed_user.dart';
+import '../../../../domain/admin/usecases/get_users.dart';
 import '../../../../domain/auth/entities/user_role.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../widgets/common/app_card.dart';
 import '../../../widgets/common/empty_state.dart';
 import '../../../widgets/common/skeletons.dart';
 import '../../../widgets/common/status_chip.dart';
+import '../../util/export_action.dart';
+import '../../util/export_icon_button.dart';
 import '../bloc/users_bloc.dart';
 
 /// The Founder Console user management list (`/console/users`, Session 6).
@@ -183,6 +186,7 @@ class _SearchAndFilterBarState extends State<_SearchAndFilterBar> {
               );
             },
           ),
+          ExportIconButton(onExport: _exportUsers),
         ],
       ),
     );
@@ -454,6 +458,43 @@ class _UserRow extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Exports the CURRENT filter result — the search box's exact hit(s) when a
+/// search is active, else a fresh paginated fetch (role/status filters,
+/// server-side) up to 1000 docs.
+Future<void> _exportUsers(BuildContext context) async {
+  final l10n = AppLocalizations.of(context)!;
+  final state = context.read<UsersBloc>().state;
+
+  List<ManagedUser> all;
+  if (state.searchResults != null) {
+    all = state.searchResults!;
+  } else {
+    final getUsers = sl<GetUsers>();
+    final collected = <ManagedUser>[];
+    String? cursor;
+    while (collected.length < 1000) {
+      final page = await getUsers(role: state.role, status: state.statusFilter, cursor: cursor);
+      collected.addAll(page.users);
+      if (!page.hasMore || page.users.isEmpty) break;
+      cursor = page.users.last.uid;
+    }
+    all = collected;
+  }
+
+  final rows = all.take(1000).toList(growable: false);
+  if (!context.mounted) return;
+  await exportCsv(
+    context,
+    filenameBase: 'users',
+    auditTargetType: 'user',
+    capped: all.length > 1000,
+    rows: [
+      [l10n.exportColId, l10n.exportColName, l10n.exportColEmail, l10n.usersFilterRole, l10n.exportColStatus],
+      for (final u in rows) [u.uid, u.name, u.email, _roleLabel(l10n, u.role), _statusLabel(l10n, u.status)],
+    ],
+  );
 }
 
 String _roleLabel(AppLocalizations l10n, UserRole role) => switch (role) {

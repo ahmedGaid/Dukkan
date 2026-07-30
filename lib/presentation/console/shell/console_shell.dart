@@ -8,11 +8,11 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../domain/admin/entities/staff_role.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/bloc/auth_bloc.dart';
+import '../search/pages/console_search_dialog.dart';
 import 'console_sections.dart';
 
-/// Ctrl+K global search. The handler is wired in Session 17; until then the
-/// intent is deliberately left unmapped (no dead action, no stray SnackBar) —
-/// the binding lives here now so the shortcut surface exists from the start.
+/// Ctrl+K global search (FC17) — bound in [ConsoleShell.build] to
+/// [ConsoleSearchDialog.show].
 class ConsoleSearchIntent extends Intent {
   const ConsoleSearchIntent();
 }
@@ -56,8 +56,14 @@ class ConsoleShell extends StatelessWidget {
             ConsoleSearchIntent(),
       },
       child: Actions(
-        // ConsoleSearchIntent is intentionally unmapped until Session 17.
-        actions: const <Type, Action<Intent>>{},
+        actions: <Type, Action<Intent>>{
+          ConsoleSearchIntent: CallbackAction<ConsoleSearchIntent>(
+            onInvoke: (_) {
+              if (admin != null) ConsoleSearchDialog.show(context, admin);
+              return null;
+            },
+          ),
+        },
         child: LayoutBuilder(
           builder: (context, constraints) {
             // NavigationRail needs ≥ 2 destinations; a staff member who can see
@@ -172,6 +178,7 @@ class _NarrowLayout extends StatelessWidget {
       appBar: AppBar(
         title: Text(title),
         actions: [
+          const _SearchButton(),
           Padding(
             padding: const EdgeInsetsDirectional.only(end: AppSpacing.md),
             child: Center(child: staff),
@@ -249,9 +256,29 @@ class _TopBar extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          const _SearchButton(),
+          const SizedBox(width: AppSpacing.sm),
           staff,
         ],
       ),
+    );
+  }
+}
+
+/// Opens [ConsoleSearchDialog] — hidden for a non-staff/inactive viewer, the
+/// same guard `visibleConsoleSections` applies to the nav menu.
+class _SearchButton extends StatelessWidget {
+  const _SearchButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final admin = context.watch<AuthBloc>().state.adminProfile;
+    if (admin == null || !admin.isActive) return const SizedBox.shrink();
+    return IconButton(
+      icon: const Icon(Icons.search),
+      tooltip: l10n.consoleSearchHint,
+      onPressed: () => ConsoleSearchDialog.show(context, admin),
     );
   }
 }
@@ -320,6 +347,7 @@ String _sectionLabel(AppLocalizations l10n, String key) => switch (key) {
       'consoleNavNotifications' => l10n.consoleNavNotifications,
       'consoleNavMedia' => l10n.consoleNavMedia,
       'consoleNavDevtools' => l10n.consoleNavDevtools,
+      'consoleNavReports' => l10n.consoleNavReports,
       _ => key,
     };
 

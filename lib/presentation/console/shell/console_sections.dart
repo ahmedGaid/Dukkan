@@ -109,6 +109,15 @@ const consoleSections = <ConsoleSection>[
     labelKey: 'consoleNavDevtools',
     requiredPerm: Permissions.systemTools,
   ),
+  // Global search + CSV export + reports (FILE_17). Gated by `reports.export`
+  // in the console menu + Firestore rules (the underlying orders/users/shops/
+  // products aggregate reads already ride the same rules the dashboard uses).
+  ConsoleSection(
+    route: '/console/reports',
+    icon: Icons.bar_chart_outlined,
+    labelKey: 'consoleNavReports',
+    requiredPerm: Permissions.reportsExport,
+  ),
 ];
 
 /// The sections a given staff member may see, in order. Empty for a non-staff

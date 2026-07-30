@@ -2444,4 +2444,122 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get promosBannerUploadErrorBody =>
       'Couldn\'t upload the image — try again.';
+
+  @override
+  String get consoleSearchHint => 'Search everything';
+
+  @override
+  String get consoleSearchPromptTitle => 'Search across everything';
+
+  @override
+  String get consoleSearchPromptBody =>
+      'Type a name, email, phone, or order number';
+
+  @override
+  String get consoleSearchEmptyTitle => 'No results';
+
+  @override
+  String get consoleSearchEmptyBody => 'Try a different search';
+
+  @override
+  String get consoleExportAction => 'Export CSV';
+
+  @override
+  String get consoleExportInProgress => 'Exporting…';
+
+  @override
+  String consoleExportSavedTo(Object path) {
+    return 'Saved to: $path';
+  }
+
+  @override
+  String get consoleExportCapped => 'Only the first 1000 rows were exported';
+
+  @override
+  String get exportColId => 'ID';
+
+  @override
+  String get exportColName => 'Name';
+
+  @override
+  String get exportColNameAr => 'Name (Arabic)';
+
+  @override
+  String get exportColOwner => 'Owner';
+
+  @override
+  String get exportColStatus => 'Status';
+
+  @override
+  String get exportColAddress => 'Address';
+
+  @override
+  String get exportColPrice => 'Price';
+
+  @override
+  String get exportColEmail => 'Email';
+
+  @override
+  String get exportColDate => 'Date';
+
+  @override
+  String get consoleNavReports => 'Reports';
+
+  @override
+  String get reportsErrorBody =>
+      'We can\'t load the report right now — try again.';
+
+  @override
+  String get reportsPeriod7 => '7 days';
+
+  @override
+  String get reportsPeriod30 => '30 days';
+
+  @override
+  String get reportsPeriod90 => '90 days';
+
+  @override
+  String get reportsChartOrders => 'Orders';
+
+  @override
+  String get reportsChartRevenue => 'Revenue';
+
+  @override
+  String get reportsChartCommission => 'Commission';
+
+  @override
+  String get reportsColDay => 'Day';
+
+  @override
+  String get reportsColCount => 'Count';
+
+  @override
+  String get reportsExportDaily => 'Export daily table';
+
+  @override
+  String get reportsExportSection => 'Export';
+
+  @override
+  String get reportsGrowthTitle => 'Growth';
+
+  @override
+  String get reportsGrowthCaption => 'Not counted before tracking started';
+
+  @override
+  String get reportsNewUsers => 'New users';
+
+  @override
+  String get reportsNewShops => 'New shops';
+
+  @override
+  String get reportsDistributionByArea => 'Orders by area';
+
+  @override
+  String get reportsDistributionByCategory => 'Products by category';
+
+  @override
+  String get reportsDistributionByShop => 'Orders by shop (top 10)';
+
+  @override
+  String get reportsDistributionEmpty => 'No data';
 }

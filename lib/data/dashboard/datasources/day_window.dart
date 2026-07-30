@@ -15,8 +15,14 @@ DateTime startOfDay(DateTime now) => DateTime(now.year, now.month, now.day);
 /// `DateTime` constructor (which normalises the day rollover) so every entry is
 /// a true local midnight even across a daylight-saving boundary, where
 /// subtracting a `Duration` of whole days would land an hour off.
-List<DateTime> last7DayStarts(DateTime now) =>
-    [for (var k = 6; k >= 0; k--) DateTime(now.year, now.month, now.day - k)];
+List<DateTime> last7DayStarts(DateTime now) => lastNDayStarts(now, 7);
+
+/// The [days] local-midnight day-starts ending with today, oldest-first —
+/// generalizes [last7DayStarts] for the reports page's 7/30/90-day picker
+/// (FC17). Same DST-safe constructor-based math.
+List<DateTime> lastNDayStarts(DateTime now, int days) => [
+      for (var k = days - 1; k >= 0; k--) DateTime(now.year, now.month, now.day - k),
+    ];
 
 /// The local midnight that starts the day after [day] — the exclusive upper
 /// bound of [day]'s bucket. Constructor-based for the same DST-safety reason.

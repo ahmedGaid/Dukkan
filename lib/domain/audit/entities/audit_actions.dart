@@ -63,6 +63,8 @@ class AuditActions {
     'banner.create',
     'banner.update',
     'banner.delete',
+    // Search / reports (session 17)
+    'report.export',
   ];
 
   /// The kinds of thing an action targets.

@@ -2401,4 +2401,121 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get promosBannerUploadErrorBody => 'معرفناش نرفع الصورة — جرّب تاني.';
+
+  @override
+  String get consoleSearchHint => 'بحث في الكل';
+
+  @override
+  String get consoleSearchPromptTitle => 'دوّر في كل حاجة';
+
+  @override
+  String get consoleSearchPromptBody =>
+      'اكتب اسم، إيميل، رقم تليفون، أو رقم طلب';
+
+  @override
+  String get consoleSearchEmptyTitle => 'مفيش نتائج';
+
+  @override
+  String get consoleSearchEmptyBody => 'جرّب كلمة تانية';
+
+  @override
+  String get consoleExportAction => 'تصدير CSV';
+
+  @override
+  String get consoleExportInProgress => 'جاري التصدير…';
+
+  @override
+  String consoleExportSavedTo(Object path) {
+    return 'اتحفظ في: $path';
+  }
+
+  @override
+  String get consoleExportCapped => 'تم تصدير أول 1000';
+
+  @override
+  String get exportColId => 'المعرّف';
+
+  @override
+  String get exportColName => 'الاسم';
+
+  @override
+  String get exportColNameAr => 'الاسم بالعربي';
+
+  @override
+  String get exportColOwner => 'المالك';
+
+  @override
+  String get exportColStatus => 'الحالة';
+
+  @override
+  String get exportColAddress => 'العنوان';
+
+  @override
+  String get exportColPrice => 'السعر';
+
+  @override
+  String get exportColEmail => 'الإيميل';
+
+  @override
+  String get exportColDate => 'التاريخ';
+
+  @override
+  String get consoleNavReports => 'التقارير';
+
+  @override
+  String get reportsErrorBody => 'معرفناش نجيب التقرير دلوقتي — جرّب تاني.';
+
+  @override
+  String get reportsPeriod7 => '٧ أيام';
+
+  @override
+  String get reportsPeriod30 => '٣٠ يوم';
+
+  @override
+  String get reportsPeriod90 => '٩٠ يوم';
+
+  @override
+  String get reportsChartOrders => 'الطلبات';
+
+  @override
+  String get reportsChartRevenue => 'الإيرادات';
+
+  @override
+  String get reportsChartCommission => 'العمولة';
+
+  @override
+  String get reportsColDay => 'اليوم';
+
+  @override
+  String get reportsColCount => 'العدد';
+
+  @override
+  String get reportsExportDaily => 'تصدير الجدول اليومي';
+
+  @override
+  String get reportsExportSection => 'تصدير';
+
+  @override
+  String get reportsGrowthTitle => 'النمو';
+
+  @override
+  String get reportsGrowthCaption => 'قبل بدء التتبّع غير مشمول';
+
+  @override
+  String get reportsNewUsers => 'مستخدمون جدد';
+
+  @override
+  String get reportsNewShops => 'متاجر جديدة';
+
+  @override
+  String get reportsDistributionByArea => 'الطلبات حسب المنطقة';
+
+  @override
+  String get reportsDistributionByCategory => 'المنتجات حسب التصنيف';
+
+  @override
+  String get reportsDistributionByShop => 'الطلبات حسب الدكان (أعلى ١٠)';
+
+  @override
+  String get reportsDistributionEmpty => 'مفيش بيانات';
 }

@@ -61,6 +61,8 @@ import '../../data/promos/datasources/banner_remote_datasource.dart';
 import '../../data/promos/datasources/coupon_remote_datasource.dart';
 import '../../data/promos/repositories/banner_repository_impl.dart';
 import '../../data/promos/repositories/coupon_repository_impl.dart';
+import '../../data/reports/datasources/reports_remote_datasource.dart';
+import '../../data/reports/repositories/reports_repository_impl.dart';
 import '../../data/product/datasources/product_local_datasource.dart';
 import '../../data/product/datasources/product_remote_datasource.dart';
 import '../../data/product/repositories/product_repository_impl.dart';
@@ -132,6 +134,7 @@ import '../../domain/admin/usecases/restore_product.dart';
 import '../../domain/admin/usecases/restore_shop.dart';
 import '../../domain/admin/usecases/restore_user.dart';
 import '../../domain/admin/usecases/search_products.dart';
+import '../../domain/admin/usecases/search_users_by_name.dart';
 import '../../domain/admin/usecases/set_admin.dart';
 import '../../domain/admin/usecases/set_area_active.dart';
 import '../../domain/admin/usecases/set_banner_active.dart';
@@ -236,6 +239,9 @@ import '../../domain/promos/repositories/coupon_repository.dart';
 import '../../domain/promos/usecases/get_coupon_by_code.dart';
 import '../../domain/promos/usecases/redeem_coupon.dart';
 import '../../domain/promos/usecases/watch_active_banners.dart';
+import '../../domain/reports/repositories/reports_repository.dart';
+import '../../domain/reports/usecases/get_order_counts_by_shop.dart';
+import '../../domain/reports/usecases/get_report_period_totals.dart';
 import '../../domain/product/repositories/product_repository.dart';
 import '../../domain/product/usecases/create_product.dart';
 import '../../domain/product/usecases/delete_product.dart';
@@ -256,6 +262,7 @@ import '../../domain/taxonomy/usecases/get_taxonomy.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/cart/bloc/cart_bloc.dart';
 import '../../presentation/catalog/bloc/collections_bloc.dart';
+import '../../domain/admin/entities/admin_profile.dart';
 import '../../domain/admin/entities/managed_user.dart';
 import '../../presentation/console/audit/bloc/audit_log_bloc.dart';
 import '../../presentation/console/dashboard/bloc/dashboard_bloc.dart';
@@ -269,6 +276,8 @@ import '../../presentation/console/orders/bloc/orders_board_bloc.dart';
 import '../../presentation/console/products/bloc/products_board_bloc.dart';
 import '../../presentation/console/promos/bloc/banners_board_bloc.dart';
 import '../../presentation/console/promos/bloc/coupons_board_bloc.dart';
+import '../../presentation/console/reports/bloc/reports_bloc.dart';
+import '../../presentation/console/search/bloc/console_search_bloc.dart';
 import '../../presentation/console/settings/bloc/settings_bloc.dart';
 import '../../presentation/console/shops/bloc/shop_detail_bloc.dart';
 import '../../presentation/console/shops/bloc/shops_board_bloc.dart';
@@ -361,6 +370,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => GetUsers(sl()));
   sl.registerLazySingleton(() => GetUserByEmail(sl()));
   sl.registerLazySingleton(() => GetUserByPhone(sl()));
+  sl.registerLazySingleton(() => SearchUsersByName(sl()));
 
   // Shop management (Founder Console session 7). AdminShopsRepository reads
   // are direct + unfiltered (shops read is public — no permission gate to
@@ -878,6 +888,41 @@ Future<void> initDependencies() async {
   sl.registerFactory(
     () => DashboardBloc(getDashboardSummary: sl(), getAuditEntries: sl()),
   );
+
+  // Global search (FC17, Ctrl+K) — page-scoped, [AdminProfile] is the factory
+  // param (mirrors DevToolsBloc's actorUid), fixed for the dialog's lifetime.
+  sl.registerFactoryParam<ConsoleSearchBloc, AdminProfile, void>(
+    (admin, _) => ConsoleSearchBloc(
+      admin: admin,
+      getOrderById: sl(),
+      getUserByEmail: sl(),
+      getUserByPhone: sl(),
+      searchUsersByName: sl(),
+      getAllShops: sl(),
+      searchProducts: sl(),
+      getAllDrivers: sl(),
+      getAllAreas: sl(),
+      getAllCategories: sl(),
+    ),
+  );
+
+  // Reports (FC17). Aggregate-only, no cache — mirrors Dashboard/Finance.
+  sl.registerLazySingleton(() => ReportsRemoteDataSource(firestore: sl()));
+  sl.registerLazySingleton<ReportsRepository>(() => ReportsRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => GetReportPeriodTotals(sl()));
+  sl.registerLazySingleton(() => GetOrderCountsByShop(sl()));
+
+  // Reports — bloc (page-scoped: one load per /console/reports open + period
+  // change; reuses CountOrdersInArea/CountProductsInCategory from FC9).
+  sl.registerFactory(() => ReportsBloc(
+        getReportPeriodTotals: sl(),
+        getAllAreas: sl(),
+        countOrdersInArea: sl(),
+        getAllCategories: sl(),
+        countProductsInCategory: sl(),
+        getAllShops: sl(),
+        getOrderCountsByShop: sl(),
+      ));
 
   // Promotions (FC16) — customer-facing coupon lookup/redeem + realtime
   // active-banners feed for the home carousel.

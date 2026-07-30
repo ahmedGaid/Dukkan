@@ -39,7 +39,14 @@ class ShopRemoteDataSource {
   }
 
   Future<ShopModel> createShop(ShopModel shop) async {
-    final doc = await _shops.add(shop.toFirestore());
+    // `createdAt` (FC17, additive) — only written going forward; the
+    // returned in-memory model doesn't resolve the server sentinel, matching
+    // every other admin repo's "no local cache, re-fetch if you need truth"
+    // contract. Reports queries read it straight from Firestore.
+    final doc = await _shops.add({
+      ...shop.toFirestore(),
+      'createdAt': FieldValue.serverTimestamp(),
+    });
     return ShopModel.fromFirestore(doc.id, shop.toFirestore());
   }
 }

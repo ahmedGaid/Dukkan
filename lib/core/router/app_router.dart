@@ -19,6 +19,7 @@ import '../../presentation/console/media/pages/media_page.dart';
 import '../../presentation/console/notifications/pages/notifications_page.dart';
 import '../../presentation/console/orders/pages/orders_board_page.dart';
 import '../../presentation/console/promos/pages/promos_page.dart';
+import '../../presentation/console/reports/pages/reports_page.dart';
 import '../../presentation/console/settings/pages/settings_page.dart';
 import '../../presentation/console/shell/console_sections.dart';
 import '../../presentation/console/shell/console_shell.dart';
@@ -268,6 +269,12 @@ class AppRouter {
           GoRoute(
             path: '/console/devtools',
             builder: (context, state) => const DevToolsPage(),
+          ),
+          // Reports (FILE_17). Gated by `reports.export` in the console menu
+          // + Firestore rules.
+          GoRoute(
+            path: '/console/reports',
+            builder: (context, state) => const ReportsPage(),
           ),
         ],
       ),

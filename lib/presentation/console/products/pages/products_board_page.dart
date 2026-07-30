@@ -20,6 +20,9 @@ import '../../../widgets/common/empty_state.dart';
 import '../../../widgets/common/shimmer_image.dart';
 import '../../../widgets/common/skeletons.dart';
 import '../../../widgets/common/status_chip.dart';
+import '../../../../domain/admin/usecases/search_products.dart';
+import '../../util/export_action.dart';
+import '../../util/export_icon_button.dart';
 import '../bloc/products_board_bloc.dart';
 
 /// The Founder Console product board (`/console/products`, FC8). Real
@@ -141,26 +144,34 @@ class _FilterBarState extends State<_FilterBar> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 44,
-            child: TextField(
-              controller: _searchCtrl,
-              textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                isDense: true,
-                labelText: l10n.productsBoardSearchLabel,
-                prefixIcon: const Icon(Icons.search, size: 18),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.close, size: 18),
-                  onPressed: () {
-                    _searchCtrl.clear();
-                    bloc.add(const ProductsBoardSearchChanged(''));
-                  },
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 44,
+                  child: TextField(
+                    controller: _searchCtrl,
+                    textInputAction: TextInputAction.search,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      labelText: l10n.productsBoardSearchLabel,
+                      prefixIcon: const Icon(Icons.search, size: 18),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.close, size: 18),
+                        onPressed: () {
+                          _searchCtrl.clear();
+                          bloc.add(const ProductsBoardSearchChanged(''));
+                        },
+                      ),
+                      border: OutlineInputBorder(borderRadius: AppRadius.mdAll),
+                    ),
+                    onChanged: (v) => bloc.add(ProductsBoardSearchChanged(v)),
+                  ),
                 ),
-                border: OutlineInputBorder(borderRadius: AppRadius.mdAll),
               ),
-              onChanged: (v) => bloc.add(ProductsBoardSearchChanged(v)),
-            ),
+              const SizedBox(width: AppSpacing.sm),
+              ExportIconButton(onExport: _exportProducts),
+            ],
           ),
           const SizedBox(height: AppSpacing.sm),
           BlocBuilder<ProductsBoardBloc, ProductsBoardState>(
@@ -370,6 +381,50 @@ class _DeletedChip extends StatelessWidget {
       )),
     );
   }
+}
+
+/// Exports the CURRENT filter result — reuses `SearchProducts` (the same
+/// unpaginated "every product matching the active filters" fetch the
+/// board's own Arabic-fold search already relies on), capped at 1000.
+Future<void> _exportProducts(BuildContext context) async {
+  final l10n = AppLocalizations.of(context)!;
+  final locale = Localizations.localeOf(context).languageCode;
+  final state = context.read<ProductsBoardBloc>().state;
+  final all = await sl<SearchProducts>()(
+    shopId: state.shopId,
+    category: state.category,
+    subcategoryId: state.subcategoryId,
+    stockStatus: state.stockStatus,
+    isPromo: state.isPromo,
+    deletedOnly: state.deletedOnly,
+  );
+  final rows = all.take(1000).toList(growable: false);
+  if (!context.mounted) return;
+  await exportCsv(
+    context,
+    filenameBase: 'products',
+    auditTargetType: 'product',
+    capped: all.length > 1000,
+    rows: [
+      [
+        l10n.exportColId,
+        l10n.exportColName,
+        l10n.exportColNameAr,
+        l10n.fieldProductCategory,
+        l10n.exportColPrice,
+        l10n.fieldProductStock,
+      ],
+      for (final p in rows)
+        [
+          p.id,
+          p.name,
+          p.nameAr,
+          p.category,
+          Money.format(p.priceMinor, languageCode: locale),
+          _stockLabel(l10n, p.stockStatus),
+        ],
+    ],
+  );
 }
 
 String _stockLabel(AppLocalizations l10n, StockStatus status) => switch (status) {

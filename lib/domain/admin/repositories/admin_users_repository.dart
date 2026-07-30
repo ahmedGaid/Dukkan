@@ -16,4 +16,8 @@ abstract class AdminUsersRepository {
 
   /// Exact-match lookup; null when no user has that phone.
   Future<ManagedUser?> getByPhone(String phone);
+
+  /// Literal name-prefix match (never Arabic-folded, unlike shops/products),
+  /// capped at [limit] — the console global search's "users" group (FC17).
+  Future<List<ManagedUser>> searchByNamePrefix(String prefix, {int limit = 5});
 }
