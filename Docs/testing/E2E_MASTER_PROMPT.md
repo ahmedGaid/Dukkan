@@ -94,8 +94,9 @@ change, a destructive data operation, or credentials you don't have.
 
 ## Phase 2 — Business journeys (the core)
 
-Two roles = two logins. Run customer journeys as the customer account, owner journeys as the owner
-account. Use unique test data prefixed `E2E-YYYYMMDD-` so runs don't collide and cleanup is possible.
+Roles = logins: customer, owner, courier (J13), plus — for the Console journeys J15/J16 — founder,
+support-role staff and admin-role staff. Run each journey as the account it names.
+Use unique test data prefixed `E2E-YYYYMMDD-` so runs don't collide and cleanup is possible.
 Prices must exercise piasters (e.g. 12.50 EGP = `1250`) — verify Firestore holds the **integer**,
 never a double (Shoppy lesson; locked decision).
 
@@ -208,6 +209,88 @@ never a double (Shoppy lesson; locked decision).
 4. Finance page (`/finance`, founder account only): non-founder account is bounced by the router;
    rules deny a non-founder aggregate read even via direct query. Founder sees six metrics, all
    **delivered-only** sums, with the COD-ledger note visible and correct.
+
+### J15 — Founder Console «إدارة»: functional (FC1–FC17)
+> Desktop-first (`flutter run -d windows`), then spot-check the same flows at phone width.
+> Needs: founder `/admins` doc seeded, rules+indexes deployed, Worker deployed. Any step whose
+> only blocker is the Worker → `SKIPPED-NEEDS-HUMAN — Worker not deployed`.
+1. **Access + shell (FC1/FC3):** founder sees the «لوحة التحكم» row in Settings; `/console` opens
+   the rail ≥900px and the drawer below; the staff chip names the role. A non-staff account has no
+   row and `/console` bounces to `/home`.
+2. **Dashboard (FC5):** every tile shows a real number (not «—» for a permission the founder has);
+   the 7-day bar chart is plausible against seeded orders; 60s auto-refresh and pull-refresh both
+   repaint; the recent-activity strip links into `/console/audit`.
+3. **Audit log (FC4):** every mutation below writes an entry — filter by action/type/targetId/date,
+   paginate past 30 rows, open the detail sheet and confirm the before/after diff matches what you
+   just changed. `write: false` holds: no client can create an entry.
+4. **Users (FC6):** search by exact email → detail → suspend/unsuspend (session revoked) → change
+   email → persona-role change → staff role grant/revoke → soft delete/restore.
+5. **Shops (FC7):** a `pending` shop is invisible on the customer home → approve → it appears;
+   suspend → it disappears from home + search; featured/verified toggles; ownership transfer
+   (Worker); create-shop-for-owner.
+6. **Products (FC8):** cross-shop board filters; edit via the owner form and confirm
+   `isFeatured`/soft-delete fields survive; duplicate; soft delete/restore; bulk +10% on three
+   products with hand-verified round-half-up; bulk category move; founder-only hard delete.
+7. **Taxonomy (FC9):** add → hide → reorder a category; the product form's dropdown follows;
+   pre-delete product-count warning appears; a retired category is `isVisible:false`, not deleted.
+8. **Geo (FC9):** add an area → checkout offers it; set a fee override → a NEW order snapshots that
+   fee, not `/config/platform`'s; deactivate → checkout drops it; an area with orders refuses to
+   delete and offers deactivate instead.
+9. **Orders (FC10):** board status filters; staff detail via `?role=staff`; force-status with a
+   reason (timeline row shows «تصحيح إداري»); force `delivered → preparing → delivered` and confirm
+   the driver's `activeOrdersCount` decrements ONCE; reassign driver (counts move on both drivers);
+   internal note is realtime for staff and invisible to customer/owner/courier.
+10. **Drivers (FC11):** activate the suspended seed driver → it appears in the owner assignment
+    sheet; suspend with a reason → the courier shell shows the suspended banner; verified toggle;
+    areas multi-select; capacity stepper; ID-doc upload lands in R2 (Worker).
+11. **Settings (FC12):** commission edit affects the NEXT order only; maintenance mode blocks a
+    customer and passes a staff account; `minSupportedBuild` above `AppConfig.buildNumber` shows
+    `/update-required`; a feature flag toggle reads back through the helper. Each card shows «آخر
+    تعديل» from the newest matching audit entry.
+12. **Notifications (FC13):** broadcast to the customer topic arrives on customers ONLY; direct
+    send to one user; a template pre-fills compose; history shows sent/failed counts and a failed
+    row resends. (Worker.)
+13. **Media (FC14):** browse each folder with pagination; stats cross-check the grid; the
+    unused/broken finders are truthful against a deliberately orphaned upload; bulk hard delete.
+    (Worker.)
+14. **Impersonation (FC15):** enter as a customer → the banner shows on every screen → act → exit
+    → the founder session is restored; both audit entries present; kill the app mid-impersonation
+    and relaunch → the banner still derives from the ID token claim (no lost session).
+15. **Devtools (FC15):** health checks green; test notification; fake customers/orders generate then
+    clean up fully; running a migration twice is idempotent.
+16. **Promos (FC16):** coupon lifecycle at checkout — apply (percent, hand-verify round-half-up),
+    reject each `CouponRejectReason` with its own Arabic copy, place the order, confirm
+    `usedCount` +1 and that commission is computed on the PRE-discount subtotal; an active banner
+    appears first in the home carousel and taps through to its target; a featured shop shows in
+    «دكاكين مميزة».
+17. **Search / exports / reports (FC17):** Ctrl+K finds each entity type (Arabic-folded, keyboard
+    nav, permission-gated groups); a CSV export of a filtered board opens in Excel with Arabic
+    intact and matches the on-screen filter; `/console/reports` totals cross-check the dashboard
+    and the finance page.
+18. **Sweep:** repeat 2/4/6/9/17 at phone width (drawer nav), in dark mode, and in English — no
+    overflow, no bare English string in Arabic, no physical left/right RTL bug.
+
+### J16 — Founder Console «إدارة»: security matrix (FC1–FC17)
+> The point of the whole Console plan: every deny below must actually deny. Needs four accounts —
+> founder, support-role staff (`users.read` + `orders.read` + `orders.update` only), admin-role
+> staff, plain customer.
+1. **As customer:** `/console` deep link bounces to `/home` and Settings shows no console row.
+2. **As customer, direct Firestore writes** (debug script or a temporary button) to `/admins`,
+   `/roles`, `/auditLogs`, `/config`, `/categories`, `/areas`, `/coupons`, and another user's
+   `/users` doc → ALL denied.
+3. **As customer, Worker:** `/admin/ping`, `/admin/users/set-disabled`, `/admin/impersonate` with
+   the customer's ID token → 403; with no token → 401.
+4. **As customer, cross-user reads:** another customer's order → denied; `/auditLogs` → denied.
+5. **As support staff:** the console shows only the sections its perms allow; every hidden
+   section's route bounces to `/console`; Firestore writes to `/products` and `/config` → denied;
+   Worker `admins/set` → 403; `impersonate` → 403.
+6. **As support staff:** `/auditLogs` read → denied (no `auditlogs.read`) AND the section is
+   absent — rules and UI agree.
+7. **As admin staff:** cannot touch the founder — `admins/set` on the founder → 403, impersonate
+   the founder → 403 (rank guard).
+8. **Founder break-glass:** temporarily rename the founder's `/admins` doc id via the console →
+   `/finance` still opens on the `isFounder()` literal → restore the doc. Proves the bootstrap
+   path survives a wiped `/admins`.
 
 ## Phase 3 — Cross-cutting quality sweeps
 
