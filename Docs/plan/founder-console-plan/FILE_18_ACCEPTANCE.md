@@ -168,6 +168,31 @@ deleted its Auth account. Scripts (kept out of the repo): `probe_security_matrix
 | read `/roles` (list) | denied | 403 |
 | self `/users` status mirror write (known looseness) | allowed | 200 |
 
+**Task B/C — ORDER STATE MACHINE + CROSS-ROLE DENIALS: VERIFIED LIVE, 30/30 PASS.** The
+highest-risk rule surface in the app, and nothing had ever driven it end to end. Same headless
+REST method, three self-signed-up accounts (owner / courier / customer) plus a second customer for
+the cross-user read — no seed needed, because each account creates only its own data.
+Script: `probe_order_state_machine.ps1` in the session scratchpad.
+- **Full happy path, in order, each accepted:** customer places order → owner `pending→accepted` →
+  owner assigns the courier while accepted+unassigned → owner `accepted→preparing` → assigned
+  courier `preparing→outForDelivery` → courier `delivered` **with the `commissionPayable` flip** →
+  customer rates it 5 stars once. This is the M9/M10/M12 chain proven against production rules.
+- **Every illegal move refused (403):** customer jumping their own order straight to `delivered` ·
+  owner jumping `accepted→delivered` · an *unassigned* courier advancing the order · the *assigned*
+  courier taking `accepted→outForDelivery` (couriers only get the two-step handoff) · rating the
+  same order twice · deleting an order · another customer reading the order.
+- **Cross-role property denials (403):** customer editing another owner's shop name · customer
+  rewriting `ownerUid` to steal a shop · a 6-star rating bump (only 1-5 allowed) · courier
+  un-suspending themselves · courier raising their own `maxActiveOrders` · customer editing the
+  courier's `/drivers` doc.
+- **By-design allow confirmed:** a 3-star rating bump by any signed-in customer, and a customer
+  cancelling their own *pending* order.
+- Probe cleanup: its 4 `/users` docs soft-deleted, all 4 Auth accounts deleted, courier set
+  offline. **Left behind because client rules forbid deleting them — delete from the Firebase
+  console when convenient:** `/shops/probe-shop-rules` (inactive, labelled
+  "TEST - rules probe (safe to delete)"), `/orders/probe-order-1`, `/orders/probe-order-2`,
+  `/drivers/aE4Q24u5i0hpP2CEEXz2EjAiBEI2` (created suspended, so never assignable).
+
 **Task B — rows still needing the live stack** (read from `firestore.rules` + `worker/src/admin.js`;
 deny confirmed by rule text, round-trip still owed):
 - Customer → `/console` deep link: **bounces to `/home`** — `app_router.dart:347-349` (no active
@@ -206,8 +231,9 @@ own doc. The fix is an `affectedKeys().hasOnly([...profile fields])` clause on t
 NOT applied here because the exact self-written field set can only be confirmed against a running
 app, and a wrong list silently breaks profile edits at runtime. Do it in the live pass.
 
-**Verdict:** everything verifiable without a seeded console is green — including the whole customer
-row of the security matrix, live. What is still open, and exactly why:
+**Verdict:** everything verifiable without a seeded console is green — **48 live rule round-trips,
+0 failures** (18 customer deny-matrix + 30 state-machine/cross-role), plus green gates and a clean
+static sweep. What is still open, and exactly why:
 - **Task B staff rows** (support / admin / founder break-glass) — every one needs an `/admins` doc,
   which only the seed can create. Same for the Worker's 401/403 rows: the Worker isn't deployed.
 - **Task A** (functional acceptance) and **Task C** journeys — need a seeded, reachable console.
