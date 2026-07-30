@@ -203,11 +203,22 @@ Script: `probe_order_state_machine.ps1` in the session scratchpad.
   courier's `/drivers` doc.
 - **By-design allow confirmed:** a 3-star rating bump by any signed-in customer, and a customer
   cancelling their own *pending* order.
-- Probe cleanup: its 4 `/users` docs soft-deleted, all 4 Auth accounts deleted, courier set
-  offline. **Left behind because client rules forbid deleting them — delete from the Firebase
-  console when convenient:** `/shops/probe-shop-rules` (inactive, labelled
-  "TEST - rules probe (safe to delete)"), `/orders/probe-order-1`, `/orders/probe-order-2`,
-  `/drivers/aE4Q24u5i0hpP2CEEXz2EjAiBEI2` (created suspended, so never assignable).
+- **The probes now live in the repo: `scripts/probes/` (+ its README), so the matrix is repeatable
+  rather than a one-off claim in this document.** Re-run any time with one command; a rules edit
+  that quietly opens a hole then shows up as a FAIL row. Everything they create is stamped
+  `fake: true`.
+- Idempotency lesson worth keeping: the state-machine script must use a **fresh random id per run
+  for the shop and orders**. Its accounts are new each run, so a reused shop belongs to the previous
+  run's owner (every owner row 403s), an order only moves forward once, and a reused shop's
+  `ratingCount` breaks the rating rule's +1. Two consecutive clean 30/30 runs confirm the fix.
+- Probe cleanup: `/users` docs soft-deleted, Auth accounts deleted, courier set offline. **Left
+  behind because client rules forbid clients deleting them:** the `/orders` and `/users` docs are
+  swept by `/console/devtools` cleanup once the console is up (those are the two collections that
+  endpoint covers), but the `/shops` and `/drivers` docs need a manual delete in the Firebase
+  console — `/shops/probe-shop-rules`, `/shops/probe-shop-3d2395`, `/orders/probe-order-1`,
+  `/orders/probe-order-2` (these two predate the `fake` stamp), and the three probe `/drivers` docs
+  `aE4Q24u5i0hpP2CEEXz2EjAiBEI2`, `kyvlyoguTph19z2QXFMCwq9Sd0E2`,
+  `G6CBwRZAhicbS1y9Ah2Bof9qH5S2` (all created suspended, so none is assignable).
 
 **Task B — WORKER AUTH GATE: VERIFIED, 9/9 PASS, against a local `wrangler dev`.** Local mode needs
 no Cloudflare login, so the Worker's 401 surface is testable before the founder ever deploys.
