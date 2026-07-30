@@ -630,6 +630,11 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       test (commission edit → new order snapshots it, maintenance toggle blocks/restores,
       minSupportedBuild update screen, non-settings.edit staff sees section hidden + rules-
       denied) still owed — not run this session. **Next: FC13 (FILE_13) — notification center.**
+      **FC13 DONE (code) 2026-07-15** (FILE_13, commit `dc891e8`) — notification center.
+      Role-topic FCM subscribe/unsubscribe on login/logout; Worker `/admin/notify/broadcast` +
+      `/admin/notify/user` write an immutable history doc + audit entry; console compose page
+      (reuses the FC6 user search) + history (sent/failed stats, resend) + templates; dashboard
+      gained a failed-pushes-7d tile. Worker deploy + device smoke test still owed.
       **FC14 DONE (code) 2026-07-15** (FILE_14) — media library. Worker `/admin/media/
       {list,stats,delete}` (perm `images.delete`, `media.delete` audited); `'banners'` added
       to `ALLOWED_FOLDERS`. New `lib/domain/media` + `lib/data/media`: `MediaRepository`
@@ -647,6 +652,17 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       wrangler dev smoke test (list/delete against real R2, stats cross-check, live
       orphan/broken detection) still owed — not run this session, no device/Worker access
       here. **Next: FC15 (FILE_15) — impersonation + dev tools.**
+      **FC15 DONE (code) 2026-07-15** (FILE_15, commit `999ef9b`) — impersonation + dev tools.
+      Worker `/admin/impersonate` mints target+return custom tokens (rank-guarded like
+      `admins/set`); `/admin/devtools/{fake-customers,fake-orders,fake-cleanup}` are
+      Worker-routed because `/users` and `/orders` create rules have no staff bypass. Flutter
+      `ImpersonationSession` + a banner overlay deriving "impersonating" from the ID token's
+      `impersonatedBy` claim (NOT in-memory state) so it survives an app kill mid-session; user
+      detail page gained "log in as this user". `lib/dev/seed_demo_data.dart` refactored into a
+      reusable `lib/dev/seed.dart` (`runSeed`, flag-gated phases) + a new `lib/dev/migrations/`
+      registry, both driving the new `console/devtools` page (perm `system.tools`): environment
+      card, health checks, founder+dev-project-gated re-seed, fake data, cache clear, test
+      notify, migrations. Worker deploy + device smoke test still owed.
 - [~] **FC16–FC18 — Growth + close.** Promotions (coupons/banners/featured) · global search +
       CSV exports + reports · acceptance + security matrix + regression. (FILE_16–18)
       **FC16 DONE (code) 2026-07-29** (FILE_16) — promotions. **Task A** `/coupons/{CODE}` (doc id
@@ -683,6 +699,19 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       + a live device smoke test (real coupon at checkout, banner tap-through, featured
       shop/product visibility) still owed — not run this session. **Next: FC17 (FILE_17) —
       global search + CSV exports + reports.**
+      **FC17 DONE (code) 2026-07-29, committed 2026-07-30** (FILE_17, commit `f960ab8` — built
+      one session, committed the next; the build session ended without its close-out) — Ctrl+K
+      `ConsoleSearchDialog` (7 permission-gated parallel groups: orders/users/shops/products/
+      drivers/areas/categories, Arabic-folded, keyboard nav); `CsvExporter` (RFC4180 + BOM so
+      Excel reads Arabic, unit-tested) wired as an export button on the users/shops/products/
+      orders boards — exports the board's CURRENT filter, capped at 1000 rows, writes a
+      `report.export` audit entry; `/console/reports` — period picker (7/30/90), three reused
+      `MiniBarChart`s, growth counts, area/category/shop-top-10 distributions, every table
+      exportable. `Shop.createdAt` now stamped at creation (additive, FC17-forward only) so
+      «متاجر جديدة» can count it. No new Firestore rules or indexes — reuses existing read gates
+      + `CountOrdersInArea`/`CountProductsInCategory` from FC9. Gates green (analyze 0, test
+      226/226, parity 785). **Next: FC18 (FILE_18) — acceptance. Device + live stack required:
+      Worker deploy, rules/index redeploy, and a successful seed must all land first.**
 
 ## Standing regression (added 2026-07-10)
 
