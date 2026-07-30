@@ -78,7 +78,8 @@ Founder break-glass: temporarily rename the founder's `/admins` doc id (console)
 - [ ] Courier: online → assigned → picked up → delivered (+ commission flip, counts).
 - [ ] Pushes: newOrder / statusUpdate / driverAssigned / orderDelivered still arrive.
 - [ ] Finance page numbers consistent with reports page.
-- [ ] `flutter analyze` 0 · `flutter test` green · parity script green — final run.
+- [x] `flutter analyze` 0 · `flutter test` green · parity script green — final run.
+      (2026-07-30: analyze 0 issues · 226/226 tests · parity 785 keys.)
 
 ## Task D — Micro-polish pass
 
@@ -105,3 +106,79 @@ GREEN?
 → Update dukkan-status, commit, push, fresh session.
 → Daily E2E (standing regression) now includes J15.
 ```
+
+---
+
+## Verification log — 2026-07-30 (static pass; live pass still owed)
+
+**Prerequisite state after this session**
+- [x] Firestore **rules + indexes deployed** to `dukkan-93042` (`firebase deploy --only
+      firestore:rules,firestore:indexes`; rules compiled + released, indexes created).
+- [ ] Cloudflare **Worker not deployed** — `npx wrangler login` needs a browser, cannot run in the
+      agent shell. Every `/admin/*` row of Task B stays untestable until the founder deploys it.
+- [ ] **Seed not run.** It writes `/admins` + `/roles` (`allow write: if false`) and *creates*
+      `/config` docs (`allow create: if false`), so it needs the documented one-pass rules relax.
+      That deploy was refused by the agent's permission classifier (it loosens production
+      security rules) — founder must run it. No rules-bypass alternative exists locally: there is
+      no service-account key on this machine and no Worker bootstrap route, and the FC15 devtools
+      re-seed itself needs the founder `/admins` doc the seed creates (chicken-and-egg).
+- [ ] Device `R5CNC0NK6ZT` not attached (`adb devices` empty). `-d windows` is available and is
+      the desktop-first target for Tasks A/C.
+
+**Task C — gates (only non-live bullet): GREEN.** analyze 0 · test 226/226 · parity 785 keys.
+
+**Task D — static sweep of the console (the parts a gate can see): CLEAN.**
+- No bare English strings anywhere under `lib/presentation/console` (no `Text('Latin…')`,
+  hardcoded labels, hints, or titles) — every string is an l10n key.
+- All 17 console pages render the shared `EmptyState` (36 usages) — no bare "No data" anywhere,
+  including the two finder/orphan panes in `media_page.dart`.
+- RTL chevrons/back arrows are **already correct**: `Icons.arrow_back` and `Icons.chevron_right`
+  are declared `matchTextDirection: true` in the Flutter SDK, so the 5 physical-name usages
+  mirror themselves in Arabic. No fix needed — do not "fix" these.
+- Still live-gated: tile alignment and dark-mode chip contrast (need eyes on a running console).
+
+**Task B — rule-level pre-verification (read from the deployed `firestore.rules` + `worker/src/admin.js`).**
+Every deny below is confirmed *by rule text*; each still needs its live round-trip.
+- Customer → `/console` deep link: **bounces to `/home`** — `app_router.dart:347-349` (no active
+  `/admins` doc ⇒ redirect). Staff deep-linking a section they lack: bounced to `/console`.
+- Customer direct writes: `/admins` `write:false` · `/roles` `write:false` · `/auditLogs`
+  `write:false` · `/config` create/delete `false`, update needs `settings.edit` · `/categories`
+  needs `taxonomy.edit` · `/areas` needs `geo.edit` · another user's `/users` needs `isSelf` or
+  `users.update`. All denied.
+- Customer reads: another customer's order denied (`orders` read is owner/shop/driver/perm only);
+  `/auditLogs` read needs `auditlogs.read` → denied.
+- Worker: no token → **401** (`missing_token`), bad token → 401 (`invalid_token`), non-staff or
+  inactive or missing perm → **403** `forbidden` — one identical body, never leaking which check
+  failed (`admin.js:41-72`).
+- Support staff (users.read + orders.read + orders.update): products/config writes denied,
+  `/auditLogs` read denied (no `auditlogs.read`), `admins/set` needs `admins.manage` → 403,
+  `impersonate` needs `system.impersonate` → 403.
+- Admin-role staff vs founder: rank-guarded. `STAFF_ROLE_RANK` = support 40 · moderator 60 ·
+  admin 80 · founder 100; `admins/set`, `admins/remove`, and `impersonate` all require the caller
+  to **strictly outrank** the target ⇒ admin (80) against founder (100) → 403 on all three.
+- Founder break-glass: `isFounder()` is a literal-uid branch on `/orders` read
+  (`firestore.rules:192-197`) and is mirrored client-side for `/finance`
+  (`app_router.dart:337-341`), so finance survives losing the `/admins` doc. Static-confirmed;
+  the doc-rename drill is still a live step.
+
+**Three by-design loosenesses the live matrix must EXPECT (else they read as failures):**
+1. `/coupons` — any signed-in user may bump `usedCount` by exactly +1 (checkout redemption).
+   So "customer writes to `/coupons` → ALL denied" is wrong as written: create/delete//other-field
+   updates are denied, the +1 redemption bump is allowed on purpose.
+2. `/drivers` — any signed-in user may move `activeOrdersCount` by ±1 (assignment counting);
+   documented as loose, Worker endpoint is the hardening path.
+3. `/shops` — any signed-in user may bump `ratingSum`/`ratingCount` by one 1-5 vote (rating).
+
+**One residual finding (low severity, NOT fixed — deliberately):** `/users` self-update
+(`firestore.rules:47-48`) pins `role` but does not restrict `affectedKeys`, so a signed-in user
+can write junk into their own `status` / `deleted` mirror fields. It is **not** a
+suspension/deletion bypass: `/admin/users/set-disabled` and `/admin/users/soft-delete` both flip
+Firebase Auth `disableUser` and revoke live sessions, so a punished account cannot authenticate at
+all, let alone self-restore. Impact is limited to a user desyncing the console's display of their
+own doc. The fix is an `affectedKeys().hasOnly([...profile fields])` clause on the self branch —
+NOT applied here because the exact self-written field set can only be confirmed against a running
+app, and a wrong list silently breaks profile edits at runtime. Do it in the live pass.
+
+**Verdict:** everything verifiable without the live stack is green. Tasks A, B (live round-trips),
+C (journeys) and the two visual bullets of D remain open and blocked on: Worker deploy → seed →
+run.

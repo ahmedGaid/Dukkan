@@ -30,6 +30,9 @@ Future<void> main() async {
     await FirebaseAuth.instance.signOut();
   }
   _SeedApp.log.value = log.toString();
+  // Mirror the on-screen log to the console so a headless `flutter run` (or an
+  // agent driving the seed) can read the outcome without looking at the window.
+  debugPrint('===== SEED LOG =====\n${log.toString()}===== SEED END =====');
 }
 
 class _SeedApp extends StatelessWidget {
