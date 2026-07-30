@@ -712,6 +712,14 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       + `CountOrdersInArea`/`CountProductsInCategory` from FC9. Gates green (analyze 0, test
       226/226, parity 785). **Next: FC18 (FILE_18) — acceptance. Device + live stack required:
       Worker deploy, rules/index redeploy, and a successful seed must all land first.**
+      **FC18 PARTIAL 2026-07-30** (FILE_18, commit `a6e0e57`) — Task E's suite work pulled forward
+      because it needs no live stack: `Docs/testing/E2E_MASTER_PROMPT.md` gained **J15** (console
+      functional sweep across FC1–FC17, desktop-first then phone width/dark/English) and **J16**
+      (the deny-side security matrix — customer, support-role staff, admin-role staff, plus the
+      founder break-glass rename), and Phase 2's preamble now names all six roles the suite needs.
+      Tasks A–D (functional acceptance, security verification, regression, micro-polish) and the
+      Task E sign-off are ALL device + live-stack work — still open. Sign-off closes only after
+      rules/indexes deploy + Worker deploy + a successful seed + a green run.
 
 ## Standing regression (added 2026-07-10)
 
