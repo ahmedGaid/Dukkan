@@ -122,8 +122,11 @@ GREEN?
       security rules) — founder must run it. No rules-bypass alternative exists locally: there is
       no service-account key on this machine and no Worker bootstrap route, and the FC15 devtools
       re-seed itself needs the founder `/admins` doc the seed creates (chicken-and-egg).
-- [ ] Device `R5CNC0NK6ZT` not attached (`adb devices` empty). `-d windows` is available and is
-      the desktop-first target for Tasks A/C.
+- [ ] Device `R5CNC0NK6ZT` not attached (`adb devices` empty). **`-d windows` is NOT usable on this
+      machine** — `flutter doctor` reports "Visual Studio not installed", so the Windows desktop
+      target cannot build even though it appears in `flutter devices`. **The desktop-first target
+      is `-d chrome`** (web toolchain is green and `FirebaseOptions.web` exists). Use it for the
+      seed and for Tasks A/C until the phone's network is fixed.
 
 **Task C — gates (only non-live bullet): GREEN.** analyze 0 · test 226/226 · parity 785 keys.
 
@@ -137,16 +140,39 @@ GREEN?
   mirror themselves in Arabic. No fix needed — do not "fix" these.
 - Still live-gated: tile alignment and dark-mode chip contrast (need eyes on a running console).
 
-**Task B — rule-level pre-verification (read from the deployed `firestore.rules` + `worker/src/admin.js`).**
-Every deny below is confirmed *by rule text*; each still needs its live round-trip.
+**Task B — CUSTOMER ROW: VERIFIED LIVE, 18/18 PASS.** Run against the *deployed* rules with a real
+customer ID token over the Firestore REST API (REST enforces the same rules as the SDK), so it
+needed no seed, no Worker and no device — this is the "debug script" option Task B allows. The
+probe signed up a throwaway customer, ran every row, then soft-deleted its `/users` doc and
+deleted its Auth account. Scripts (kept out of the repo): `probe_security_matrix.ps1` +
+`probe_cleanup.ps1` in the session scratchpad — re-runnable any time.
+
+| Row | Expected | HTTP |
+|---|---|---|
+| own `/users` doc create (sanity) | allowed | 200 |
+| write `/admins/{self}` | denied | 403 |
+| write `/roles/probe` | denied | 403 |
+| write `/auditLogs/probe` | denied | 403 |
+| update `/config/platform` | denied | 403 |
+| write `/categories/probe` | denied | 403 |
+| write `/areas/probe` | denied | 403 |
+| create `/coupons/PROBE` | denied | 403 |
+| write `/banners/probe` | denied | 403 |
+| write `/notificationTemplates/probe` | denied | 403 |
+| write another user's `/users` doc | denied | 403 |
+| create `/drivers/{self}` unsuspended | denied | 403 |
+| self `/users` role escalation → owner | denied | 403 |
+| read `/auditLogs` (list) | denied | 403 |
+| read `/orders` (list, cross-user) | denied | 403 |
+| read `/admins/{someone else}` | denied | 403 |
+| read `/roles` (list) | denied | 403 |
+| self `/users` status mirror write (known looseness) | allowed | 200 |
+
+**Task B — rows still needing the live stack** (read from `firestore.rules` + `worker/src/admin.js`;
+deny confirmed by rule text, round-trip still owed):
 - Customer → `/console` deep link: **bounces to `/home`** — `app_router.dart:347-349` (no active
   `/admins` doc ⇒ redirect). Staff deep-linking a section they lack: bounced to `/console`.
-- Customer direct writes: `/admins` `write:false` · `/roles` `write:false` · `/auditLogs`
-  `write:false` · `/config` create/delete `false`, update needs `settings.edit` · `/categories`
-  needs `taxonomy.edit` · `/areas` needs `geo.edit` · another user's `/users` needs `isSelf` or
-  `users.update`. All denied.
-- Customer reads: another customer's order denied (`orders` read is owner/shop/driver/perm only);
-  `/auditLogs` read needs `auditlogs.read` → denied.
+  Needs the app running to drive.
 - Worker: no token → **401** (`missing_token`), bad token → 401 (`invalid_token`), non-staff or
   inactive or missing perm → **403** `forbidden` — one identical body, never leaking which check
   failed (`admin.js:41-72`).
@@ -169,9 +195,10 @@ Every deny below is confirmed *by rule text*; each still needs its live round-tr
    documented as loose, Worker endpoint is the hardening path.
 3. `/shops` — any signed-in user may bump `ratingSum`/`ratingCount` by one 1-5 vote (rating).
 
-**One residual finding (low severity, NOT fixed — deliberately):** `/users` self-update
-(`firestore.rules:47-48`) pins `role` but does not restrict `affectedKeys`, so a signed-in user
-can write junk into their own `status` / `deleted` mirror fields. It is **not** a
+**One residual finding (low severity, NOT fixed — deliberately). Confirmed LIVE: HTTP 200 on a
+self `status: 'banned'` write; the matching role-escalation attempt was correctly 403.** `/users`
+self-update (`firestore.rules:47-48`) pins `role` but does not restrict `affectedKeys`, so a
+signed-in user can write junk into their own `status` / `deleted` mirror fields. It is **not** a
 suspension/deletion bypass: `/admin/users/set-disabled` and `/admin/users/soft-delete` both flip
 Firebase Auth `disableUser` and revoke live sessions, so a punished account cannot authenticate at
 all, let alone self-restore. Impact is limited to a user desyncing the console's display of their
@@ -179,6 +206,12 @@ own doc. The fix is an `affectedKeys().hasOnly([...profile fields])` clause on t
 NOT applied here because the exact self-written field set can only be confirmed against a running
 app, and a wrong list silently breaks profile edits at runtime. Do it in the live pass.
 
-**Verdict:** everything verifiable without the live stack is green. Tasks A, B (live round-trips),
-C (journeys) and the two visual bullets of D remain open and blocked on: Worker deploy → seed →
-run.
+**Verdict:** everything verifiable without a seeded console is green — including the whole customer
+row of the security matrix, live. What is still open, and exactly why:
+- **Task B staff rows** (support / admin / founder break-glass) — every one needs an `/admins` doc,
+  which only the seed can create. Same for the Worker's 401/403 rows: the Worker isn't deployed.
+- **Task A** (functional acceptance) and **Task C** journeys — need a seeded, reachable console.
+- **Task D** tile alignment + dark-mode chip contrast — need eyes on a running console.
+The probe script generalises: once the seed has run, point it at a support-staff and an admin-staff
+ID token to clear those rows the same headless way, leaving only the genuinely visual work for a
+device/browser pass.
