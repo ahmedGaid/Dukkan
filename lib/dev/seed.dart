@@ -326,9 +326,9 @@ Future<void> _seedMigrationsDoc(FirebaseFirestore firestore) async {
 Future<void> _seedRbac(FirebaseFirestore firestore) async {
   final roles = <String, Map<String, Object>>{
     'founder': {'permissions': [Permissions.all], 'rank': 100},
-    'admin': {'permissions': _adminPermissions, 'rank': 80},
-    'moderator': {'permissions': _moderatorPermissions, 'rank': 60},
-    'support': {'permissions': _supportPermissions, 'rank': 40},
+    'admin': {'permissions': adminRolePermissions, 'rank': 80},
+    'moderator': {'permissions': moderatorRolePermissions, 'rank': 60},
+    'support': {'permissions': supportRolePermissions, 'rank': 40},
   };
   for (final entry in roles.entries) {
     await _retryAuthSettle(
@@ -349,7 +349,10 @@ Future<void> _seedRbac(FirebaseFirestore firestore) async {
 
 // admin = everything except the three founder-reserved powers (managing other
 // admins, impersonation, platform settings).
-const _adminPermissions = <String>[
+// The three role sets below are public so `test/console_role_gating_test.dart`
+// can assert the console menu against the permissions actually seeded, instead
+// of re-typing them in the test (FILE_18 Task B).
+const adminRolePermissions = <String>[
   Permissions.usersRead,
   Permissions.usersCreate,
   Permissions.usersUpdate,
@@ -377,7 +380,7 @@ const _adminPermissions = <String>[
 ];
 
 // moderator = day-to-day content + order handling, no destructive/staff powers.
-const _moderatorPermissions = <String>[
+const moderatorRolePermissions = <String>[
   Permissions.shopsUpdate,
   Permissions.productsUpdate,
   Permissions.taxonomyEdit,
@@ -386,7 +389,7 @@ const _moderatorPermissions = <String>[
 ];
 
 // support = read users, read + nudge orders.
-const _supportPermissions = <String>[
+const supportRolePermissions = <String>[
   Permissions.usersRead,
   Permissions.ordersRead,
   Permissions.ordersUpdate,

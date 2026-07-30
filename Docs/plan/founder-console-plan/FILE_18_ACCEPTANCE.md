@@ -128,7 +128,23 @@ GREEN?
       is `-d chrome`** (web toolchain is green and `FirebaseOptions.web` exists). Use it for the
       seed and for Tasks A/C until the phone's network is fixed.
 
-**Task C — gates (only non-live bullet): GREEN.** analyze 0 · test 226/226 · parity 785 keys.
+**Task C — gates (only non-live bullet): GREEN.** analyze 0 · test **234/234** · parity 785 keys.
+(226 before this session, +8 from the new role-gating suite below.)
+
+**Task B staff rows — client half now AUTOMATED, 8/8.** New `test/console_role_gating_test.dart`
+asserts the console menu each *seeded* role gets, against the permission sets the seed actually
+writes to `/roles` (the three sets in `lib/dev/seed.dart` are now public so the test reads them
+instead of re-typing them — otherwise the test could pass while the seed drifted):
+- support → exactly `/console`, `/console/users`, `/console/orders`; explicitly NOT audit,
+  settings, devtools, promos or media. This is the plan's "support CANNOT read `/auditLogs`" and
+  "console shows ONLY its permitted sections" bullets, minus the live round-trip.
+- moderator → dashboard + shops + products + orders + taxonomy, nothing destructive.
+- admin → every section except `/console/settings`, and holds none of the three founder-reserved
+  powers (`admins.manage`, `system.impersonate`, `settings.edit`).
+- Invariants: every section gate names a real `Permissions` constant (no dead/typo'd gate), and
+  `/console/settings` is the *only* section unreachable for the admin role.
+What is still owed live for these rows is the server half — Firestore denials and the Worker 403s
+with a real support/admin ID token, which needs the seed.
 
 **Task D — static sweep of the console (the parts a gate can see): CLEAN.**
 - No bare English strings anywhere under `lib/presentation/console` (no `Text('Latin…')`,
