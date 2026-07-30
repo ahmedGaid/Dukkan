@@ -209,6 +209,28 @@ Script: `probe_order_state_machine.ps1` in the session scratchpad.
   "TEST - rules probe (safe to delete)"), `/orders/probe-order-1`, `/orders/probe-order-2`,
   `/drivers/aE4Q24u5i0hpP2CEEXz2EjAiBEI2` (created suspended, so never assignable).
 
+**Task B — WORKER AUTH GATE: VERIFIED, 9/9 PASS, against a local `wrangler dev`.** Local mode needs
+no Cloudflare login, so the Worker's 401 surface is testable before the founder ever deploys.
+Script: `probe_worker_auth.ps1`. The Worker **boots clean** (R2 binding simulated, all three vars
+resolve), and every unauthenticated call is `401`: `/admin/ping`, `/admin/users/set-disabled`,
+`/admin/impersonate`, `/admin/admins/set`, `/upload`, `/notify` with no header · a malformed bearer ·
+a bearer with a junk signature (so real Google-cert verification runs and rejects) · and an unknown
+route with no token, which is `401` **not** `404` — auth runs before routing, i.e. it fails closed.
+An unknown route *with* a valid token is `400`.
+
+**Two findings from that run — both matter before the founder deploys:**
+1. **`wrangler.toml` still ships the placeholder `PUBLIC_BASE_URL =
+   "https://REPLACE-WITH-YOUR-R2-PUBLIC-URL"`.** Deploy as-is and every uploaded image gets a
+   broken public URL — Task A's media/logo/product-image bullets would all fail for a reason that
+   looks like an app bug. Paste the real `pub-….r2.dev` origin (or a custom domain) into
+   `[vars]` **before** `wrangler deploy`.
+2. The customer-token row returns **500 locally, and that is expected, not a bug**: the log shows
+   `[admin] service account token failed SyntaxError: "undefined" is not valid JSON` at
+   `firebase.js:87` via `requireAdmin` (`admin.js:60`) — the `FIREBASE_SERVICE_ACCOUNT` secret
+   simply isn't set in local dev. On the deployed Worker (secret set) that path continues to the
+   `/admins` lookup and must answer **403**. So the customer/support/admin **403** rows are
+   genuinely deploy-gated, and now we know exactly why rather than guessing.
+
 **Task B — rows still needing the live stack** (read from `firestore.rules` + `worker/src/admin.js`;
 deny confirmed by rule text, round-trip still owed):
 - Customer → `/console` deep link: **bounces to `/home`** — `app_router.dart:347-349` (no active
@@ -247,9 +269,10 @@ own doc. The fix is an `affectedKeys().hasOnly([...profile fields])` clause on t
 NOT applied here because the exact self-written field set can only be confirmed against a running
 app, and a wrong list silently breaks profile edits at runtime. Do it in the live pass.
 
-**Verdict:** everything verifiable without a seeded console is green — **48 live rule round-trips,
-0 failures** (18 customer deny-matrix + 30 state-machine/cross-role), plus green gates and a clean
-static sweep. What is still open, and exactly why:
+**Verdict:** everything verifiable without a seeded console is green — **57 live round-trips, 0
+failures** (18 customer deny-matrix + 30 state-machine/cross-role + 9 Worker auth-gate), plus green
+gates (234/234, incl. 8 new role-gating tests) and a clean static sweep. What is still open, and
+exactly why:
 - **Task B staff rows** (support / admin / founder break-glass) — every one needs an `/admins` doc,
   which only the seed can create. Same for the Worker's 401/403 rows: the Worker isn't deployed.
 - **Task A** (functional acceptance) and **Task C** journeys — need a seeded, reachable console.
