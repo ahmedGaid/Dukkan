@@ -8,6 +8,7 @@ import 'package:dukkan/domain/driver/entities/driver.dart';
 import 'package:dukkan/domain/driver/repositories/driver_repository.dart';
 import 'package:dukkan/main.dart';
 import 'package:dukkan/presentation/auth/pages/login_page.dart';
+import 'package:dukkan/presentation/widgets/common/app_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -122,5 +123,37 @@ void main() {
 
     expect(find.byType(MaterialApp), findsOneWidget);
     expect(find.byType(LoginPage), findsOneWidget);
+  });
+
+  // A live run on 2026-07-31 showed both login fields carrying «الحقل ده
+  // مطلوب» and was first read as "validation fires on arrival". It is not:
+  // the fields use the default (disabled) autovalidateMode, so errors appear
+  // only after a submit — what was really seen was an empty-form login
+  // attempt. These two pin that contract so a future autovalidateMode change
+  // can't quietly regress it.
+  testWidgets('login shows no validation errors before the first submit',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(const DukkanApp());
+    await tester.pumpAndSettle();
+
+    final fields = tester.widgetList<TextField>(find.byType(TextField));
+    expect(fields, hasLength(2));
+    for (final f in fields) {
+      expect(f.decoration?.errorText, isNull);
+    }
+  });
+
+  testWidgets('login surfaces required errors once submitted empty',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(const DukkanApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(AppButton));
+    await tester.pumpAndSettle();
+
+    final fields =
+        tester.widgetList<TextField>(find.byType(TextField)).toList();
+    expect(fields.every((f) => f.decoration?.errorText != null), isTrue,
+        reason: 'an empty submit must mark both fields');
   });
 }

@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/di/injector.dart';
+import '../../../../core/short_id.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../domain/driver/entities/driver.dart';
@@ -602,7 +603,7 @@ class _AssignedOrderRow extends StatelessWidget {
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      title: Text('#${order.id.length > 8 ? order.id.substring(0, 8) : order.id}'),
+      title: Text('#${shortId(order.id)}'),
       subtitle: Text(DateFormat.Md(locale).add_Hm().format(order.createdAt)),
       trailing: StatusChip(label: view.label, tone: view.tone),
       onTap: () => context.push('/order/${order.id}?role=staff'),

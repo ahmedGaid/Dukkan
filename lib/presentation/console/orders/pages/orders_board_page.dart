@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/di/injector.dart';
 import '../../../../core/money.dart';
+import '../../../../core/short_id.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../domain/admin/usecases/get_orders_page.dart';
@@ -434,7 +435,7 @@ class _OrderRow extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '#${order.id.length > 8 ? order.id.substring(0, 8) : order.id}',
+                  '#${shortId(order.id)}',
                   style: text.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: AppSpacing.xs),
