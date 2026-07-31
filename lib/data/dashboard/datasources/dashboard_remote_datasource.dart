@@ -10,10 +10,17 @@ import 'day_window.dart';
 /// every query in parallel; the read rules each aggregate rides are auth-only
 /// (never `resource.data`), so aggregation stays legal.
 ///
-/// Index note: the `delivered && createdAt >= today` money sums need the
-/// composite `status + createdAt`; every other query is a single-field range or
-/// equality (or two equalities, which Firestore serves from single-field
-/// indexes) — see `firestore.indexes.json`.
+/// Index note: the `delivered && createdAt >= today` money sums need a
+/// composite that also carries EVERY summed field —
+/// `status + createdAt + commissionMinor + totalMinor`. A `sum()` aggregation
+/// is not served by the plain `status + createdAt` composite the `count()`
+/// queries use; leaving the summed fields out fails the whole dashboard with
+/// `FAILED_PRECONDITION` (found on device 2026-07-31). The failed-notifications
+/// count needs `status + sentAt ASCENDING` for the same reason a range without
+/// an `orderBy` always does — the DESCENDING composite the history page uses
+/// does NOT serve it. Every other query is a single-field range or equality (or
+/// two equalities, which Firestore serves from single-field indexes) — see
+/// `firestore.indexes.json`.
 class DashboardRemoteDataSource {
   DashboardRemoteDataSource({required FirebaseFirestore firestore})
       : _firestore = firestore;
