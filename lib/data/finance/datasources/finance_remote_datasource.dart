@@ -8,6 +8,12 @@ import '../models/finance_summary_model.dart';
 /// `aggregate()` takes multiple `AggregateField`s at once; `total` and
 /// `cancelled` each need their own `count()` because they're different
 /// `where` filters over the same collection.
+///
+/// Index note: a filtered `sum()` needs a composite carrying the filter field
+/// AND every summed field — here `status + commissionMinor +
+/// platformDeliveryShareMinor`. A plain `status` single-field index does NOT
+/// serve it; the same omission left the console dashboard permanently on its
+/// error state until 2026-07-31. See `firestore.indexes.json`.
 class FinanceRemoteDataSource {
   FinanceRemoteDataSource({required FirebaseFirestore firestore})
       : _firestore = firestore;

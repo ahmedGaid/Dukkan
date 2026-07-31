@@ -22,6 +22,15 @@
       "collectionGroup": "orders",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "commissionMinor", "order": "ASCENDING" },
+        { "fieldPath": "platformDeliveryShareMinor", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
         { "fieldPath": "shopId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]

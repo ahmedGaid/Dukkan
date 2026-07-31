@@ -10,11 +10,15 @@ import '../../dashboard/datasources/day_window.dart';
 /// fixed 7 days to the period picker's 7/30/90. No document downloads.
 ///
 /// Index note: the delivered-per-day sum (`status == 'delivered' &&
-/// createdAt` range) rides the exact composite index the dashboard's
-/// `deliveredToday` query already uses (`status ASC, createdAt ASC`) — no new
-/// `firestore.indexes.json` entry needed. `users`/`shops` `createdAt` range
-/// counts and the per-shop `orders.shopId` counts are single-field
-/// equalities/ranges, auto-indexed by Firestore.
+/// createdAt` range) rides the same composite as the dashboard's
+/// `deliveredToday` query — but that is
+/// `status + createdAt + commissionMinor + totalMinor`, NOT the plain
+/// `status + createdAt` this comment used to claim. A filtered `sum()` needs
+/// every summed field in the index; the plain composite serves only the
+/// `count()` queries, and relying on it kept the dashboard permanently in its
+/// error state until 2026-07-31. `users`/`shops` `createdAt` range counts and
+/// the per-shop `orders.shopId` counts are single-field equalities/ranges,
+/// auto-indexed by Firestore.
 class ReportsRemoteDataSource {
   ReportsRemoteDataSource({required FirebaseFirestore firestore}) : _firestore = firestore;
 
