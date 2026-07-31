@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/di/injector.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../domain/driver/entities/driver.dart';
 import '../../../../domain/order/entities/order.dart';
@@ -419,7 +420,7 @@ class _EditableFieldsCardState extends State<_EditableFieldsCard> {
             InkWell(
               onTap: _pickIdDoc,
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: AppRadius.smAll,
                 child: _newIdDocBytes != null
                     ? Image.memory(_newIdDocBytes!, width: 96, height: 64, fit: BoxFit.cover)
                     : ShimmerImage(

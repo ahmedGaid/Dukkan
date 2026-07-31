@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/di/injector.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../domain/admin/entities/permissions.dart';
 import '../../../../domain/shop/entities/shop.dart';
@@ -449,7 +450,7 @@ class _EditableFieldsCardState extends State<_EditableFieldsCard> {
                 InkWell(
                   onTap: _pickLogo,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: AppRadius.smAll,
                     child: _newLogoBytes != null
                         ? Image.memory(_newLogoBytes!, width: 64, height: 64, fit: BoxFit.cover)
                         : ShimmerImage(url: widget.state.shop.logoUrl, width: 64, height: 64),

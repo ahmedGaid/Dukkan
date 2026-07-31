@@ -456,7 +456,7 @@ Future<void> _showAuditDetail(BuildContext context, AuditEntry entry) {
     isScrollControlled: true,
     showDragHandle: true,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
     ),
     builder: (_) => _AuditDetailSheet(entry: entry),
   );
