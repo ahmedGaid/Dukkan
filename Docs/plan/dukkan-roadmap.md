@@ -731,6 +731,17 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       delete after the seed): `/categories`, `/areas`, `/drivers` create+update, `/config` create,
       `/admins`, `/roles`. Procedure: copy over `firestore.rules` → deploy → seed → `git checkout --
       firestore.rules` → deploy again.
+      **2026-07-31 seed run — DONE.** Ran the relax→seed→restore pass on `-d chrome`; demo data is
+      live (7 shops, 53 products, 7 categories, 5 areas, 2 couriers/drivers, 4 roles + founder
+      admin, 3 customers with orders). Hit 2 real bugs in the pre-made `firestore.seed.rules`: the
+      DB already carried partial leftovers from the 07-29/07-30 attempts, so `.set()` on
+      `/config/*` and `/orders/*` resolved to Firestore **update** (not create) — and the relax
+      file only widened `create` on those two, not `update`. Fixed by adding `|| isSignedIn()` to
+      both `update` rules too (temporary, restored after). Fix is saved in `firestore.seed.rules`
+      for the next reseed. Re-tried the phone device (`R5CNC0NK6ZT`, now attached) at the user's
+      request — still `firebase_auth/network-request-failed`, confirms blocker 3 is real, not
+      stale. **Worker deploy is the one remaining blocker** — `wrangler login` needs a real browser,
+      confirmed not authed (`wrangler whoami`). Full detail → `dukkan-status`.
 
 ## Standing regression (added 2026-07-10)
 
