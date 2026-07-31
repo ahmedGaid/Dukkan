@@ -710,7 +710,8 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       exportable. `Shop.createdAt` now stamped at creation (additive, FC17-forward only) so
       «متاجر جديدة» can count it. No new Firestore rules or indexes — reuses existing read gates
       + `CountOrdersInArea`/`CountProductsInCategory` from FC9. Gates green (analyze 0, test
-      226/226, parity 785). **Next: FC18 (FILE_18) — acceptance. Device + live stack required:
+      226/226, parity 785 — since raised to **234/234** by FC18's `console_role_gating_test.dart`).
+      **Next: FC18 (FILE_18) — acceptance. Device + live stack required:
       Worker deploy, rules/index redeploy, and a successful seed must all land first.**
       **FC18 PARTIAL 2026-07-30** (FILE_18, commit `a6e0e57`) — Task E's suite work pulled forward
       because it needs no live stack: `Docs/testing/E2E_MASTER_PROMPT.md` gained **J15** (console
@@ -720,6 +721,16 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       Tasks A–D (functional acceptance, security verification, regression, micro-polish) and the
       Task E sign-off are ALL device + live-stack work — still open. Sign-off closes only after
       rules/indexes deploy + Worker deploy + a successful seed + a green run.
+      **2026-07-31 unblock attempt** — gates re-verified green (analyze 0, **234/234**, parity 785);
+      `flutter build web --release` **succeeds**, so `-d chrome` is a confirmed-viable acceptance
+      target (the 5 `dart:io` imports are conditionally guarded — don't "fix" them). Firebase CLI
+      works headless via `npx --yes firebase-tools` (authed `ahmedgaid85@gmail.com`) — but wrangler
+      is **not** authed (`wrangler login` needs a browser), so the Worker deploy stays founder-only,
+      and the agent classifier again refused deploying the seed-relaxed rules. The 7 relax edits are
+      pre-made in **`firestore.seed.rules`** (repo root, untracked on purpose — never commit it,
+      delete after the seed): `/categories`, `/areas`, `/drivers` create+update, `/config` create,
+      `/admins`, `/roles`. Procedure: copy over `firestore.rules` → deploy → seed → `git checkout --
+      firestore.rules` → deploy again.
 
 ## Standing regression (added 2026-07-10)
 
