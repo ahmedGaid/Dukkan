@@ -743,6 +743,36 @@ Status flow: `pending → accepted → preparing → outForDelivery → delivere
       stale. **Worker deploy is the one remaining blocker** — `wrangler login` needs a real browser,
       confirmed not authed (`wrangler whoami`). Full detail → `dukkan-status`.
 
+### Phase 8 — Offline-first (queued 2026-08-01, not started)
+
+Two separate initiatives surfaced during FILE_18 live device testing — a Firestore DNS outage on
+the test phone made both gaps visible at once. Keep them separate; they have very different
+shapes.
+
+- [ ] **O1 — Console dashboard off aggregation queries.** The FC5 dashboard's tiles run Firestore
+      `count()`/`sum()` aggregation queries, which the SDK **cannot** serve from local cache at all
+      (hard restriction, not our bug) — so the dashboard can never show anything offline no matter
+      what caching we add elsewhere. Fix: replace the aggregation reads with rolling counter
+      fields (maintained via existing mutation paths, same pattern as `/shops.ratingSum` or
+      `/drivers.activeOrdersCount`), so a plain doc read serves the tiles and Firestore's normal
+      offline cache covers it for free. Console mutations stay live-only by design (unaffected) —
+      this is read-path only. Single session, well-scoped.
+- [ ] **O2 — App-wide offline mutation queue (design session first).** Founder wants the
+      customer/owner/courier app to work fully offline like Notion/Linear: actions taken with no
+      connection (place order, accept/advance an order, rate, edit cart/profile, etc.) queue
+      locally and sync when back online, with a visible "will sync when you're back online"
+      indicator — not just the current read-only cache fallback (`online → remote+cache,
+      offline → cached read`, verified working for browse in `shop_repository_impl.dart` and
+      siblings, already Shoppy-proven, no change needed there). This is materially bigger than O1:
+      every mutation path needs an offline-queue strategy, a conflict/failure UX (a queued write
+      can still fail the Firestore rules check once it replays online — must be surfaced, not
+      silently dropped), local persistence for the queue surviving app kill, and a sync-status
+      indicator design (`dukkan-brand` territory). **Do not start coding directly** — first session
+      is a brainstorm/design pass (`superpowers:brainstorming`) to pick the queue mechanism and
+      scope which mutations are safe to queue at all (e.g. placing an order offline is very
+      different from an owner force-changing order status — some actions may need to stay
+      online-only). Output of that session is a proper multi-session plan, inserted here.
+
 ## Standing regression (added 2026-07-10)
 
 `Docs/testing/E2E_MASTER_PROMPT.md` is the master daily E2E test prompt (same pattern as

@@ -50,43 +50,56 @@ class ConsoleShell extends StatelessWidget {
         ? l10n.consoleTitle
         : _sectionLabel(l10n, sections[selected].labelKey);
 
-    return Shortcuts(
-      shortcuts: const {
-        SingleActivator(LogicalKeyboardKey.keyK, control: true):
-            ConsoleSearchIntent(),
+    // Section switches use `go()` (peers, not a stack), which collapses the
+    // router's match list — including whatever was `push()`ed to enter the
+    // console. So once inside, the Navigator has nothing left to pop and a
+    // plain back press would exit the app. Falling back to explicit
+    // navigation here (dashboard, then out to `/home`) keeps back working
+    // regardless of how the stack got collapsed.
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        context.go(location == '/console' ? '/home' : '/console');
       },
-      child: Actions(
-        actions: <Type, Action<Intent>>{
-          ConsoleSearchIntent: CallbackAction<ConsoleSearchIntent>(
-            onInvoke: (_) {
-              if (admin != null) ConsoleSearchDialog.show(context, admin);
-              return null;
-            },
-          ),
+      child: Shortcuts(
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.keyK, control: true):
+              ConsoleSearchIntent(),
         },
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            // NavigationRail needs ≥ 2 destinations; a staff member who can see
-            // only the dashboard falls back to the drawer layout even on desktop.
-            final useRail = constraints.maxWidth >= 900 && sections.length >= 2;
-            if (useRail) {
-              return _WideLayout(
+        child: Actions(
+          actions: <Type, Action<Intent>>{
+            ConsoleSearchIntent: CallbackAction<ConsoleSearchIntent>(
+              onInvoke: (_) {
+                if (admin != null) ConsoleSearchDialog.show(context, admin);
+                return null;
+              },
+            ),
+          },
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // NavigationRail needs ≥ 2 destinations; a staff member who can see
+              // only the dashboard falls back to the drawer layout even on desktop.
+              final useRail = constraints.maxWidth >= 900 && sections.length >= 2;
+              if (useRail) {
+                return _WideLayout(
+                  sections: sections,
+                  selected: selected,
+                  extended: constraints.maxWidth >= 1200,
+                  title: title,
+                  staff: _StaffChip(authState: authState),
+                  child: child,
+                );
+              }
+              return _NarrowLayout(
                 sections: sections,
                 selected: selected,
-                extended: constraints.maxWidth >= 1200,
                 title: title,
                 staff: _StaffChip(authState: authState),
                 child: child,
               );
-            }
-            return _NarrowLayout(
-              sections: sections,
-              selected: selected,
-              title: title,
-              staff: _StaffChip(authState: authState),
-              child: child,
-            );
-          },
+            },
+          ),
         ),
       ),
     );
