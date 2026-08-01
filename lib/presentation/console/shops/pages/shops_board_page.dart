@@ -268,7 +268,12 @@ class _ShopRow extends StatelessWidget {
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),
-      onTap: () => context.push('/console/shops/${shop.id}', extra: shop),
+      onTap: () async {
+        await context.push('/console/shops/${shop.id}', extra: shop);
+        if (context.mounted) {
+          context.read<ShopsBoardBloc>().add(const ShopsBoardRetryRequested());
+        }
+      },
       child: Row(
         children: [
           ShimmerImage(url: shop.logoUrl, width: 48, height: 48, radius: AppRadius.mdAll),

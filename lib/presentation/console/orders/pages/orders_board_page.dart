@@ -426,7 +426,12 @@ class _OrderRow extends StatelessWidget {
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),
-      onTap: () => context.push('/order/${order.id}?role=staff'),
+      onTap: () async {
+        await context.push('/order/${order.id}?role=staff');
+        if (context.mounted) {
+          context.read<OrdersBoardBloc>().add(const OrdersBoardRetryRequested());
+        }
+      },
       child: Row(
         children: [
           Expanded(

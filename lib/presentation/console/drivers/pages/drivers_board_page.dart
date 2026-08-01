@@ -185,7 +185,12 @@ class _DriverRow extends StatelessWidget {
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),
-      onTap: () => context.push('/console/drivers/${driver.uid}', extra: driver),
+      onTap: () async {
+        await context.push('/console/drivers/${driver.uid}', extra: driver);
+        if (context.mounted) {
+          context.read<DriversBoardBloc>().add(const DriversBoardRetryRequested());
+        }
+      },
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
