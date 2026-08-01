@@ -10,6 +10,9 @@ import 'package:dukkan/domain/promos/usecases/watch_active_banners.dart';
 import 'package:dukkan/domain/shop/entities/shop.dart';
 import 'package:dukkan/domain/shop/repositories/shop_repository.dart';
 import 'package:dukkan/domain/shop/usecases/watch_shops.dart';
+import 'package:dukkan/domain/taxonomy/entities/category.dart';
+import 'package:dukkan/domain/taxonomy/repositories/taxonomy_repository.dart';
+import 'package:dukkan/domain/taxonomy/usecases/watch_taxonomy.dart';
 import 'package:dukkan/presentation/home/bloc/shops_bloc.dart';
 import 'package:dukkan/presentation/home/widgets/promo_carousel.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -84,6 +87,18 @@ class _FakeBannerRepository implements BannerRepository {
   Stream<List<PromoBanner>> watchActiveBanners() => controller.stream;
 }
 
+/// Drives the taxonomy stream by hand — feeds the category grid directly,
+/// independent of shop coverage (see `ShopsBloc` doc).
+class _FakeTaxonomyRepository implements TaxonomyRepository {
+  final controller = StreamController<List<Category>>();
+
+  @override
+  Stream<List<Category>> watchTaxonomy() => controller.stream;
+
+  @override
+  Future<List<Category>> getTaxonomy() => throw UnimplementedError();
+}
+
 Shop _shop(String id, List<String> categories) => Shop(
       id: id,
       ownerUid: 'owner-$id',
@@ -94,20 +109,31 @@ Shop _shop(String id, List<String> categories) => Shop(
       categories: categories,
     );
 
+Category _category(String id) => Category(
+      id: id,
+      nameAr: id,
+      nameEn: id,
+      sort: 0,
+      subcategories: const [],
+    );
+
 void main() {
   late _FakeShopRepository shopRepo;
   late _FakeProductRepository productRepo;
   late _FakeBannerRepository bannerRepo;
+  late _FakeTaxonomyRepository taxonomyRepo;
   late ShopsBloc bloc;
 
   setUp(() {
     shopRepo = _FakeShopRepository();
     productRepo = _FakeProductRepository();
     bannerRepo = _FakeBannerRepository();
+    taxonomyRepo = _FakeTaxonomyRepository();
     bloc = ShopsBloc(
       watchShops: WatchShops(shopRepo),
       watchAllProducts: WatchAllProducts(productRepo),
       watchActiveBanners: WatchActiveBanners(bannerRepo),
+      watchTaxonomy: WatchTaxonomy(taxonomyRepo),
     );
   });
 
@@ -116,23 +142,25 @@ void main() {
     await shopRepo.controller.close();
     await productRepo.controller.close();
     await bannerRepo.controller.close();
+    await taxonomyRepo.controller.close();
   });
 
-  test('loads shops and derives the category union in first-seen order',
+  test('category grid follows the taxonomy stream, not shop coverage',
       () async {
     bloc.add(const ShopsStarted());
     await Future<void>.delayed(Duration.zero);
 
-    shopRepo.controller.add([
-      _shop('a', ['خضروات', 'ألبان']),
-      _shop('b', ['ألبان', 'مشروبات']),
-    ]);
+    shopRepo.controller.add([_shop('a', const [])]);
     productRepo.controller.add(const []);
+    taxonomyRepo.controller
+        .add([_category('خضروات'), _category('ألبان'), _category('مشروبات')]);
     await Future<void>.delayed(Duration.zero);
 
     expect(bloc.state.status, ShopsStatus.loaded);
-    expect(bloc.state.categories, ['خضروات', 'ألبان', 'مشروبات']);
-    expect(bloc.state.visibleShops.length, 2);
+    expect(bloc.state.categories.map((c) => c.id),
+        ['خضروات', 'ألبان', 'مشروبات']);
+    // Shop 'a' carries none of these — the grid still shows all three.
+    expect(bloc.state.visibleShops.length, 1);
   });
 
   test('category filter narrows visibleShops, re-tap clears it', () async {
@@ -156,25 +184,26 @@ void main() {
     expect(bloc.state.visibleShops.length, 2);
   });
 
-  test('drops a selected category that disappears from the feed', () async {
+  test('drops a selected category that is hidden/deleted from taxonomy',
+      () async {
     bloc.add(const ShopsStarted());
     await Future<void>.delayed(Duration.zero);
     shopRepo.controller.add([
       _shop('a', ['خضروات']),
+      _shop('b', ['ألبان']),
     ]);
     productRepo.controller.add(const []);
+    taxonomyRepo.controller.add([_category('خضروات'), _category('ألبان')]);
     await Future<void>.delayed(Duration.zero);
     bloc.add(const ShopsCategorySelected('خضروات'));
     await Future<void>.delayed(Duration.zero);
     expect(bloc.state.selectedCategory, 'خضروات');
 
-    // Feed updates and that category is gone.
-    shopRepo.controller.add([
-      _shop('b', ['ألبان']),
-    ]);
+    // Taxonomy updates and that category is gone (hidden or deleted).
+    taxonomyRepo.controller.add([_category('ألبان')]);
     await Future<void>.delayed(Duration.zero);
     expect(bloc.state.selectedCategory, isNull);
-    expect(bloc.state.visibleShops.map((s) => s.id), ['b']);
+    expect(bloc.state.visibleShops.map((s) => s.id), ['a', 'b']);
   });
 
   test('stream error surfaces as error status', () async {

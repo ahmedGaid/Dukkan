@@ -17,4 +17,12 @@ class TaxonomyRemoteDataSource {
         .map((doc) => CategoryModel.fromFirestore(doc.id, doc.data()))
         .toList();
   }
+
+  Stream<List<CategoryModel>> watchTaxonomy() {
+    return _firestore.collection('categories').orderBy('sort').snapshots().map(
+          (snap) => snap.docs
+              .map((doc) => CategoryModel.fromFirestore(doc.id, doc.data()))
+              .toList(),
+        );
+  }
 }

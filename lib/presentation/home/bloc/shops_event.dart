@@ -60,6 +60,18 @@ class _ShopsBannersUpdated extends ShopsEvent {
   List<Object?> get props => [banners];
 }
 
+/// Internal: the taxonomy list changed (console add/hide/reorder) — drives
+/// the category grid directly, independent of shop coverage. Non-critical,
+/// same as banners: a failure yields an empty list rather than an error state.
+class _TaxonomyUpdated extends ShopsEvent {
+  const _TaxonomyUpdated(this.categories);
+
+  final List<Category> categories;
+
+  @override
+  List<Object?> get props => [categories];
+}
+
 /// Internal: the stream errored.
 class _ShopsFailed extends ShopsEvent {
   const _ShopsFailed(this.error);

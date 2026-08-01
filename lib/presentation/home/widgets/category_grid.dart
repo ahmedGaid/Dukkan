@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../domain/taxonomy/entities/category.dart';
+import '../../console/taxonomy/category_icons.dart';
 
 /// Maps a shop category (Arabic, from the shop `categories` field) to a calm
 /// glyph. Keyword match so new categories still land on a sensible icon rather
@@ -30,12 +32,14 @@ class CategoryGrid extends StatelessWidget {
     required this.onSelect,
   });
 
-  final List<String> categories;
+  final List<Category> categories;
   final String? selected;
   final ValueChanged<String> onSelect;
 
   @override
   Widget build(BuildContext context) {
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -50,10 +54,13 @@ class CategoryGrid extends StatelessWidget {
       itemBuilder: (context, i) {
         final category = categories[i];
         return _CategoryTile(
-          label: category,
-          icon: categoryIcon(category),
-          selected: category == selected,
-          onTap: () => onSelect(category),
+          label: isArabic ? category.nameAr : category.nameEn,
+          icon: resolveCategoryIcon(
+            category.iconName,
+            categoryIcon(category.id),
+          ),
+          selected: category.id == selected,
+          onTap: () => onSelect(category.id),
         );
       },
     );

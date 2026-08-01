@@ -259,6 +259,7 @@ import '../../domain/storage/repositories/storage_repository.dart';
 import '../../domain/storage/usecases/upload_image.dart';
 import '../../domain/taxonomy/repositories/taxonomy_repository.dart';
 import '../../domain/taxonomy/usecases/get_taxonomy.dart';
+import '../../domain/taxonomy/usecases/watch_taxonomy.dart';
 import '../../presentation/auth/bloc/auth_bloc.dart';
 import '../../presentation/cart/bloc/cart_bloc.dart';
 import '../../presentation/catalog/bloc/collections_bloc.dart';
@@ -729,6 +730,7 @@ Future<void> initDependencies() async {
         watchShops: sl(),
         watchAllProducts: sl(),
         watchActiveBanners: sl(),
+        watchTaxonomy: sl(),
       ));
 
   // Product — data
@@ -759,16 +761,17 @@ Future<void> initDependencies() async {
     ),
   );
 
-  // Taxonomy — data (seed-managed, read-only to clients; small fixed tree,
-  // so a one-shot get + shared_preferences cache, not a stream).
+  // Taxonomy — data (console-editable since FC9; small fixed tree, cached
+  // locally for offline, both a one-shot get and a live watch).
   sl.registerLazySingleton(() => TaxonomyRemoteDataSource(firestore: sl()));
   sl.registerLazySingleton(() => TaxonomyLocalDataSource());
   sl.registerLazySingleton<TaxonomyRepository>(
     () => TaxonomyRepositoryImpl(sl(), sl(), sl()),
   );
 
-  // Taxonomy — use case
+  // Taxonomy — use cases
   sl.registerLazySingleton(() => GetTaxonomy(sl()));
+  sl.registerLazySingleton(() => WatchTaxonomy(sl()));
 
   // Collections — data (owner-scoped subcollection, no local cache — see
   // `CollectionsRepository` doc).

@@ -22,8 +22,11 @@ Do not write anything yet.
 - [ ] Dashboard: every tile shows a real number; refresh works; 7-day chart plausible.
 - [ ] Users: search → detail → suspend/unsuspend → reset email → persona role change →
       staff role grant/revoke → soft delete/restore. Audit entries for each.
-- [ ] Shops: pending → approve; suspend hides from customer home/search; featured/verified
-      toggles; ownership transfer; create-shop-for-owner.
+- [x] Shops: pending → approve; suspend hides from customer home/search; featured/verified
+      toggles; ownership transfer; create-shop-for-owner. (2026-08-01, live phone, founder
+      driving: Featured/Verified chips update with no manual refresh — confirms today's
+      refetch-on-return fix; suspend flips status + list reflects it; ownership transfer and
+      pending-shop approve both pass.)
 - [ ] Products: cross-shop board filters; edit; duplicate; soft delete/restore; bulk price
       +10% on 3 products (hand-verify rounding); bulk category move.
 - [ ] Taxonomy: add/hide/reorder category → home grid follows; product form follows.

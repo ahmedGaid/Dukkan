@@ -18,8 +18,9 @@ class ShopsState extends Equatable {
   /// Every shop from the feed (unfiltered) — [visibleShops] applies the filter.
   final List<Shop> shops;
 
-  /// Union of shop categories, drives the category grid.
-  final List<String> categories;
+  /// Taxonomy categories (console-visible, `sort` order) — drives the
+  /// category grid directly, independent of which shops carry them.
+  final List<Category> categories;
 
   /// Up to 8 real `isPromo` products across every shop — feeds the promo
   /// carousel (P1). Empty hides the carousel entirely (no bare placeholder).
@@ -68,7 +69,7 @@ class ShopsState extends Equatable {
   ShopsState copyWith({
     ShopsStatus? status,
     List<Shop>? shops,
-    List<String>? categories,
+    List<Category>? categories,
     String? selectedCategory,
     bool clearCategory = false,
     List<Product>? promoProducts,

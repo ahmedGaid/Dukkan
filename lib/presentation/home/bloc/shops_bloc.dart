@@ -9,6 +9,8 @@ import '../../../domain/promos/entities/promo_banner.dart';
 import '../../../domain/promos/usecases/watch_active_banners.dart';
 import '../../../domain/shop/entities/shop.dart';
 import '../../../domain/shop/usecases/watch_shops.dart';
+import '../../../domain/taxonomy/entities/category.dart';
+import '../../../domain/taxonomy/usecases/watch_taxonomy.dart';
 import '../widgets/promo_carousel.dart';
 
 part 'shops_event.dart';
@@ -20,16 +22,19 @@ part 'shops_state.dart';
 /// Also subscribes to [WatchAllProducts] to feed the promo/featured carousel
 /// slots (P1/FC16) — `loaded` is reached only once both feeds have delivered a
 /// first value, matching [SearchBloc]'s dual-stream readiness. [WatchActiveBanners]
-/// is a third, non-critical stream (FC16 Task B) — mirrors [ProductsBloc]'s
+/// and [WatchTaxonomy] are non-critical streams (the category grid hides
+/// itself when empty, same as the carousel) — mirrors [ProductsBloc]'s
 /// `WatchCollections` addition: a failure is swallowed, never blocks `loaded`.
 class ShopsBloc extends Bloc<ShopsEvent, ShopsState> {
   ShopsBloc({
     required WatchShops watchShops,
     required WatchAllProducts watchAllProducts,
     required WatchActiveBanners watchActiveBanners,
+    required WatchTaxonomy watchTaxonomy,
   })  : _watchShops = watchShops,
         _watchAllProducts = watchAllProducts,
         _watchActiveBanners = watchActiveBanners,
+        _watchTaxonomy = watchTaxonomy,
         super(const ShopsState()) {
     on<ShopsStarted>(_onStarted);
     on<ShopsCategorySelected>(_onCategorySelected);
@@ -37,15 +42,18 @@ class ShopsBloc extends Bloc<ShopsEvent, ShopsState> {
     on<_ShopsUpdated>(_onUpdated);
     on<_ShopsProductsUpdated>(_onProductsUpdated);
     on<_ShopsBannersUpdated>(_onBannersUpdated);
+    on<_TaxonomyUpdated>(_onTaxonomyUpdated);
     on<_ShopsFailed>(_onFailed);
   }
 
   final WatchShops _watchShops;
   final WatchAllProducts _watchAllProducts;
   final WatchActiveBanners _watchActiveBanners;
+  final WatchTaxonomy _watchTaxonomy;
   StreamSubscription<List<Shop>>? _sub;
   StreamSubscription<List<Product>>? _productsSub;
   StreamSubscription<List<PromoBanner>>? _bannersSub;
+  StreamSubscription<List<Category>>? _taxonomySub;
   bool _shopsReady = false;
   bool _productsReady = false;
 
@@ -56,6 +64,7 @@ class ShopsBloc extends Bloc<ShopsEvent, ShopsState> {
     await _sub?.cancel();
     await _productsSub?.cancel();
     await _bannersSub?.cancel();
+    await _taxonomySub?.cancel();
     _sub = _watchShops().listen(
       (shops) => add(_ShopsUpdated(shops)),
       onError: (Object error) => add(_ShopsFailed(error)),
@@ -68,19 +77,24 @@ class ShopsBloc extends Bloc<ShopsEvent, ShopsState> {
       (banners) => add(_ShopsBannersUpdated(banners)),
       onError: (_) => add(const _ShopsBannersUpdated([])),
     );
+    _taxonomySub = _watchTaxonomy().listen(
+      (categories) => add(_TaxonomyUpdated(categories)),
+      onError: (_) => add(const _TaxonomyUpdated([])),
+    );
   }
 
   void _onUpdated(_ShopsUpdated event, Emitter<ShopsState> emit) {
     _shopsReady = true;
-    // A category the user had picked may vanish if that shop left the feed —
+    emit(state.copyWith(status: _readyStatus, shops: event.shops));
+  }
+
+  void _onTaxonomyUpdated(_TaxonomyUpdated event, Emitter<ShopsState> emit) {
+    // A category the founder had selected may have been hidden/deleted —
     // drop the filter rather than show an empty list for a stale selection.
-    final categories = _categoriesOf(event.shops);
     final stillValid = state.selectedCategory != null &&
-        categories.contains(state.selectedCategory);
+        event.categories.any((c) => c.id == state.selectedCategory);
     emit(state.copyWith(
-      status: _readyStatus,
-      shops: event.shops,
-      categories: categories,
+      categories: event.categories,
       selectedCategory: stillValid ? state.selectedCategory : null,
       clearCategory: !stillValid,
     ));
@@ -120,23 +134,12 @@ class ShopsBloc extends Bloc<ShopsEvent, ShopsState> {
     ));
   }
 
-  /// Union of every shop's categories, first-seen order preserved.
-  List<String> _categoriesOf(List<Shop> shops) {
-    final seen = <String>{};
-    final ordered = <String>[];
-    for (final shop in shops) {
-      for (final c in shop.categories) {
-        if (seen.add(c)) ordered.add(c);
-      }
-    }
-    return ordered;
-  }
-
   @override
   Future<void> close() {
     _sub?.cancel();
     _productsSub?.cancel();
     _bannersSub?.cancel();
+    _taxonomySub?.cancel();
     return super.close();
   }
 }

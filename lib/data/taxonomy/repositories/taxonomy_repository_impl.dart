@@ -21,6 +21,18 @@ class TaxonomyRepositoryImpl implements TaxonomyRepository {
     return _visible(await _local.getCachedTaxonomy());
   }
 
+  @override
+  Stream<List<Category>> watchTaxonomy() async* {
+    if (await _networkInfo.isConnected) {
+      await for (final categories in _remote.watchTaxonomy()) {
+        await _local.cacheTaxonomy(categories);
+        yield _visible(categories);
+      }
+    } else {
+      yield _visible(await _local.getCachedTaxonomy());
+    }
+  }
+
   /// FC9: a retired category (`isVisible: false`) is hidden from every
   /// consumer of this repository (home/product-form) — the console's
   /// `AdminTaxonomyRepository` reads the unfiltered collection directly.
