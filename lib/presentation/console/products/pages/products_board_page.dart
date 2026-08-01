@@ -227,6 +227,7 @@ class _ShopDropdown extends StatelessWidget {
       child: DropdownButtonFormField<String?>(
         initialValue: state.shopId,
         isDense: true,
+        isExpanded: true,
         decoration: InputDecoration(
           isDense: true,
           labelText: l10n.productsBoardFilterShop,
@@ -276,6 +277,7 @@ class _CategoryDropdown extends StatelessWidget {
       child: DropdownButtonFormField<String?>(
         initialValue: state.category,
         isDense: true,
+        isExpanded: true,
         decoration: InputDecoration(
           isDense: true,
           labelText: l10n.fieldProductCategory,
@@ -315,15 +317,19 @@ class _StockDropdown extends StatelessWidget {
       child: DropdownButtonFormField<String?>(
         initialValue: state.stockStatus,
         isDense: true,
+        isExpanded: true,
         decoration: InputDecoration(
           isDense: true,
           labelText: l10n.fieldProductStock,
           border: OutlineInputBorder(borderRadius: AppRadius.mdAll),
         ),
         items: [
-          DropdownMenuItem(value: null, child: Text(l10n.shopsFilterAll)),
+          DropdownMenuItem(value: null, child: Text(l10n.shopsFilterAll, overflow: TextOverflow.ellipsis)),
           for (final s in StockStatus.values)
-            DropdownMenuItem(value: s.wire, child: Text(_stockLabel(l10n, s))),
+            DropdownMenuItem(
+              value: s.wire,
+              child: Text(_stockLabel(l10n, s), overflow: TextOverflow.ellipsis),
+            ),
         ],
         onChanged: (v) => bloc.add(ProductsBoardFilterChanged(
           shopId: state.shopId,
