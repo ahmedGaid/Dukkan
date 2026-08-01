@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/di/injector.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -36,7 +37,16 @@ class _FinanceView extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.financeTitle)),
+      appBar: AppBar(
+        title: Text(l10n.financeTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.home_outlined),
+            tooltip: l10n.navHome,
+            onPressed: () => context.go('/home'),
+          ),
+        ],
+      ),
       body: SafeArea(
         top: false,
         child: RefreshIndicator(

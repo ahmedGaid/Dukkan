@@ -191,6 +191,7 @@ class _NarrowLayout extends StatelessWidget {
       appBar: AppBar(
         title: Text(title),
         actions: [
+          _HomeButton(l10n: l10n),
           const _SearchButton(),
           Padding(
             padding: const EdgeInsetsDirectional.only(end: AppSpacing.md),
@@ -269,11 +270,31 @@ class _TopBar extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          _HomeButton(l10n: AppLocalizations.of(context)!),
           const _SearchButton(),
           const SizedBox(width: AppSpacing.sm),
           staff,
         ],
       ),
+    );
+  }
+}
+
+/// Always-visible way back to the customer app, from anywhere in the console
+/// — the console's own nav (rail/drawer) never includes a "home" entry, and
+/// section switches collapse the route stack (see [ConsoleShell]'s
+/// `PopScope`), so a direct jump is more reliable than relying on back.
+class _HomeButton extends StatelessWidget {
+  const _HomeButton({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.home_outlined),
+      tooltip: l10n.navHome,
+      onPressed: () => context.go('/home'),
     );
   }
 }
