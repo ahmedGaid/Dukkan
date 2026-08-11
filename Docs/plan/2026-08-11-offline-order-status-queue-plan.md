@@ -563,15 +563,7 @@ Expected: FAIL — no `failures` getter, no `SyncFailure` class, `enqueue` doesn
 
 - [ ] **Step 3: Add the replay loop**
 
-In `lib/core/offline/offline_mutation_queue.dart`, add the import:
-
-```dart
-import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseException;
-
-import '../errors/failures.dart';
-```
-
-(`FirebaseException` import is unused directly but documents why `ServerFailure` exists here — safe to drop if analyze flags it as unused; the real catch is on `ServerFailure`.) Actually drop that import — only `ServerFailure` is caught. Add just:
+In `lib/core/offline/offline_mutation_queue.dart`, add the import (only `ServerFailure` is caught in the replay loop below, not `FirebaseException` directly — Task 1 already made `ServerFailure.code` carry what's needed):
 
 ```dart
 import '../errors/failures.dart';
@@ -821,8 +813,8 @@ git commit -m "feat(offline): replay on app resume via WidgetsBindingObserver"
 - Test: `test/order_repository_impl_test.dart` (new)
 
 **Interfaces:**
-- Consumes: `OfflineMutationQueue` (Tasks 3–5), `NetworkInfo` (existing), `FirebaseAuth` (existing, already a DI singleton).
-- Produces: `OrderRepositoryImpl(OrderRemoteDataSource remote, {required NetworkInfo networkInfo, required OfflineMutationQueue queue, required FirebaseAuth auth})` — every other repository method is untouched.
+- Consumes: `OfflineMutationQueue` (Tasks 3–5), `NetworkInfo` (existing).
+- Produces: `OrderRepositoryImpl(OrderRemoteDataSource remote, {required NetworkInfo networkInfo, required OfflineMutationQueue queue, required String? Function() currentUidProvider})` — every other repository method is untouched. `currentUidProvider` is a `FirebaseAuth`-free seam (production wires `() => FirebaseAuth.instance.currentUser?.uid`) so the test can fake the current uid without a Firebase test harness, which this project doesn't have.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -831,101 +823,9 @@ git commit -m "feat(offline): replay on app resume via WidgetsBindingObserver"
 import 'package:dukkan/core/network/network_info.dart';
 import 'package:dukkan/core/offline/offline_mutation_queue.dart';
 import 'package:dukkan/data/order/repositories/order_repository_impl.dart';
-import 'package:dukkan/domain/order/entities/address.dart';
-import 'package:dukkan/domain/order/entities/order.dart';
-import 'package:dukkan/domain/order/entities/order_item.dart';
-import 'package:dukkan/domain/order/entities/order_status.dart';
-import 'package:dukkan/domain/order/repositories/order_repository.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-class _FakeNetworkInfo implements NetworkInfo {
-  bool connected = true;
-  @override
-  Future<bool> get isConnected async => connected;
-}
-
-/// Only `updateOrderStatus` is exercised — every other method throws so a
-/// stray call fails loudly instead of silently passing.
-class _FakeRemote implements OrderRepository {
-  int updateCalls = 0;
-
-  @override
-  Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
-    updateCalls++;
-  }
-
-  @override
-  Future<Order> placeOrder({
-    required String shopId,
-    required String customerUid,
-    required List<OrderItem> items,
-    required Address deliveryAddress,
-    required int subtotalMinor,
-    required int deliveryFeeMinor,
-    required int commissionBps,
-    required int commissionMinor,
-    required int driverDeliveryShareMinor,
-    required int platformDeliveryShareMinor,
-    required int totalMinor,
-    String? notes,
-    String? couponCode,
-    int discountMinor = 0,
-  }) =>
-      throw UnimplementedError();
-
-  @override
-  Stream<List<Order>> watchCustomerOrders(String customerUid) => throw UnimplementedError();
-  @override
-  Stream<List<Order>> watchShopOrders(String shopId) => throw UnimplementedError();
-  @override
-  Stream<Order> watchOrder(String orderId) => throw UnimplementedError();
-  @override
-  Stream<List<Order>> watchDriverActiveOrders(String driverUid) => throw UnimplementedError();
-  @override
-  Stream<List<Order>> watchDriverHistory(String driverUid) => throw UnimplementedError();
-  @override
-  Future<void> cancelOrder(String orderId) => throw UnimplementedError();
-  @override
-  Future<void> rateOrder({required String orderId, required String shopId, required int rating}) =>
-      throw UnimplementedError();
-}
-
-void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
-  test('online: updateOrderStatus goes straight to the remote', () async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final network = _FakeNetworkInfo()..connected = true;
-    final queue = OfflineMutationQueue(
-      prefs: prefs,
-      networkInfo: network,
-      remoteUpdate: (_, _) async {},
-    );
-    // NOTE: OrderRepositoryImplTest exercises the repository directly, not
-    // through DI — this is intentionally a plain unit test.
-
-    addTearDown(queue.dispose);
-  });
-}
-```
-
-This first draft can't actually construct `OrderRepositoryImpl` without a real `FirebaseAuth`, which isn't fakeable without a Firebase test harness this project doesn't have. Replace the whole file with the version below, which sidesteps that by testing the **decision logic** (online → remote, offline → queue) directly against a repository built with a `FirebaseAuth`-free seam: add a small `String? Function() currentUidProvider` parameter instead of a raw `FirebaseAuth`, so the test can fake it trivially and production wires `() => FirebaseAuth.instance.currentUser?.uid`.
-
-- [ ] **Step 1 (final): Write the failing test**
-
-```dart
-// test/order_repository_impl_test.dart
-import 'package:dukkan/core/network/network_info.dart';
-import 'package:dukkan/core/offline/offline_mutation_queue.dart';
-import 'package:dukkan/data/order/repositories/order_repository_impl.dart';
 import 'package:dukkan/domain/order/entities/order_status.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'order_repository_impl_test.mocks.dart' show FakeOrderRemoteDataSourceUpdateOnly;
 
 class _FakeNetworkInfo implements NetworkInfo {
   bool connected = true;
@@ -986,8 +886,6 @@ void main() {
   });
 }
 ```
-
-Drop the unused `.mocks.dart` import — this test needs no mock generation. Remove that import line entirely; the file above is self-contained once that line is deleted.
 
 - [ ] **Step 2: Run test to verify it fails**
 
@@ -1662,26 +1560,97 @@ git commit -m "feat(owner): show pending-sync badge on the order desk"
 - Modify: `lib/presentation/driver/bloc/deliveries_event.dart`
 - Modify: `lib/presentation/driver/pages/deliveries_page.dart`
 - Modify: `lib/core/di/injector.dart` (`DeliveriesBloc` factory)
-- Test: `test/deliveries_bloc_test.dart` (extend if it exists, else this task creates the state/queue-merge tests inline with whatever tests already exist for this bloc — check first with `Glob test/deliveries_bloc_test.dart`)
+- Test: `test/deliveries_bloc_test.dart` (already exists — extend it, don't replace it)
 
 **Interfaces:**
 - Same shape as Task 9: `DeliveriesState.pendingStatuses` (`Map<String, OrderStatus>`), `DeliveriesBloc(..., queue: OfflineMutationQueue)`.
 
-This task mirrors Task 9 exactly, applied to the courier's **active** list only (history is all-`delivered`, terminal, never has a pending mutation — `pendingStatuses` is still computed from the whole queue for simplicity, but in practice only ever matches an active-tab order).
+This task mirrors Task 9 exactly, applied to the courier's **active** list only (history is all-`delivered`, terminal, never has a pending mutation — `pendingStatuses` is still computed from the whole queue for simplicity, but in practice only ever matches an active-tab order). `test/deliveries_bloc_test.dart` already exists with a `_FakeOrderRepository` (separate `activeController`/`historyController` broadcast `StreamController`s), a `_FakeAreasRepository`, and an `_order(id, status, {createdAt})` helper whose orders all carry `driverUid: 'd1'` — reuse these exactly, don't recreate them.
 
-- [ ] **Step 1: Check for an existing test file, then write the failing test**
+- [ ] **Step 1: Write the failing test**
 
-Run: `flutter test test/deliveries_bloc_test.dart` first to see whether the file exists (if it does, read it to mirror its existing fakes before adding to it, same approach as Task 9 with `owner_orders_bloc_test.dart`). Add these two tests (adapting the existing file's `_order`/fake-repository helpers, or creating equivalents matching Task 9's pattern if the file doesn't exist yet):
+Add these imports to the top of `test/deliveries_bloc_test.dart` (alongside the existing ones):
+
+```dart
+import 'package:dukkan/core/network/network_info.dart';
+import 'package:dukkan/core/offline/offline_mutation_queue.dart';
+import 'package:dukkan/core/offline/pending_mutation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+```
+
+Add this fake near the top-level `_FakeOrderRepository`/`_FakeAreasRepository` declarations:
+
+```dart
+class _FakeNetworkInfo implements NetworkInfo {
+  @override
+  Future<bool> get isConnected async => false;
+}
+```
+
+Add these two tests inside `main()`, after the existing `'tab switch flips which list the page reads'` test:
 
 ```dart
   test('a queued mutation for an active order surfaces in pendingStatuses', () async {
-    // ... same shape as Task 9's Step 1, using DeliveriesBloc + watchActive.
-    // Enqueue targeting one of the active orders' id, assert
-    // bloc.state.pendingStatuses[id] == the enqueued targetStatus.
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (_, _) async {},
+    );
+    final queuedBloc = DeliveriesBloc(
+      driverUid: 'd1',
+      watchActive: WatchDriverActiveOrders(repo),
+      watchHistory: WatchDriverOrderHistory(repo),
+      getAreas: GetAreas(_FakeAreasRepository()),
+      queue: queue,
+    );
+    addTearDown(queuedBloc.close);
+    addTearDown(queue.dispose);
+
+    queuedBloc.add(const DeliveriesStarted());
+    await tick();
+    repo.activeController.add([_order('a', OrderStatus.preparing)]);
+    await tick();
+
+    await queue.enqueue(PendingMutation(
+      id: 'm1',
+      orderId: 'a',
+      targetStatus: OrderStatus.outForDelivery,
+      actorUid: 'd1',
+      enqueuedAt: DateTime(2026, 8, 11),
+    ));
+    await tick();
+
+    expect(queuedBloc.state.pendingStatuses['a'], OrderStatus.outForDelivery);
   });
 
   test('an active order not in the queue has no pendingStatuses entry', () async {
-    // ... mirrors Task 9's negative case.
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (_, _) async {},
+    );
+    final queuedBloc = DeliveriesBloc(
+      driverUid: 'd1',
+      watchActive: WatchDriverActiveOrders(repo),
+      watchHistory: WatchDriverOrderHistory(repo),
+      getAreas: GetAreas(_FakeAreasRepository()),
+      queue: queue,
+    );
+    addTearDown(queuedBloc.close);
+    addTearDown(queue.dispose);
+
+    queuedBloc.add(const DeliveriesStarted());
+    await tick();
+    repo.activeController.add([_order('a', OrderStatus.preparing)]);
+    await tick();
+
+    expect(queuedBloc.state.pendingStatuses.containsKey('a'), isFalse);
   });
 ```
 
