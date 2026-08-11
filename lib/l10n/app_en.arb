@@ -193,6 +193,8 @@
   "orderAssignedAtLabel": "Assigned",
   "orderTimelineTitle": "Order history",
   "orderForcedChip": "Staff correction",
+  "offlineSyncPendingBadge": "Pending sync",
+  "offlineSyncFailedBody": "Couldn't sync — try again.",
   "orderNotesTitle": "Internal notes",
   "orderNotesEmpty": "No notes yet.",
   "orderNotesAddHint": "Add a note for other staff…",

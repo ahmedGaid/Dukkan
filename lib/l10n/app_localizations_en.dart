@@ -546,6 +546,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderForcedChip => 'Staff correction';
 
   @override
+  String get offlineSyncPendingBadge => 'Pending sync';
+
+  @override
+  String get offlineSyncFailedBody => 'Couldn\'t sync — try again.';
+
+  @override
   String get orderNotesTitle => 'Internal notes';
 
   @override
