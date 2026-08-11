@@ -7,11 +7,21 @@
 
 ## Scope (locked)
 
-Queue exactly these 4 status transitions, offline-capable:
+Queue exactly these 5 status transitions, offline-capable:
 - `pending → accepted` (owner)
+- `pending → rejected` (owner) — **added 2026-08-11**: traced the actual call
+  site (`_OwnerOrderCard._apply` in `order_desk_page.dart`) and found reject
+  shares the identical `UpdateOrderStatus` → `OrderRepositoryImpl
+  .updateOrderStatus` path as the 4 transitions below — same shape, no extra
+  mechanism, so it rides along rather than needing its own online-only
+  carve-out.
 - `accepted → preparing` (owner)
 - `preparing → outForDelivery` (courier)
 - `outForDelivery → delivered` (courier)
+
+`OrderRepositoryImpl.updateOrderStatus` never branches on the target status —
+every call through it queues the same way when offline, regardless of which
+of the 5 transitions it is.
 
 Explicitly OUT of scope for this slice (deferred, own design needed):
 - **Driver assignment** (owner picks a courier for an accepted order) — a property
@@ -90,6 +100,16 @@ Per queued item, on each trigger: attempt the real write via
 Distinguishing outcome 2 from outcome 3 requires catching `FirebaseException`
 by `.code`: `unavailable`/`deadline-exceeded`/etc. → treat as still-offline;
 `permission-denied`/anything else → treat as a real rejection.
+
+**Amended 2026-08-11** (found while writing the implementation plan): the
+replay call doesn't see a raw `FirebaseException` — `OrderRemoteDataSource
+._advanceStatus` already catches it and rethrows `ServerFailure(e.message ??
+e.code)`, which loses the structured code (only a message string survives).
+Fix: add an optional `code` field to `ServerFailure` (`lib/core/errors/
+failures.dart`) and have `_advanceStatus` pass `e.code` into it alongside the
+existing message — additive, every other `ServerFailure` call site keeps
+working unchanged (`code` defaults to null). Replay then catches
+`ServerFailure` and branches on `.code`, not `FirebaseException`.
 
 Queue order: **FIFO across the whole queue**, not per-order. Expected volume is
 a handful of items between signal gaps (an owner or courier doesn't advance
