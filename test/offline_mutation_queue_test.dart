@@ -1,3 +1,4 @@
+import 'package:dukkan/core/errors/failures.dart';
 import 'package:dukkan/core/network/network_info.dart';
 import 'package:dukkan/core/offline/offline_mutation_queue.dart';
 import 'package:dukkan/core/offline/pending_mutation.dart';
@@ -160,6 +161,109 @@ void main() {
     );
 
     expect(queue.pendingForOrder('o1'), isEmpty);
+    await queue.dispose();
+  });
+
+  test('replay on enqueue: success removes the item and emits the drained list', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (_, _) async {},
+    );
+
+    await queue.enqueue(_mutation('m1'));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(queue.pendingForOrder('o1'), isEmpty);
+    await queue.dispose();
+  });
+
+  test('replay leaves the item queued on a still-offline failure', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (_, _) async =>
+          throw const ServerFailure('offline', 'unavailable'),
+    );
+
+    await queue.enqueue(_mutation('m1'));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(queue.pendingForOrder('o1').single.id, 'm1');
+    await queue.dispose();
+  });
+
+  test('replay removes the item and emits SyncFailure on a real rejection', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (_, _) async =>
+          throw const ServerFailure('denied', 'permission-denied'),
+    );
+
+    SyncFailure? failure;
+    final sub = queue.failures.listen((f) => failure = f);
+
+    await queue.enqueue(_mutation('m1'));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(queue.pendingForOrder('o1'), isEmpty);
+    expect(failure?.orderId, 'o1');
+    await sub.cancel();
+    await queue.dispose();
+  });
+
+  test('a network-shaped failure stops the pass — later items stay untouched', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final attempted = <String>[];
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (orderId, _) async {
+        attempted.add(orderId);
+        throw const ServerFailure('offline', 'unavailable');
+      },
+    );
+
+    await queue.enqueue(_mutation('m1', orderId: 'o1'));
+    await queue.enqueue(_mutation('m2', orderId: 'o2'));
+    await Future<void>.delayed(Duration.zero);
+
+    // Each enqueue triggers its own immediate replay pass; o1 is attempted
+    // every time (still queued), o2 only once it exists.
+    expect(attempted, contains('o1'));
+    expect(queue.pendingForOrder('o1'), isNotEmpty);
+    expect(queue.pendingForOrder('o2'), isNotEmpty);
+    await queue.dispose();
+  });
+
+  test('a rejection does not block the rest of the same pass', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (orderId, _) async {
+        if (orderId == 'o1') {
+          throw const ServerFailure('denied', 'permission-denied');
+        }
+      },
+    );
+
+    await queue.enqueue(_mutation('m1', orderId: 'o1'));
+    await queue.enqueue(_mutation('m2', orderId: 'o2'));
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(queue.pendingForOrder('o1'), isEmpty);
+    expect(queue.pendingForOrder('o2'), isEmpty);
     await queue.dispose();
   });
 }
