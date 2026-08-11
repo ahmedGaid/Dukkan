@@ -749,10 +749,10 @@ Two separate initiatives surfaced during FILE_18 live device testing — a Fires
 the test phone made both gaps visible at once. Keep them separate; they have very different
 shapes.
 
-- [x] **O1 — Console dashboard off aggregation queries.** DONE (code) 2026-08-11, branch
-      `feat/o1-dashboard-offline-counters` (worktree `Dukkan-o1-dashboard-offline`, based on
-      `feat/c2c-search` — NOT `main`, which is 50 commits stale and missing the whole Founder
-      Console). Replaced all 16 `count()`/`sum()` aggregate reads in
+- [x] **O1 — Console dashboard off aggregation queries.** DONE (code) 2026-08-11, **merged into
+      `feat/c2c-search` 2026-08-11** (commit `45ccc9a`, clean 2-way merge, gates re-verified green
+      post-merge: analyze 0, test 244/244, parity 785; branch `feat/o1-dashboard-offline-counters`
+      + its worktree deleted after push). Replaced all 16 `count()`/`sum()` aggregate reads in
       `DashboardRemoteDataSource.getSummary` with 8 plain doc reads (1 `/stats/global` +
       7 `/stats/daily-{date}`) — new shared writer `lib/core/firestore/platform_stats.dart`
       (`bumpGlobalStats`/`bumpDailyStats`, same pattern as `/shops.ratingSum` and
