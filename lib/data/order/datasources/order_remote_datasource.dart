@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../core/errors/failures.dart';
+import '../../../core/firestore/platform_stats.dart';
 import '../../../domain/order/entities/address.dart';
 import '../../../domain/order/entities/order_item.dart';
 import '../../../domain/order/entities/order_status.dart';
@@ -68,6 +69,8 @@ class OrderRemoteDataSource {
         ],
       );
       final ref = await _orders.add(draft.toFirestore());
+      bumpDailyStats(_firestore, now, {'ordersCount': 1});
+      bumpGlobalStats(_firestore, {'ordersWaiting': 1});
       final saved = await ref.get();
       return OrderModel.fromFirestore(saved.id, saved.data()!);
     } on FirebaseException catch (e) {
@@ -171,29 +174,32 @@ class OrderRemoteDataSource {
         'at': DateTime.now().toIso8601String(),
         'byUid': uid,
       };
-
-      // A driver-carrying order reaching a terminal status frees its slot on
-      // the driver's profile — done inside the same transaction as the
-      // status write so the count never drifts from reality.
-      if (!_terminalStatuses.contains(status)) {
-        await orderRef.update({
-          'status': status.wire,
-          'statusHistory': FieldValue.arrayUnion([change]),
-        });
-        return;
-      }
+      final isTerminal = _terminalStatuses.contains(status);
 
       await _firestore.runTransaction((txn) async {
-        // Firestore transactions require every read before any write, so the
-        // driver doc (if any) is read here, ahead of both updates below.
+        // Firestore transactions require every read before any write. The
+        // order's own prior status/createdAt drive the stats bumps below
+        // (Phase 8 O1) — reading it here also covers the driver doc (if any)
+        // needed for the terminal-status slot release.
         final orderSnap = await txn.get(orderRef);
-        final driverUid = orderSnap.data()?['driverUid'] as String?;
-        final driverRef = driverUid == null ? null : _drivers.doc(driverUid);
-        final active = driverRef == null
-            ? 0
-            : ((await txn.get(driverRef)).data()?['activeOrdersCount'] as num?)
-                    ?.toInt() ??
-                0;
+        final orderData = orderSnap.data() ?? const <String, dynamic>{};
+        final fromPending = orderData['status'] == OrderStatus.pending.wire;
+        final createdAtRaw = orderData['createdAt'];
+        final createdAt =
+            createdAtRaw is Timestamp ? createdAtRaw.toDate() : DateTime.now();
+
+        DocumentReference<Map<String, dynamic>>? driverRef;
+        int active = 0;
+        if (isTerminal) {
+          final driverUid = orderData['driverUid'] as String?;
+          if (driverUid != null) {
+            driverRef = _drivers.doc(driverUid);
+            active =
+                ((await txn.get(driverRef)).data()?['activeOrdersCount'] as num?)
+                        ?.toInt() ??
+                    0;
+          }
+        }
 
         txn.update(orderRef, {
           'status': status.wire,
@@ -207,6 +213,22 @@ class OrderRemoteDataSource {
           txn.update(driverRef, {
             'activeOrdersCount': active > 0 ? active - 1 : 0,
           });
+        }
+
+        // A leaving-pending order is no longer in the waiting tile, no
+        // matter which status it moves to (accepted/cancelled/rejected all
+        // leave pending exactly once — `fromPending` guards a cancel from
+        // `accepted` from double-decrementing).
+        if (fromPending) {
+          bumpGlobalStats(_firestore, {'ordersWaiting': -1}, txn: txn);
+        }
+        if (status == OrderStatus.delivered) {
+          bumpDailyStats(_firestore, createdAt, {
+            'deliveredCount': 1,
+            'revenueMinor': (orderData['totalMinor'] as num?)?.toInt() ?? 0,
+            'commissionMinor':
+                (orderData['commissionMinor'] as num?)?.toInt() ?? 0,
+          }, txn: txn);
         }
       });
     } on FirebaseException catch (e) {

@@ -366,6 +366,81 @@ service cloud.firestore {
       allow create, update, delete: if hasPerm('promos.edit');
     }
 
+    // Dashboard rolling counters (Phase 8 O1) — replace the FC5 dashboard's
+    // count()/sum() aggregates, which the SDK can never serve from local
+    // cache (hard restriction), with denormalized fields bumped alongside
+    // the real mutation — same pattern as /shops.ratingSum and
+    // /drivers.activeOrdersCount above. `global` holds platform-wide
+    // figures; every other doc id is a `daily-yyyy-MM-dd` bucket. Per-field
+    // delta caps are a sanity backstop, not a precise check: unlike a rating
+    // (bounded 1-5) or a driver slot (exactly ±1), a money-sum bump's exact
+    // amount can't be verified here — rules can't see the sibling order doc
+    // in the same write (a Firestore limitation, not unique to this
+    // feature) — so a signed-in user could nudge these within the cap. Same
+    // risk class as the coupon usedCount / driver activeOrdersCount
+    // loosenesses already accepted above; these are display numbers only,
+    // never a gate on money actually moving.
+    match /stats/{docId} {
+      allow read: if isStaff();
+      // The doc is created once (by the founder's seed, or by whichever
+      // mutation happens to land first) with real starting values — every
+      // write after that is bounded by the update rule below.
+      allow create: if isSignedIn();
+
+      function inRange(delta, lo, hi) {
+        return delta >= lo && delta <= hi;
+      }
+
+      function validGlobalBump() {
+        let before = resource.data;
+        let after = request.resource.data;
+        let keys = after.diff(before).affectedKeys();
+        return keys.hasOnly(['totalShops', 'totalProducts', 'totalUsers',
+              'pendingShops', 'driversOnline', 'ordersWaiting'])
+          // totalShops/totalUsers never actually decrease (neither doc is
+          // ever hard-deleted — both rules blocks above are `allow delete:
+          // if false`) but totalProducts can (products CAN be hard-deleted)
+          // — same -50..50 band for all three rather than a fourth bespoke
+          // shape, since the app never sends more than a single-digit delta
+          // in practice.
+          && (!('totalShops' in keys)
+            || inRange(after.totalShops - before.get('totalShops', 0), -50, 50))
+          && (!('totalProducts' in keys)
+            || inRange(after.totalProducts - before.get('totalProducts', 0), -50, 50))
+          && (!('totalUsers' in keys)
+            || inRange(after.totalUsers - before.get('totalUsers', 0), -50, 50))
+          && (!('pendingShops' in keys)
+            || inRange(after.pendingShops - before.get('pendingShops', 0), -5, 5))
+          && (!('driversOnline' in keys)
+            || inRange(after.driversOnline - before.get('driversOnline', 0), -5, 5))
+          && (!('ordersWaiting' in keys)
+            || inRange(after.ordersWaiting - before.get('ordersWaiting', 0), -5, 5));
+      }
+
+      function validDailyBump() {
+        let before = resource.data;
+        let after = request.resource.data;
+        let keys = after.diff(before).affectedKeys();
+        return keys.hasOnly(['ordersCount', 'deliveredCount', 'revenueMinor',
+              'commissionMinor', 'failedNotifications'])
+          && (!('ordersCount' in keys)
+            || inRange(after.ordersCount - before.get('ordersCount', 0), 0, 50))
+          && (!('deliveredCount' in keys)
+            || inRange(after.deliveredCount - before.get('deliveredCount', 0), 0, 50))
+          && (!('revenueMinor' in keys)
+            || inRange(after.revenueMinor - before.get('revenueMinor', 0), 0, 5000000))
+          && (!('commissionMinor' in keys)
+            || inRange(after.commissionMinor - before.get('commissionMinor', 0), 0, 5000000))
+          && (!('failedNotifications' in keys)
+            || inRange(after.failedNotifications - before.get('failedNotifications', 0), 0, 50));
+      }
+
+      allow update: if isSignedIn()
+        && (docId == 'global' ? validGlobalBump() : validDailyBump());
+
+      allow delete: if false;
+    }
+
     // Deny anything without an explicit rule above.
     match /{document=**} {
       allow read, write: if false;

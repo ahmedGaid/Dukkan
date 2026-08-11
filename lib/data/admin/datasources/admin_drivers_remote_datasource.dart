@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/errors/failures.dart';
+import '../../../core/firestore/platform_stats.dart';
 import '../../../domain/admin/entities/driver_performance.dart';
 import '../../driver/models/driver_model.dart';
 import '../../order/models/order_model.dart';
@@ -47,6 +48,36 @@ class AdminDriversRemoteDataSource {
   Future<void> patchFields(String uid, Map<String, dynamic> fields) async {
     try {
       await _drivers.doc(uid).update(fields);
+    } on FirebaseException catch (e) {
+      throw ServerFailure(e.message ?? e.code);
+    }
+  }
+
+  /// See `DriverRemoteDataSource.setOnline` — same `driversOnline` (Phase 8
+  /// O1) pairing, this time reading `isOnline` (unaffected here) to decide
+  /// whether suspending/activating crosses in/out of the counted set.
+  Future<void> setSuspendedWithStats(
+    String uid,
+    bool suspended,
+    String? reason,
+  ) async {
+    try {
+      final ref = _drivers.doc(uid);
+      await _firestore.runTransaction((txn) async {
+        final snap = await txn.get(ref);
+        final isOnline = snap.data()?['isOnline'] == true;
+        final wasCounted =
+            isOnline && snap.data()?['isSuspended'] != true;
+        final isCounted = isOnline && !suspended;
+        txn.update(ref, {
+          'isSuspended': suspended,
+          'suspendReason': suspended ? reason : null,
+        });
+        if (wasCounted != isCounted) {
+          bumpGlobalStats(_firestore, {'driversOnline': isCounted ? 1 : -1},
+              txn: txn);
+        }
+      });
     } on FirebaseException catch (e) {
       throw ServerFailure(e.message ?? e.code);
     }

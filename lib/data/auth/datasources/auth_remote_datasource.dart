@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/errors/failures.dart';
+import '../../../core/firestore/platform_stats.dart';
 import '../../../domain/auth/entities/user_role.dart';
 import '../models/app_user_model.dart';
 
@@ -83,6 +84,7 @@ class AuthRemoteDataSource {
         ...model.toFirestore(),
         'createdAt': FieldValue.serverTimestamp(),
       });
+      bumpGlobalStats(_firestore, {'totalUsers': 1});
       return model;
     } on FirebaseAuthException catch (e) {
       throw _mapAuthError(e);

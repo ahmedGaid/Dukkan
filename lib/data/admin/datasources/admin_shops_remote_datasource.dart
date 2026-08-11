@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/errors/failures.dart';
+import '../../../core/firestore/platform_stats.dart';
 import '../../shop/models/shop_model.dart';
 
 /// Firestore-direct reads/writes of `/shops` for the console. Unlike
@@ -78,7 +79,33 @@ class AdminShopsRemoteDataSource {
         ...shop.toFirestore(),
         'createdAt': FieldValue.serverTimestamp(),
       });
+      bumpGlobalStats(_firestore, {
+        'totalShops': 1,
+        if (shop.status == 'pending') 'pendingShops': 1,
+      });
       return ShopModel.fromFirestore(doc.id, shop.toFirestore());
+    } on FirebaseException catch (e) {
+      throw ServerFailure(e.message ?? e.code);
+    }
+  }
+
+  /// Reads the shop's current status inside a transaction so `pendingShops`
+  /// (Phase 8 O1) only moves when a shop actually enters/leaves `pending` —
+  /// `patchFields` can't do this itself, it has no notion of "was this a
+  /// status change" for an arbitrary field map.
+  Future<void> setStatusWithStats(String shopId, String status) async {
+    try {
+      final ref = _shops.doc(shopId);
+      await _firestore.runTransaction((txn) async {
+        final snap = await txn.get(ref);
+        final wasPending = snap.data()?['status'] == 'pending';
+        final isPending = status == 'pending';
+        txn.update(ref, {'status': status});
+        if (wasPending != isPending) {
+          bumpGlobalStats(_firestore, {'pendingShops': isPending ? 1 : -1},
+              txn: txn);
+        }
+      });
     } on FirebaseException catch (e) {
       throw ServerFailure(e.message ?? e.code);
     }

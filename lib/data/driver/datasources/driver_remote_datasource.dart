@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/errors/failures.dart';
+import '../../../core/firestore/platform_stats.dart';
 import '../models/driver_model.dart';
 
 class DriverRemoteDataSource {
@@ -40,8 +41,26 @@ class DriverRemoteDataSource {
     });
   }
 
-  Future<void> setOnline(String uid, bool isOnline) =>
-      _drivers.doc(uid).update({'isOnline': isOnline});
+  /// `driversOnline` (Phase 8 O1) counts `isOnline && !isSuspended` — reads
+  /// the driver's current `isSuspended` (unaffected by this call) inside the
+  /// transaction to decide whether this toggle actually crosses in/out of
+  /// that counted set, same shape as `AdminDriversRemoteDataSource
+  /// .setSuspendedWithStats` reading `isOnline` for the other half of the
+  /// pair.
+  Future<void> setOnline(String uid, bool isOnline) async {
+    final ref = _drivers.doc(uid);
+    await _firestore.runTransaction((txn) async {
+      final snap = await txn.get(ref);
+      final wasSuspended = snap.data()?['isSuspended'] == true;
+      final wasCounted = snap.data()?['isOnline'] == true && !wasSuspended;
+      final isCounted = isOnline && !wasSuspended;
+      txn.update(ref, {'isOnline': isOnline});
+      if (wasCounted != isCounted) {
+        bumpGlobalStats(_firestore, {'driversOnline': isCounted ? 1 : -1},
+            txn: txn);
+      }
+    });
+  }
 
   Future<List<DriverModel>> availableDrivers(String areaId) async {
     final snap = await _drivers

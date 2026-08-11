@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/errors/failures.dart';
+import '../../../core/firestore/platform_stats.dart';
 import '../../../domain/admin/entities/products_page.dart';
 import '../../product/models/product_model.dart';
 
@@ -152,6 +153,7 @@ class AdminProductsRemoteDataSource {
         isFeatured: false,
       );
       final created = await _products.add(copy.toFirestore());
+      bumpGlobalStats(_firestore, {'totalProducts': 1});
       return created.id;
     } on FirebaseException catch (e) {
       throw ServerFailure(e.message ?? e.code);
@@ -161,6 +163,7 @@ class AdminProductsRemoteDataSource {
   Future<void> hardDelete(String productId) async {
     try {
       await _products.doc(productId).delete();
+      bumpGlobalStats(_firestore, {'totalProducts': -1});
     } on FirebaseException catch (e) {
       throw ServerFailure(e.message ?? e.code);
     }

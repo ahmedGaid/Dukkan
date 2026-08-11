@@ -29,7 +29,7 @@ class AdminShopsRepositoryImpl implements AdminShopsRepository {
     required String status,
     String? reason,
   }) async {
-    await _remote.patchFields(shopId, {'status': status});
+    await _remote.setStatusWithStats(shopId, status);
     unawaited(_api.reportAudit(
       action: 'shop.status',
       targetType: 'shop',

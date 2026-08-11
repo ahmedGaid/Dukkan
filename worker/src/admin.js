@@ -765,10 +765,37 @@ const AUDIENCE_TOPICS = {
 };
 
 async function writeNotificationHistory(env, accessToken, fields) {
+  if (fields.status === 'failed') {
+    await bumpFailedNotificationsStat(env, accessToken);
+  }
   return firestoreCreateDoc(env, accessToken, 'notifications', {
     ...fields,
     sentAt: fsTimestamp(new Date().toISOString()),
   });
+}
+
+/**
+ * `/stats/daily-{utc date}.failedNotifications` (Phase 8 O1, client half in
+ * `platform_stats.dart`) — read-then-write-absolute, same pattern as
+ * `buildDriverDecrementWrite` above (no atomic `increment` transform is used
+ * elsewhere in this file, and a transform write requires the target doc to
+ * already exist, which a brand-new day's stats doc won't). Best-effort: a
+ * failure here must never block the actual notification-history write, so
+ * errors are swallowed — this tile is display-only. Bucketed by the Worker's
+ * UTC day rather than the founder's local day (the client-side bumps use
+ * local time) — a few hours of slop right at midnight on this one minor
+ * count, never worth threading a timezone through the Worker for.
+ */
+async function bumpFailedNotificationsStat(env, accessToken) {
+  try {
+    const day = new Date().toISOString().slice(0, 10);
+    const path = `stats/daily-${day}`;
+    const current = await firestoreGetFields(env, accessToken, path);
+    const next = Number(current?.failedNotifications ?? 0) + 1;
+    await firestorePatchFields(env, accessToken, path, { failedNotifications: next });
+  } catch (e) {
+    console.error('[admin] failedNotifications stat bump failed', e);
+  }
 }
 
 /**
