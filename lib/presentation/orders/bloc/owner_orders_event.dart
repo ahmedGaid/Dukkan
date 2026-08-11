@@ -36,3 +36,13 @@ class _OwnerOrdersFailed extends OwnerOrdersEvent {
   @override
   List<Object?> get props => [error];
 }
+
+/// Internal: the offline queue's contents changed.
+class _PendingMutationsUpdated extends OwnerOrdersEvent {
+  const _PendingMutationsUpdated(this.mutations);
+
+  final List<PendingMutation> mutations;
+
+  @override
+  List<Object?> get props => [mutations];
+}

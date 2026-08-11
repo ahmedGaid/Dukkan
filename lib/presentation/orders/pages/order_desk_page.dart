@@ -17,6 +17,7 @@ import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_snackbar.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/price_tag.dart';
+import '../../widgets/common/pending_sync_badge.dart';
 import '../../widgets/common/skeletons.dart';
 import '../../widgets/common/status_chip.dart';
 import '../bloc/owner_orders_bloc.dart';
@@ -92,7 +93,11 @@ class _OrderDeskView extends StatelessWidget {
                               const SizedBox(height: AppSpacing.sm),
                           itemBuilder: (context, i) => i == 0
                               ? _DailySummaryStrip(orders: state.orders)
-                              : _OwnerOrderCard(order: state.orders[i - 1]),
+                              : _OwnerOrderCard(
+                                  order: state.orders[i - 1],
+                                  pendingStatus: state
+                                      .pendingStatuses[state.orders[i - 1].id],
+                                ),
                         ),
                 },
               ),
@@ -154,9 +159,10 @@ class _DailySummaryStrip extends StatelessWidget {
 }
 
 class _OwnerOrderCard extends StatefulWidget {
-  const _OwnerOrderCard({required this.order});
+  const _OwnerOrderCard({required this.order, this.pendingStatus});
 
   final Order order;
+  final OrderStatus? pendingStatus;
 
   @override
   State<_OwnerOrderCard> createState() => _OwnerOrderCardState();
@@ -228,9 +234,10 @@ class _OwnerOrderCardState extends State<_OwnerOrderCard> {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final order = widget.order;
-    final view = orderStatusView(l10n, order.status);
-    final primary = orderPrimaryAction(l10n, order.status);
-    final secondary = orderSecondaryAction(l10n, order.status);
+    final effectiveStatus = widget.pendingStatus ?? order.status;
+    final view = orderStatusView(l10n, effectiveStatus);
+    final primary = widget.pendingStatus == null ? orderPrimaryAction(l10n, order.status) : null;
+    final secondary = widget.pendingStatus == null ? orderSecondaryAction(l10n, order.status) : null;
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -245,7 +252,16 @@ class _OwnerOrderCardState extends State<_OwnerOrderCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    StatusChip(label: view.label, tone: view.tone),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        StatusChip(label: view.label, tone: view.tone),
+                        if (widget.pendingStatus != null) ...[
+                          const SizedBox(width: AppSpacing.xs),
+                          const PendingSyncBadge(),
+                        ],
+                      ],
+                    ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
                       DateFormat.yMMMd(locale)

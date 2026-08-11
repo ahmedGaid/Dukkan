@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:dukkan/core/network/network_info.dart';
+import 'package:dukkan/core/offline/offline_mutation_queue.dart';
+import 'package:dukkan/core/offline/pending_mutation.dart';
 import 'package:dukkan/domain/order/entities/address.dart';
 import 'package:dukkan/domain/order/entities/order.dart';
 import 'package:dukkan/domain/order/entities/order_item.dart';
@@ -8,6 +11,12 @@ import 'package:dukkan/domain/order/repositories/order_repository.dart';
 import 'package:dukkan/domain/order/usecases/watch_shop_orders.dart';
 import 'package:dukkan/presentation/orders/bloc/owner_orders_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class _FakeNetworkInfo implements NetworkInfo {
+  @override
+  Future<bool> get isConnected async => false;
+}
 
 /// Drives the shop-orders stream by hand (mirrors `_FakeOrderRepository` in
 /// orders_bloc_test.dart).
@@ -87,21 +96,91 @@ Order _order(String id, OrderStatus status) => Order(
 void main() {
   late _FakeOrderRepository repo;
   late OwnerOrdersBloc bloc;
+  late OfflineMutationQueue queue;
 
-  setUp(() {
+  setUp(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     repo = _FakeOrderRepository();
+    queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (_, _) async {},
+    );
     bloc = OwnerOrdersBloc(
       shopId: 's1',
       watchShopOrders: WatchShopOrders(repo),
+      queue: queue,
     );
   });
 
   tearDown(() async {
     await bloc.close();
     await repo.controller.close();
+    await queue.dispose();
   });
 
   Future<void> tick() => Future<void>.delayed(Duration.zero);
+
+  test('a queued mutation for a listed order surfaces in pendingStatuses', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (_, _) async {},
+    );
+    final queuedBloc = OwnerOrdersBloc(
+      shopId: 's1',
+      watchShopOrders: WatchShopOrders(repo),
+      queue: queue,
+    );
+    addTearDown(queuedBloc.close);
+    addTearDown(queue.dispose);
+
+    queuedBloc.add(const OwnerOrdersStarted());
+    await tick();
+    repo.controller.add([_order('a', OrderStatus.pending)]);
+    await tick();
+
+    await queue.enqueue(PendingMutation(
+      id: 'm1',
+      orderId: 'a',
+      targetStatus: OrderStatus.accepted,
+      actorUid: 'u1',
+      enqueuedAt: DateTime(2026, 8, 11),
+    ));
+    await tick();
+
+    expect(queuedBloc.state.pendingStatuses['a'], OrderStatus.accepted);
+  });
+
+  test('an order not in the queue has no pendingStatuses entry', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (_, _) async {},
+    );
+    final queuedBloc = OwnerOrdersBloc(
+      shopId: 's1',
+      watchShopOrders: WatchShopOrders(repo),
+      queue: queue,
+    );
+    addTearDown(queuedBloc.close);
+    addTearDown(queue.dispose);
+
+    queuedBloc.add(const OwnerOrdersStarted());
+    await tick();
+    repo.controller.add([_order('a', OrderStatus.pending)]);
+    await tick();
+
+    expect(queuedBloc.state.pendingStatuses.containsKey('a'), isFalse);
+  });
 
   test('loads orders from the shop stream', () async {
     bloc.add(const OwnerOrdersStarted());

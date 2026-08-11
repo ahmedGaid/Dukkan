@@ -1014,7 +1014,7 @@ Future<void> initDependencies() async {
         OrdersBloc(customerUid: customerUid, watchCustomerOrders: sl()),
   );
   sl.registerFactoryParam<OwnerOrdersBloc, String, void>(
-    (shopId, _) => OwnerOrdersBloc(shopId: shopId, watchShopOrders: sl()),
+    (shopId, _) => OwnerOrdersBloc(shopId: shopId, watchShopOrders: sl(), queue: sl()),
   );
   sl.registerFactoryParam<OrderDetailBloc, String, OrderViewerRole>(
     (orderId, role) => OrderDetailBloc(
