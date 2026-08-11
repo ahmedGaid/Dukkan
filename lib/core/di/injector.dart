@@ -299,6 +299,7 @@ import '../../presentation/shop/bloc/products_bloc.dart';
 import '../l10n/locale_controller.dart';
 import '../network/network_info.dart';
 import '../notifications/notification_service.dart';
+import '../offline/offline_mutation_queue.dart';
 import '../router/app_router.dart';
 import '../theme/theme_controller.dart';
 
@@ -973,11 +974,27 @@ Future<void> initDependencies() async {
         deleteBanner: sl(),
       ));
 
-  // Order — data
+  // Order — data. OfflineMutationQueue (O2 slice 1) is resolved eagerly
+  // right after this block (not lazily) so its WidgetsBindingObserver is
+  // registered from app start, not only after the first status write.
   sl.registerLazySingleton(
     () => OrderRemoteDataSource(firestore: sl(), auth: sl()),
   );
-  sl.registerLazySingleton<OrderRepository>(() => OrderRepositoryImpl(sl()));
+  sl.registerLazySingleton(
+    () => OfflineMutationQueue(
+      prefs: sl(),
+      networkInfo: sl(),
+      remoteUpdate: (orderId, status) => sl<OrderRemoteDataSource>().updateOrderStatus(orderId, status),
+    ),
+  );
+  sl.registerLazySingleton<OrderRepository>(
+    () => OrderRepositoryImpl(
+      sl(),
+      networkInfo: sl(),
+      queue: sl(),
+      currentUidProvider: () => sl<FirebaseAuth>().currentUser?.uid,
+    ),
+  );
 
   // Order — use cases
   sl.registerLazySingleton(() => PlaceOrder(sl(), sl(), sl(), sl()));
