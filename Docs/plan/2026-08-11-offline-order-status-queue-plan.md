@@ -27,7 +27,7 @@
 - Test: `test/failures_test.dart` (new)
 
 **Interfaces:**
-- Produces: `ServerFailure({String message = '', String? code})` — `code` is optional and defaults to `null`, so every existing call site (`ServerFailure(e.message ?? e.code)` elsewhere in the codebase, unchanged) keeps compiling and behaving identically.
+- Produces: `ServerFailure([String message = '', String? code])` — positional optional params, matching the existing `Failure([this.message = ''])` base-class style. `code` defaults to `null`, so every existing call site (`ServerFailure(e.message ?? e.code)` elsewhere in the codebase, unchanged) keeps compiling and behaving identically.
 
 - [ ] **Step 1: Write the failing test**
 
