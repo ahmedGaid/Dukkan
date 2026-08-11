@@ -3,6 +3,7 @@ import 'package:dukkan/core/network/network_info.dart';
 import 'package:dukkan/core/offline/offline_mutation_queue.dart';
 import 'package:dukkan/core/offline/pending_mutation.dart';
 import 'package:dukkan/domain/order/entities/order_status.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -304,6 +305,46 @@ void main() {
 
     expect(queue.pendingForOrder('o1'), isEmpty);
     expect(queue.pendingForOrder('o2'), isEmpty);
+    await queue.dispose();
+  });
+
+  test('an app resume with a non-empty queue triggers a replay', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final network = _FakeNetworkInfo()..connected = false;
+    var attempts = 0;
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: network,
+      remoteUpdate: (_, _) async => attempts++,
+    );
+    await queue.enqueue(_mutation('m1'));
+    expect(attempts, 0); // still offline, the post-enqueue attempt no-ops
+
+    network.connected = true;
+    (queue as WidgetsBindingObserver)
+      .didChangeAppLifecycleState(AppLifecycleState.resumed);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(attempts, 1);
+    await queue.dispose();
+  });
+
+  test('an app resume with an empty queue does not call remoteUpdate', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    var attempts = 0;
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (_, _) async => attempts++,
+    );
+
+    (queue as WidgetsBindingObserver)
+      .didChangeAppLifecycleState(AppLifecycleState.resumed);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(attempts, 0);
     await queue.dispose();
   });
 }

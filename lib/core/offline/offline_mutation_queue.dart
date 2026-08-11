@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/order/entities/order_status.dart';
@@ -13,7 +14,7 @@ import 'pending_mutation.dart';
 /// [prefs] is read synchronously (unlike `ProductLocalDataSource`'s `_ready`
 /// guard) because by the time this is constructed via DI, `SharedPreferences`
 /// was already awaited once at app start (`core/di/injector.dart`).
-class OfflineMutationQueue {
+class OfflineMutationQueue with WidgetsBindingObserver {
   OfflineMutationQueue({
     required SharedPreferences prefs,
     required NetworkInfo networkInfo,
@@ -21,7 +22,9 @@ class OfflineMutationQueue {
   })  : _prefs = prefs,
         _networkInfo = networkInfo,
         _remoteUpdate = remoteUpdate,
-        _items = _load(prefs);
+        _items = _load(prefs) {
+    WidgetsBinding.instance.addObserver(this);
+  }
 
 
   static const _key = 'offline.pendingMutations';
@@ -81,6 +84,13 @@ class OfflineMutationQueue {
     }
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _items.isNotEmpty) {
+      unawaited(_replay());
+    }
+  }
+
   /// One FIFO pass over a snapshot of the queue. A network-shaped failure
   /// (still offline) stops the pass immediately — the next trigger retries
   /// everything from the top. A real rejection only drops that one item and
@@ -137,6 +147,7 @@ class OfflineMutationQueue {
   }
 
   Future<void> dispose() async {
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     await _controller.close();
     await _failureController.close();
