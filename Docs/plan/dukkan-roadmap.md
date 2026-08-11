@@ -749,14 +749,31 @@ Two separate initiatives surfaced during FILE_18 live device testing — a Fires
 the test phone made both gaps visible at once. Keep them separate; they have very different
 shapes.
 
-- [ ] **O1 — Console dashboard off aggregation queries.** The FC5 dashboard's tiles run Firestore
-      `count()`/`sum()` aggregation queries, which the SDK **cannot** serve from local cache at all
-      (hard restriction, not our bug) — so the dashboard can never show anything offline no matter
-      what caching we add elsewhere. Fix: replace the aggregation reads with rolling counter
-      fields (maintained via existing mutation paths, same pattern as `/shops.ratingSum` or
-      `/drivers.activeOrdersCount`), so a plain doc read serves the tiles and Firestore's normal
-      offline cache covers it for free. Console mutations stay live-only by design (unaffected) —
-      this is read-path only. Single session, well-scoped.
+- [x] **O1 — Console dashboard off aggregation queries.** DONE (code) 2026-08-11, branch
+      `feat/o1-dashboard-offline-counters` (worktree `Dukkan-o1-dashboard-offline`, based on
+      `feat/c2c-search` — NOT `main`, which is 50 commits stale and missing the whole Founder
+      Console). Replaced all 16 `count()`/`sum()` aggregate reads in
+      `DashboardRemoteDataSource.getSummary` with 8 plain doc reads (1 `/stats/global` +
+      7 `/stats/daily-{date}`) — new shared writer `lib/core/firestore/platform_stats.dart`
+      (`bumpGlobalStats`/`bumpDailyStats`, same pattern as `/shops.ratingSum` and
+      `/drivers.activeOrdersCount`). Wired at every real mutation site: order place/advance
+      (`ordersWaiting`, daily `ordersCount`/`deliveredCount`/`revenueMinor`/`commissionMinor`),
+      shop create + a new `setStatusWithStats` (replaces the shop-status `patchFields` call, reads
+      prior status in a txn so `pendingShops` only moves on an actual pending↔other transition),
+      product create/duplicate/hardDelete (`totalProducts` — NOT monotonic, hard delete exists),
+      driver `setOnline` + a new `setSuspendedWithStats` (`driversOnline`, each reads the other
+      flag to compute the pair correctly), user signUp (`totalUsers`), and the Worker's
+      `writeNotificationHistory` (`failedNotifications`, UTC-day-bucketed, best-effort/swallowed).
+      `firestore.rules` gained a `/stats/{docId}` block: any signed-in user may bump within a
+      bounded per-write delta (a sanity backstop, not exact — rules can't see the sibling order
+      doc to verify a money-sum's real amount, same accepted-loose class as the coupon/driver
+      bumps already in the file). `seed.dart` recomputes `/stats` from its own literal demo-data
+      functions (never a Firestore read — the seed identity has no `/users`/`/orders` list
+      permission) so a reseed doesn't leave the dashboard at zero; only on a full
+      catalog+customers pass. Gates green: analyze 0, test 244/244 (+3 new
+      `platform_stats_test.dart`), parity 785. **Live device pass still owed** — same as every
+      Worker-touching session before deploy — plus the R2 credit-card blocker separately covers
+      Worker deploy itself.
 - [ ] **O2 — App-wide offline mutation queue (design session first).** Founder wants the
       customer/owner/courier app to work fully offline like Notion/Linear: actions taken with no
       connection (place order, accept/advance an order, rate, edit cart/profile, etc.) queue
