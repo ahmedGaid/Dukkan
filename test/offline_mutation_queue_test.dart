@@ -228,7 +228,12 @@ void main() {
       networkInfo: _FakeNetworkInfo(),
       remoteUpdate: (orderId, _) async {
         attempted.add(orderId);
-        throw const ServerFailure('offline', 'unavailable');
+        // Only o1 is still-offline; o2 would succeed if it were ever
+        // attempted — this is what lets the test tell "stopped early" apart
+        // from "tried everything and everything happened to fail".
+        if (orderId == 'o1') {
+          throw const ServerFailure('offline', 'unavailable');
+        }
       },
     );
 
@@ -237,10 +242,45 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     // Each enqueue triggers its own immediate replay pass; o1 is attempted
-    // every time (still queued), o2 only once it exists.
+    // every time (still queued, stops the pass), o2 is never reached.
     expect(attempted, contains('o1'));
+    expect(attempted, isNot(contains('o2')));
     expect(queue.pendingForOrder('o1'), isNotEmpty);
     expect(queue.pendingForOrder('o2'), isNotEmpty);
+    await queue.dispose();
+  });
+
+  test('an unexpected (non-ServerFailure) exception does not crash the pass or the item', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final attempted = <String>[];
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (orderId, _) async {
+        attempted.add(orderId);
+        if (orderId == 'o1') {
+          throw Exception('boom: malformed response');
+        }
+      },
+    );
+
+    SyncFailure? failure;
+    final sub = queue.failures.listen((f) => failure = f);
+
+    await queue.enqueue(_mutation('m1', orderId: 'o1'));
+    await queue.enqueue(_mutation('m2', orderId: 'o2'));
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+
+    // The crash on o1 doesn't propagate and doesn't wedge the pass: o1 is
+    // dropped (not retried forever) and o2, later in the same pass, still
+    // gets attempted and succeeds.
+    expect(queue.pendingForOrder('o1'), isEmpty);
+    expect(queue.pendingForOrder('o2'), isEmpty);
+    expect(attempted, contains('o2'));
+    expect(failure?.orderId, 'o1');
+    await sub.cancel();
     await queue.dispose();
   });
 

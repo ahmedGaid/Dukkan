@@ -97,6 +97,14 @@ class OfflineMutationQueue {
         if (e.code != null && _offlineCodes.contains(e.code)) return;
         _remove(mutation.id);
         _failureController.add(SyncFailure(orderId: mutation.orderId, reason: e.code ?? 'unknown'));
+      } catch (e) {
+        // Anything that isn't a ServerFailure (a bug, a cast failure while
+        // parsing a response, ...) is not a "still offline" signal we know
+        // how to retry — treat it like a rejection so it can't wedge this
+        // item (and, via the 15s timer, the whole queue) in an infinite
+        // crash loop with zero user-facing signal.
+        _remove(mutation.id);
+        _failureController.add(SyncFailure(orderId: mutation.orderId, reason: 'unexpected'));
       }
     }
     _stopTimerIfDrained();
