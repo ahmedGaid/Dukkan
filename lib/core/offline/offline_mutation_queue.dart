@@ -20,9 +20,8 @@ class OfflineMutationQueue {
   })  : _prefs = prefs,
         _networkInfo = networkInfo,
         _remoteUpdate = remoteUpdate,
-        _items = _load(prefs) {
-    _controller.add(List.unmodifiable(_items));
-  }
+        _items = _load(prefs);
+
 
   static const _key = 'offline.pendingMutations';
 
@@ -32,6 +31,10 @@ class OfflineMutationQueue {
   final _controller = StreamController<List<PendingMutation>>.broadcast();
   List<PendingMutation> _items;
 
+  /// Stream of mutation list updates. Does not emit an initial state to late
+  /// subscribers (broadcast controller behavior). Callers must pair this with
+  /// [pendingForOrder] to read the current state on first render, then use
+  /// this stream for updates.
   Stream<List<PendingMutation>> watchAll() => _controller.stream;
 
   /// Sync lookup for the overlay widgets (owner desk / courier list / order
@@ -51,12 +54,18 @@ class OfflineMutationQueue {
   }
 
   static List<PendingMutation> _load(SharedPreferences prefs) {
-    final raw = prefs.getString(_key);
-    if (raw == null) return [];
-    final list = jsonDecode(raw) as List;
-    return list
-        .map((e) => PendingMutation.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList();
+    try {
+      final raw = prefs.getString(_key);
+      if (raw == null) return [];
+      final list = jsonDecode(raw) as List;
+      return list
+          .map((e) => PendingMutation.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList();
+    } catch (_) {
+      // Treat any parse/schema error as "nothing persisted" — corrupted or
+      // future-schema entries must never crash app startup.
+      return [];
+    }
   }
 
   Future<void> dispose() async {
