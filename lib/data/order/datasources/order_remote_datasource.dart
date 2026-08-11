@@ -232,7 +232,7 @@ class OrderRemoteDataSource {
         }
       });
     } on FirebaseException catch (e) {
-      throw ServerFailure(e.message ?? e.code);
+      throw ServerFailure(e.message ?? e.code, e.code);
     }
   }
 
