@@ -1,26 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/errors/failures.dart';
+import '../../../core/firestore/platform_stats.dart';
 import '../../../domain/dashboard/entities/daily_order_count.dart';
 import '../models/dashboard_summary_model.dart';
 import 'day_window.dart';
 
-/// Live platform figures for the console dashboard, all via `count()`/`sum()`
-/// aggregates — no document downloads (M13 lesson). One `Future.wait` fires
-/// every query in parallel; the read rules each aggregate rides are auth-only
-/// (never `resource.data`), so aggregation stays legal.
-///
-/// Index note: the `delivered && createdAt >= today` money sums need a
-/// composite that also carries EVERY summed field —
-/// `status + createdAt + commissionMinor + totalMinor`. A `sum()` aggregation
-/// is not served by the plain `status + createdAt` composite the `count()`
-/// queries use; leaving the summed fields out fails the whole dashboard with
-/// `FAILED_PRECONDITION` (found on device 2026-07-31). The failed-notifications
-/// count needs `status + sentAt ASCENDING` for the same reason a range without
-/// an `orderBy` always does — the DESCENDING composite the history page uses
-/// does NOT serve it. Every other query is a single-field range or equality (or
-/// two equalities, which Firestore serves from single-field indexes) — see
-/// `firestore.indexes.json`.
+/// Live platform figures for the console dashboard, read from the rolling
+/// `/stats` counters (Phase 8 O1) instead of `count()`/`sum()` aggregates —
+/// those can NEVER be served from Firestore's local cache (a hard SDK
+/// restriction), so the dashboard was unusable offline no matter what
+/// caching the rest of the app had. A plain doc read *can* be served
+/// offline once fetched, so this datasource now costs 8 doc reads (1 global
+/// + 7 daily buckets) instead of 16 aggregate reads, and stays populated
+/// without a connection. See `core/firestore/platform_stats.dart` for who
+/// bumps these fields and why each one is safe to trust.
 class DashboardRemoteDataSource {
   DashboardRemoteDataSource({required FirebaseFirestore firestore})
       : _firestore = firestore;
@@ -30,69 +24,44 @@ class DashboardRemoteDataSource {
   Future<DashboardSummaryModel> getSummary({required bool includeUsers}) async {
     try {
       final now = DateTime.now();
-      final todayStart = Timestamp.fromDate(startOfDay(now));
       final days = last7DayStarts(now);
 
-      final orders = _firestore.collection('orders');
-      final shops = _firestore.collection('shops');
+      final results = await Future.wait([
+        globalStatsRef(_firestore).get(),
+        for (final day in days) dailyStatsRef(_firestore, day).get(),
+      ]);
 
-      final ordersToday =
-          orders.where('createdAt', isGreaterThanOrEqualTo: todayStart);
-      final deliveredToday = orders
-          .where('status', isEqualTo: 'delivered')
-          .where('createdAt', isGreaterThanOrEqualTo: todayStart);
-      final waiting = orders.where('status', isEqualTo: 'pending');
-      final driversOnline = _firestore
-          .collection('drivers')
-          .where('isOnline', isEqualTo: true)
-          .where('isSuspended', isEqualTo: false);
-      final pendingShops = shops.where('status', isEqualTo: 'pending');
-      final failedNotifications = _firestore
-          .collection('notifications')
-          .where('status', isEqualTo: 'failed')
-          .where('sentAt', isGreaterThanOrEqualTo: Timestamp.fromDate(days.first));
+      final global = results.first.data() ?? const <String, dynamic>{};
+      final dailySnaps = results.skip(1).toList(growable: false);
+      final todayData = dailySnaps.last.data() ?? const <String, dynamic>{};
 
-      // Order matters: results are read back by index below. The 7 per-day
-      // counts occupy indices 7..13; failed notifications is 14; the
-      // optional users count is last.
-      final futures = <Future<AggregateQuerySnapshot>>[
-        ordersToday.count().get(), // 0
-        deliveredToday
-            .aggregate(count(), sum('totalMinor'), sum('commissionMinor'))
-            .get(), // 1
-        waiting.count().get(), // 2
-        shops.count().get(), // 3
-        _firestore.collection('products').count().get(), // 4
-        driversOnline.count().get(), // 5
-        pendingShops.count().get(), // 6
-        for (final d in days) // 7 .. 13
-          orders
-              .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(d))
-              .where('createdAt',
-                  isLessThan: Timestamp.fromDate(nextDay(d)))
-              .count()
-              .get(),
-        failedNotifications.count().get(), // 14
-        if (includeUsers) _firestore.collection('users').count().get(), // 15
-      ];
+      var failedNotifications7d = 0;
+      final last7Days = <DailyOrderCount>[];
+      for (var i = 0; i < days.length; i++) {
+        final data = dailySnaps[i].data() ?? const <String, dynamic>{};
+        failedNotifications7d +=
+            (data['failedNotifications'] as num?)?.toInt() ?? 0;
+        last7Days.add(DailyOrderCount(
+          day: days[i],
+          count: (data['ordersCount'] as num?)?.toInt() ?? 0,
+        ));
+      }
 
-      final r = await Future.wait(futures);
+      int field(Map<String, dynamic> data, String key) =>
+          (data[key] as num?)?.toInt() ?? 0;
 
       return DashboardSummaryModel(
-        ordersToday: r[0].count ?? 0,
-        revenueTodayMinor: (r[1].getSum('totalMinor') ?? 0).round(),
-        commissionTodayMinor: (r[1].getSum('commissionMinor') ?? 0).round(),
-        ordersWaiting: r[2].count ?? 0,
-        totalShops: r[3].count ?? 0,
-        totalProducts: r[4].count ?? 0,
-        driversOnline: r[5].count ?? 0,
-        pendingShops: r[6].count ?? 0,
-        last7Days: [
-          for (var i = 0; i < days.length; i++)
-            DailyOrderCount(day: days[i], count: r[7 + i].count ?? 0),
-        ],
-        failedNotifications7d: r[7 + days.length].count ?? 0,
-        totalUsers: includeUsers ? (r[8 + days.length].count ?? 0) : null,
+        ordersToday: field(todayData, 'ordersCount'),
+        revenueTodayMinor: field(todayData, 'revenueMinor'),
+        commissionTodayMinor: field(todayData, 'commissionMinor'),
+        ordersWaiting: field(global, 'ordersWaiting'),
+        totalShops: field(global, 'totalShops'),
+        totalProducts: field(global, 'totalProducts'),
+        driversOnline: field(global, 'driversOnline'),
+        pendingShops: field(global, 'pendingShops'),
+        last7Days: last7Days,
+        failedNotifications7d: failedNotifications7d,
+        totalUsers: includeUsers ? field(global, 'totalUsers') : null,
       );
     } on FirebaseException catch (e) {
       throw ServerFailure(e.message ?? e.code);

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/errors/failures.dart';
+import '../../../core/firestore/platform_stats.dart';
 import '../models/product_model.dart';
 
 class ProductRemoteDataSource {
@@ -39,6 +40,7 @@ class ProductRemoteDataSource {
 
   Future<ProductModel> createProduct(ProductModel product) async {
     final doc = await _products.add(product.toFirestore());
+    bumpGlobalStats(_firestore, {'totalProducts': 1});
     return ProductModel(
       id: doc.id,
       shopId: product.shopId,
@@ -61,6 +63,8 @@ class ProductRemoteDataSource {
   Future<void> updateProduct(ProductModel product) =>
       _products.doc(product.id).update(product.toFirestore());
 
-  Future<void> deleteProduct(String productId) =>
-      _products.doc(productId).delete();
+  Future<void> deleteProduct(String productId) async {
+    await _products.doc(productId).delete();
+    bumpGlobalStats(_firestore, {'totalProducts': -1});
+  }
 }

@@ -38,6 +38,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../core/config/app_config.dart';
+import '../core/firestore/platform_stats.dart';
 import '../domain/admin/entities/permissions.dart';
 
 const _seedEmail = 'owner@dukkan.dev';
@@ -144,12 +145,23 @@ Future<void> runSeed(
             _couriers.first['email'] as String,
             _couriers.first['password'] as String,
           );
+    final customerUids = <String>[];
     for (var i = 0; i < _customers.length; i++) {
       final customer = _customers[i];
       await auth.signOut();
       final uid = await _signInOrCreate(customer['email']!, customer['password']!);
+      customerUids.add(uid);
       await _seedCustomer(db, uid, customer, i, ownerUid, courier1Uid, log);
     }
+    await _seedStats(
+      db,
+      catalogSeeded: catalog,
+      ownerUid: ownerUid,
+      courierUids: courierUids,
+      customerUids: customerUids,
+      courier1Uid: courier1Uid,
+      log: log,
+    );
   }
 
   // Don't leave the device authenticated as a seed account — otherwise the
@@ -626,6 +638,89 @@ Future<void> _seedCustomer(
 
   log.writeln('Customer ${customer['email']}: profile + '
       '${favorites[1].length} favorites + ${orders.length} orders.');
+}
+
+/// `/stats` (Phase 8 O1) — the seeded demo data would otherwise leave the
+/// dashboard's rolling counters at zero while the real collections are full,
+/// since every write above is a raw Firestore `.set()` bypassing the app's
+/// instrumented datasources entirely. Computed straight from the same
+/// literal `_demoShops`/`_demoProducts`/`_couriers`/`_demoOrders` this file
+/// already writes from — never a broad Firestore read — because the seed
+/// identity (owner/courier/customer) has no `/users` or `/orders` list
+/// permission (only staff does), and recomputing from the fixed source data
+/// is exact anyway. Writes absolute values (`.set()`, not an increment), so
+/// re-running the seed always lands on the same correct numbers instead of
+/// drifting upward each pass.
+///
+/// Only runs on a full reseed (`catalogSeeded`, and this is already inside
+/// `if (customers)`) — a partial pass (e.g. RBAC-only) has no way to know
+/// what a prior full run already put in Firestore without that same
+/// forbidden broad read, so it leaves whatever `/stats` already exists.
+///
+/// Overwrites today's daily bucket outright rather than merging in on top of
+/// it — same reasoning as reading it first being off the table, and matches
+/// this whole script's already-destructive "reseed replaces the demo data"
+/// contract. A real order placed the same calendar day as a reseed would
+/// have its contribution to that one bucket clobbered; acceptable for a dev
+/// tool, worth knowing if a live test session reseeds mid-day.
+Future<void> _seedStats(
+  FirebaseFirestore db, {
+  required bool catalogSeeded,
+  required String ownerUid,
+  required List<String> courierUids,
+  required List<String> customerUids,
+  required String courier1Uid,
+  required StringBuffer log,
+}) async {
+  if (!catalogSeeded) return;
+
+  final shops = _demoShops(ownerUid);
+  final pendingShops = shops.where((s) => s['status'] == 'pending').length;
+  final driversOnline = _couriers
+      .where((c) => c['isOnline'] == true && c['isSuspended'] != true)
+      .length;
+
+  var ordersWaiting = 0;
+  final byDay = <String, Map<String, int>>{};
+  for (var i = 0; i < customerUids.length; i++) {
+    for (final order in _demoOrders(customerUids[i], i, ownerUid, courier1Uid)) {
+      if (order['status'] == 'pending') ordersWaiting++;
+      final createdAtRaw = order['createdAt'];
+      final createdAt =
+          createdAtRaw is Timestamp ? createdAtRaw.toDate() : DateTime.now();
+      final bucket = byDay.putIfAbsent(dailyStatsDocId(createdAt), () => {
+            'ordersCount': 0,
+            'deliveredCount': 0,
+            'revenueMinor': 0,
+            'commissionMinor': 0,
+          });
+      bucket['ordersCount'] = bucket['ordersCount']! + 1;
+      if (order['status'] == 'delivered') {
+        bucket['deliveredCount'] = bucket['deliveredCount']! + 1;
+        bucket['revenueMinor'] =
+            bucket['revenueMinor']! + ((order['totalMinor'] as num?)?.toInt() ?? 0);
+        bucket['commissionMinor'] = bucket['commissionMinor']! +
+            ((order['commissionMinor'] as num?)?.toInt() ?? 0);
+      }
+    }
+  }
+
+  await globalStatsRef(db).set({
+    'totalShops': shops.length,
+    'totalProducts': _demoProducts().length,
+    'totalUsers': 1 + courierUids.length + customerUids.length,
+    'pendingShops': pendingShops,
+    'driversOnline': driversOnline,
+    'ordersWaiting': ordersWaiting,
+  });
+  for (final entry in byDay.entries) {
+    await db.collection('stats').doc(entry.key).set(entry.value);
+  }
+
+  final totalOrders = byDay.values.fold(0, (a, b) => a + b['ordersCount']!);
+  log.writeln('Seeded /stats: ${shops.length} shops, ${_demoProducts().length} '
+      'products, ${1 + courierUids.length + customerUids.length} users, '
+      '$totalOrders orders across ${byDay.length} day(s).');
 }
 
 List<Map<String, dynamic>> _demoShops(String ownerUid) => [

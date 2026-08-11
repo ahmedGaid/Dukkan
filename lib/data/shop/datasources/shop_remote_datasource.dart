@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/errors/failures.dart';
+import '../../../core/firestore/platform_stats.dart';
 import '../models/shop_model.dart';
 
 class ShopRemoteDataSource {
@@ -46,6 +47,10 @@ class ShopRemoteDataSource {
     final doc = await _shops.add({
       ...shop.toFirestore(),
       'createdAt': FieldValue.serverTimestamp(),
+    });
+    bumpGlobalStats(_firestore, {
+      'totalShops': 1,
+      if (shop.status == 'pending') 'pendingShops': 1,
     });
     return ShopModel.fromFirestore(doc.id, shop.toFirestore());
   }

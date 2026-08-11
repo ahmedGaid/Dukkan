@@ -29,10 +29,7 @@ class AdminDriversRepositoryImpl implements AdminDriversRepository {
     required bool value,
     String? reason,
   }) async {
-    await _remote.patchFields(uid, {
-      'isSuspended': value,
-      'suspendReason': value ? reason : null,
-    });
+    await _remote.setSuspendedWithStats(uid, value, reason);
     unawaited(_api.reportAudit(
       action: value ? 'driver.suspend' : 'driver.activate',
       targetType: 'driver',
