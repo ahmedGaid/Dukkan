@@ -1044,6 +1044,7 @@ Future<void> initDependencies() async {
       watchActive: sl(),
       watchHistory: sl(),
       getAreas: sl(),
+      queue: sl(),
     ),
   );
 

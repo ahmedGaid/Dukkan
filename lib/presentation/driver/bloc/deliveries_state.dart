@@ -12,6 +12,7 @@ class DeliveriesState extends Equatable {
     this.activeOrders = const [],
     this.historyOrders = const [],
     this.areas = const [],
+    this.pendingStatuses = const {},
   });
 
   final DeliveriesTab tab;
@@ -24,6 +25,14 @@ class DeliveriesState extends Equatable {
   /// district name. Optional/display-only: an empty list just hides the line.
   final List<Area> areas;
 
+  /// orderId → queued target status (O2 slice 1) — non-empty only for an
+  /// order with a pending offline mutation; the delivery card overrides its
+  /// displayed status with this and shows [PendingSyncBadge]. Computed from
+  /// the whole queue for simplicity — history is all-`delivered` and never
+  /// has a pending mutation, so in practice this only ever matches an active
+  /// order.
+  final Map<String, OrderStatus> pendingStatuses;
+
   DeliveriesState copyWith({
     DeliveriesTab? tab,
     DeliveriesListStatus? activeStatus,
@@ -31,6 +40,7 @@ class DeliveriesState extends Equatable {
     List<Order>? activeOrders,
     List<Order>? historyOrders,
     List<Area>? areas,
+    Map<String, OrderStatus>? pendingStatuses,
   }) {
     return DeliveriesState(
       tab: tab ?? this.tab,
@@ -39,6 +49,7 @@ class DeliveriesState extends Equatable {
       activeOrders: activeOrders ?? this.activeOrders,
       historyOrders: historyOrders ?? this.historyOrders,
       areas: areas ?? this.areas,
+      pendingStatuses: pendingStatuses ?? this.pendingStatuses,
     );
   }
 
@@ -50,5 +61,6 @@ class DeliveriesState extends Equatable {
         activeOrders,
         historyOrders,
         areas,
+        pendingStatuses,
       ];
 }

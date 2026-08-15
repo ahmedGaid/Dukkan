@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:dukkan/core/network/network_info.dart';
+import 'package:dukkan/core/offline/offline_mutation_queue.dart';
+import 'package:dukkan/core/offline/pending_mutation.dart';
 import 'package:dukkan/domain/areas/entities/area.dart';
 import 'package:dukkan/domain/areas/repositories/areas_repository.dart';
 import 'package:dukkan/domain/areas/usecases/get_areas.dart';
@@ -12,6 +15,12 @@ import 'package:dukkan/domain/order/usecases/watch_driver_active_orders.dart';
 import 'package:dukkan/domain/order/usecases/watch_driver_order_history.dart';
 import 'package:dukkan/presentation/driver/bloc/deliveries_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class _FakeNetworkInfo implements NetworkInfo {
+  @override
+  Future<bool> get isConnected async => false;
+}
 
 /// Drives the courier's two streams by hand (mirrors `_FakeOrderRepository`
 /// in owner_orders_bloc_test.dart).
@@ -104,14 +113,24 @@ Order _order(String id, OrderStatus status, {DateTime? createdAt}) => Order(
 void main() {
   late _FakeOrderRepository repo;
   late DeliveriesBloc bloc;
+  late OfflineMutationQueue queue;
 
-  setUp(() {
+  setUp(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     repo = _FakeOrderRepository();
+    queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (_, _) async {},
+    );
     bloc = DeliveriesBloc(
       driverUid: 'd1',
       watchActive: WatchDriverActiveOrders(repo),
       watchHistory: WatchDriverOrderHistory(repo),
       getAreas: GetAreas(_FakeAreasRepository()),
+      queue: queue,
     );
   });
 
@@ -119,6 +138,7 @@ void main() {
     await bloc.close();
     await repo.activeController.close();
     await repo.historyController.close();
+    await queue.dispose();
   });
 
   Future<void> tick() => Future<void>.delayed(Duration.zero);
@@ -174,5 +194,105 @@ void main() {
     await tick();
 
     expect(bloc.state.tab, DeliveriesTab.history);
+  });
+
+  test('a queued mutation for an active order surfaces in pendingStatuses', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (_, _) async {},
+    );
+    final queuedBloc = DeliveriesBloc(
+      driverUid: 'd1',
+      watchActive: WatchDriverActiveOrders(repo),
+      watchHistory: WatchDriverOrderHistory(repo),
+      getAreas: GetAreas(_FakeAreasRepository()),
+      queue: queue,
+    );
+    addTearDown(queuedBloc.close);
+    addTearDown(queue.dispose);
+
+    queuedBloc.add(const DeliveriesStarted());
+    await tick();
+    repo.activeController.add([_order('a', OrderStatus.preparing)]);
+    await tick();
+
+    await queue.enqueue(PendingMutation(
+      id: 'm1',
+      orderId: 'a',
+      targetStatus: OrderStatus.outForDelivery,
+      actorUid: 'd1',
+      enqueuedAt: DateTime(2026, 8, 11),
+    ));
+    await tick();
+
+    expect(queuedBloc.state.pendingStatuses['a'], OrderStatus.outForDelivery);
+  });
+
+  test('an active order not in the queue has no pendingStatuses entry', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (_, _) async {},
+    );
+    final queuedBloc = DeliveriesBloc(
+      driverUid: 'd1',
+      watchActive: WatchDriverActiveOrders(repo),
+      watchHistory: WatchDriverOrderHistory(repo),
+      getAreas: GetAreas(_FakeAreasRepository()),
+      queue: queue,
+    );
+    addTearDown(queuedBloc.close);
+    addTearDown(queue.dispose);
+
+    queuedBloc.add(const DeliveriesStarted());
+    await tick();
+    repo.activeController.add([_order('a', OrderStatus.preparing)]);
+    await tick();
+
+    expect(queuedBloc.state.pendingStatuses.containsKey('a'), isFalse);
+  });
+
+  test(
+      'a mutation already queued before the bloc is constructed still surfaces in the initial state',
+      () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (_, _) async {},
+    );
+    addTearDown(queue.dispose);
+
+    // Queued (and left pending, since _FakeNetworkInfo reports offline)
+    // BEFORE the bloc — and therefore its watchAll() subscription — exists.
+    // watchAll() never replays to a late subscriber, so this only surfaces
+    // if the bloc also reads OfflineMutationQueue.allPending on construction.
+    await queue.enqueue(PendingMutation(
+      id: 'm1',
+      orderId: 'a',
+      targetStatus: OrderStatus.outForDelivery,
+      actorUid: 'd1',
+      enqueuedAt: DateTime(2026, 8, 11),
+    ));
+
+    final queuedBloc = DeliveriesBloc(
+      driverUid: 'd1',
+      watchActive: WatchDriverActiveOrders(repo),
+      watchHistory: WatchDriverOrderHistory(repo),
+      getAreas: GetAreas(_FakeAreasRepository()),
+      queue: queue,
+    );
+    addTearDown(queuedBloc.close);
+
+    expect(queuedBloc.state.pendingStatuses['a'], OrderStatus.outForDelivery);
   });
 }

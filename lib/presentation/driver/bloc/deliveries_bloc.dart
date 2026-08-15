@@ -3,9 +3,12 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/offline/offline_mutation_queue.dart';
+import '../../../core/offline/pending_mutation.dart';
 import '../../../domain/areas/entities/area.dart';
 import '../../../domain/areas/usecases/get_areas.dart';
 import '../../../domain/order/entities/order.dart';
+import '../../../domain/order/entities/order_status.dart';
 import '../../../domain/order/usecases/watch_driver_active_orders.dart';
 import '../../../domain/order/usecases/watch_driver_order_history.dart';
 
@@ -20,18 +23,32 @@ part 'deliveries_state.dart';
 /// Status advances happen on the order-detail page (`OrderDetailBloc`,
 /// courier role) and come back through these same streams, so no local patch
 /// is needed here. App-session-scoped: the driver uid is the factory param
-/// (mirrors [OrdersBloc]'s customerUid).
+/// (mirrors [OrdersBloc]'s customerUid). Initial `pendingStatuses` is seeded
+/// from [OfflineMutationQueue.allPending] (a mutation queued before this page
+/// opened, e.g. from a previous visit or an app restart, must still show),
+/// then kept live via [OfflineMutationQueue.watchAll] (O2 slice 1) so a
+/// queued mutation for one of this courier's orders shows a pending-sync
+/// overlay before the real write lands.
 class DeliveriesBloc extends Bloc<DeliveriesEvent, DeliveriesState> {
   DeliveriesBloc({
     required String driverUid,
     required WatchDriverActiveOrders watchActive,
     required WatchDriverOrderHistory watchHistory,
     required GetAreas getAreas,
+    required OfflineMutationQueue queue,
   })  : _driverUid = driverUid,
         _watchActive = watchActive,
         _watchHistory = watchHistory,
         _getAreas = getAreas,
-        super(const DeliveriesState()) {
+        _queue = queue,
+        super(
+          DeliveriesState(
+            pendingStatuses: {
+              for (final mutation in queue.allPending)
+                mutation.orderId: mutation.targetStatus,
+            },
+          ),
+        ) {
     on<DeliveriesStarted>(_onStarted);
     on<DeliveriesTabChanged>(_onTabChanged);
     on<_ActiveArrived>(_onActiveArrived);
@@ -39,14 +56,21 @@ class DeliveriesBloc extends Bloc<DeliveriesEvent, DeliveriesState> {
     on<_HistoryArrived>(_onHistoryArrived);
     on<_HistoryFailed>(_onHistoryFailed);
     on<_AreasArrived>(_onAreasArrived);
+    on<_PendingMutationsUpdated>(_onPendingMutationsUpdated);
+
+    _queueSub = _queue.watchAll().listen(
+      (mutations) => add(_PendingMutationsUpdated(mutations)),
+    );
   }
 
   final String _driverUid;
   final WatchDriverActiveOrders _watchActive;
   final WatchDriverOrderHistory _watchHistory;
   final GetAreas _getAreas;
+  final OfflineMutationQueue _queue;
   StreamSubscription<List<Order>>? _activeSub;
   StreamSubscription<List<Order>>? _historySub;
+  StreamSubscription<List<PendingMutation>>? _queueSub;
 
   Future<void> _onStarted(
     DeliveriesEvent event,
@@ -105,10 +129,22 @@ class DeliveriesBloc extends Bloc<DeliveriesEvent, DeliveriesState> {
     emit(state.copyWith(areas: event.areas));
   }
 
+  void _onPendingMutationsUpdated(
+    _PendingMutationsUpdated event,
+    Emitter<DeliveriesState> emit,
+  ) {
+    final byOrder = <String, OrderStatus>{};
+    for (final mutation in event.mutations) {
+      byOrder[mutation.orderId] = mutation.targetStatus;
+    }
+    emit(state.copyWith(pendingStatuses: byOrder));
+  }
+
   @override
   Future<void> close() {
     _activeSub?.cancel();
     _historySub?.cancel();
+    _queueSub?.cancel();
     return super.close();
   }
 }
