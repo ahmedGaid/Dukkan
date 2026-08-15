@@ -17,6 +17,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../widgets/common/app_snackbar.dart';
 import '../../widgets/common/empty_state.dart';
+import '../../widgets/common/pending_sync_badge.dart';
 import '../../widgets/common/price_tag.dart';
 import '../../widgets/common/skeletons.dart';
 import '../../widgets/common/status_chip.dart';
@@ -127,7 +128,8 @@ class _OrderDetailView extends StatelessWidget {
             previous.cancelStatus != current.cancelStatus ||
             previous.rateStatus != current.rateStatus ||
             previous.advanceStatus != current.advanceStatus ||
-            previous.staffActionStatus != current.staffActionStatus,
+            previous.staffActionStatus != current.staffActionStatus ||
+            previous.syncFailureReason != current.syncFailureReason,
         listener: (context, state) {
           if (state.cancelStatus == OrderCancelStatus.failure) {
             AppSnackBar.error(context, l10n.orderCancelErrorBody);
@@ -140,6 +142,10 @@ class _OrderDetailView extends StatelessWidget {
           }
           if (state.staffActionStatus == StaffActionStatus.failure) {
             AppSnackBar.error(context, l10n.staffOrderActionErrorBody);
+          }
+          if (state.syncFailureReason != null) {
+            AppSnackBar.error(context, l10n.offlineSyncFailedBody);
+            context.read<OrderDetailBloc>().add(const OrderDetailSyncFailureDismissed());
           }
         },
         builder: (context, state) => switch (state.status) {
@@ -162,6 +168,7 @@ class _OrderDetailView extends StatelessWidget {
               isRating: state.isRating,
               isAdvancing: state.isAdvancing,
               isStaffActionBusy: state.isStaffActionBusy,
+              pendingTargetStatus: state.pendingTargetStatus,
               onCancel: () => _confirmCancel(context),
               onRate: (rating) => context
                   .read<OrderDetailBloc>()
@@ -185,6 +192,7 @@ class _OrderDetailContent extends StatelessWidget {
     required this.isRating,
     required this.isAdvancing,
     required this.isStaffActionBusy,
+    required this.pendingTargetStatus,
     required this.onCancel,
     required this.onRate,
     required this.onAdvance,
@@ -207,6 +215,10 @@ class _OrderDetailContent extends StatelessWidget {
   final bool isRating;
   final bool isAdvancing;
   final bool isStaffActionBusy;
+
+  /// The offline-queued target status for this order (O2 slice 1), null when
+  /// nothing is queued — overrides the displayed status/stepper.
+  final OrderStatus? pendingTargetStatus;
   final VoidCallback onCancel;
   final ValueChanged<int> onRate;
   final ValueChanged<OrderStatus> onAdvance;
@@ -217,7 +229,8 @@ class _OrderDetailContent extends StatelessWidget {
     final locale = Localizations.localeOf(context).languageCode;
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final view = orderStatusView(l10n, order.status);
+    final effectiveStatus = pendingTargetStatus ?? order.status;
+    final view = orderStatusView(l10n, effectiveStatus);
     final isOwner = role == OrderViewerRole.owner;
     final isCourier = role == OrderViewerRole.courier;
     final isStaff = role == OrderViewerRole.staff;
@@ -245,7 +258,11 @@ class _OrderDetailContent extends StatelessWidget {
               if (isTerminalBranch)
                 StatusChip(label: view.label, tone: view.tone)
               else
-                OrderStatusStepper(status: order.status),
+                OrderStatusStepper(status: effectiveStatus),
+              if (pendingTargetStatus != null) ...[
+                const SizedBox(height: AppSpacing.sm),
+                const PendingSyncBadge(),
+              ],
               const SizedBox(height: AppSpacing.lg),
               Text(l10n.checkoutSummary, style: text.titleSmall),
               const SizedBox(height: AppSpacing.sm),

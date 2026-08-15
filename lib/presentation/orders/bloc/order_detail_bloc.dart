@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:flutter/widgets.dart' show Locale;
 
+import '../../../core/offline/offline_mutation_queue.dart';
+import '../../../core/offline/pending_mutation.dart';
 import '../../../domain/admin/usecases/add_order_note.dart';
 import '../../../domain/admin/usecases/cancel_order_as_staff.dart';
 import '../../../domain/admin/usecases/force_order_status.dart';
@@ -39,6 +41,16 @@ part 'order_detail_state.dart';
 /// courier view additionally resolves the delivery area's name via
 /// [GetAreas] (M10). Courier status advances ("Picked up"/"Delivered", M10)
 /// reuse the same [UpdateOrderStatus] path as the owner's order-desk actions.
+/// Initial `pendingTargetStatus` is seeded from
+/// [OfflineMutationQueue.pendingForOrder] (a mutation queued for this order
+/// before this page opened, e.g. queued from the owner desk and then tapped
+/// into, must still show), then kept live via [OfflineMutationQueue.watchAll]
+/// (O2 slice 1) — mirrors `OwnerOrdersBloc`/`DeliveriesBloc`'s
+/// `allPending`/`watchAll` pattern, but single-order since this bloc only
+/// ever watches one order. A real rejection for this order (not a network
+/// blip) arrives via [OfflineMutationQueue.failures] as a one-shot
+/// `syncFailureReason`, cleared by [OrderDetailSyncFailureDismissed] once the
+/// page has shown it.
 class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
   OrderDetailBloc({
     required String orderId,
@@ -51,6 +63,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     required CancelOrderAsStaff staffCancelOrder,
     required WatchOrderNotes watchOrderNotes,
     required AddOrderNote addOrderNote,
+    required OfflineMutationQueue queue,
     GetUserById? getUserById,
     GetAreas? getAreas,
     NotifyOrderEvent? notifyOrderEvent,
@@ -69,7 +82,15 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         _getAreas = getAreas,
         _notifyOrderEvent = notifyOrderEvent,
         _role = role,
-        super(const OrderDetailState()) {
+        _queue = queue,
+        super(
+          OrderDetailState(
+            pendingTargetStatus: () {
+              final mine = queue.pendingForOrder(orderId);
+              return mine.isEmpty ? null : mine.first.targetStatus;
+            }(),
+          ),
+        ) {
     on<OrderDetailStarted>(_onStarted);
     on<OrderDetailCancelRequested>(_onCancelRequested);
     on<OrderDetailRateSubmitted>(_onRateSubmitted);
@@ -86,12 +107,24 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     on<_CustomerArrived>(_onCustomerArrived);
     on<_AreaArrived>(_onAreaArrived);
     on<_NotesArrived>((event, emit) => emit(state.copyWith(notes: event.notes)));
+    on<_PendingMutationsUpdated>(_onPendingMutationsUpdated);
+    on<_SyncFailureArrived>(_onSyncFailureArrived);
+    on<OrderDetailSyncFailureDismissed>(
+      (event, emit) => emit(state.clearSyncFailure()),
+    );
 
     if (_role == OrderViewerRole.staff) {
       _notesSub = _watchOrderNotes(_orderId).listen(
         (notes) => add(_NotesArrived(notes)),
       );
     }
+
+    _queueSub = _queue.watchAll().listen(
+          (mutations) => add(_PendingMutationsUpdated(mutations)),
+        );
+    _failureSub = _queue.failures
+        .where((f) => f.orderId == _orderId)
+        .listen((f) => add(_SyncFailureArrived(f.reason)));
   }
 
   final String _orderId;
@@ -108,8 +141,11 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
   final GetAreas? _getAreas;
   final NotifyOrderEvent? _notifyOrderEvent;
   final OrderViewerRole _role;
+  final OfflineMutationQueue _queue;
   StreamSubscription<Order>? _sub;
   StreamSubscription<List<OrderNote>>? _notesSub;
+  StreamSubscription<List<PendingMutation>>? _queueSub;
+  StreamSubscription<SyncFailure>? _failureSub;
 
   Future<void> _onStarted(
     OrderDetailEvent event,
@@ -346,10 +382,40 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
   ) =>
       _runStaffAction(emit, () => _addOrderNote(orderId: _orderId, text: event.text));
 
+  void _onPendingMutationsUpdated(
+    _PendingMutationsUpdated event,
+    Emitter<OrderDetailState> emit,
+  ) {
+    final mine = event.mutations.where((m) => m.orderId == _orderId);
+    final s = state;
+    emit(OrderDetailState(
+      status: s.status,
+      order: s.order,
+      cancelStatus: s.cancelStatus,
+      rateStatus: s.rateStatus,
+      advanceStatus: s.advanceStatus,
+      staffActionStatus: s.staffActionStatus,
+      customer: s.customer,
+      area: s.area,
+      notes: s.notes,
+      pendingTargetStatus: mine.isEmpty ? null : mine.first.targetStatus,
+      syncFailureReason: s.syncFailureReason,
+    ));
+  }
+
+  void _onSyncFailureArrived(
+    _SyncFailureArrived event,
+    Emitter<OrderDetailState> emit,
+  ) {
+    emit(state.copyWith(syncFailureReason: event.reason));
+  }
+
   @override
   Future<void> close() {
     _sub?.cancel();
     _notesSub?.cancel();
+    _queueSub?.cancel();
+    _failureSub?.cancel();
     return super.close();
   }
 }

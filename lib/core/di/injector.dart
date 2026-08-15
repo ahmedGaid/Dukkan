@@ -1028,6 +1028,7 @@ Future<void> initDependencies() async {
       staffCancelOrder: sl(),
       watchOrderNotes: sl(),
       addOrderNote: sl(),
+      queue: sl(),
       getUserById: sl(),
       getAreas: sl(),
       notifyOrderEvent: sl(),

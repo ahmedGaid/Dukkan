@@ -167,3 +167,29 @@ class _NotesArrived extends OrderDetailEvent {
   @override
   List<Object?> get props => [notes];
 }
+
+/// Internal: the offline queue's contents changed.
+class _PendingMutationsUpdated extends OrderDetailEvent {
+  const _PendingMutationsUpdated(this.mutations);
+
+  final List<PendingMutation> mutations;
+
+  @override
+  List<Object?> get props => [mutations];
+}
+
+/// Internal: the offline queue reported a real rejection for this order.
+class _SyncFailureArrived extends OrderDetailEvent {
+  const _SyncFailureArrived(this.reason);
+
+  final String reason;
+
+  @override
+  List<Object?> get props => [reason];
+}
+
+/// The page finished showing the sync-failure banner — clears it so it
+/// doesn't re-show on the next rebuild.
+class OrderDetailSyncFailureDismissed extends OrderDetailEvent {
+  const OrderDetailSyncFailureDismissed();
+}
