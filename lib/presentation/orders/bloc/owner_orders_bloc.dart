@@ -18,10 +18,13 @@ part 'owner_orders_state.dart';
 /// id is the factory param (mirrors [OrdersBloc]'s customerUid). Status
 /// changes (accept/reject/advance) are one-shot [UpdateOrderStatus] calls
 /// made directly from the card widget — same pattern as catalog CRUD — the
-/// resulting status change comes back through this same stream. Also
-/// subscribes to [OfflineMutationQueue.watchAll] (O2 slice 1) so a queued
-/// mutation for one of this shop's orders shows a pending-sync overlay
-/// before the real write lands.
+/// resulting status change comes back through this same stream. Initial
+/// `pendingStatuses` is seeded from [OfflineMutationQueue.allPending] (a
+/// mutation queued before this page opened, e.g. from a previous visit or an
+/// app restart, must still show), then kept live via
+/// [OfflineMutationQueue.watchAll] (O2 slice 1) so a queued mutation for one
+/// of this shop's orders shows a pending-sync overlay before the real write
+/// lands.
 class OwnerOrdersBloc extends Bloc<OwnerOrdersEvent, OwnerOrdersState> {
   OwnerOrdersBloc({
     required String shopId,
@@ -30,7 +33,14 @@ class OwnerOrdersBloc extends Bloc<OwnerOrdersEvent, OwnerOrdersState> {
   })  : _shopId = shopId,
         _watchShopOrders = watchShopOrders,
         _queue = queue,
-        super(const OwnerOrdersState()) {
+        super(
+          OwnerOrdersState(
+            pendingStatuses: {
+              for (final mutation in queue.allPending)
+                mutation.orderId: mutation.targetStatus,
+            },
+          ),
+        ) {
     on<OwnerOrdersStarted>(_onStarted);
     on<OwnerOrdersRetryRequested>(_onStarted);
     on<_OwnerOrdersUpdated>(_onUpdated);

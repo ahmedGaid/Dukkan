@@ -65,6 +65,13 @@ class OfflineMutationQueue with WidgetsBindingObserver {
   List<PendingMutation> pendingForOrder(String orderId) =>
       _items.where((m) => m.orderId == orderId).toList();
 
+  /// Sync snapshot of every currently-queued mutation, across all orders —
+  /// pairs with [watchAll] the same way [pendingForOrder] does: a list-scoped
+  /// subscriber (a bloc caching an orderId→status map for a whole page) reads
+  /// this once to seed its initial state, then relies on [watchAll] for
+  /// updates, since the broadcast stream never replays to a late subscriber.
+  List<PendingMutation> get allPending => List.unmodifiable(_items);
+
   Future<void> enqueue(PendingMutation mutation) async {
     _items = [..._items, mutation];
     await _persist();

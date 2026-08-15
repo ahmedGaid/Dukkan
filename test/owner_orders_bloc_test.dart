@@ -157,6 +157,39 @@ void main() {
     expect(queuedBloc.state.pendingStatuses['a'], OrderStatus.accepted);
   });
 
+  test('a mutation already queued before the bloc is constructed still surfaces in the initial state', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      networkInfo: _FakeNetworkInfo(),
+      remoteUpdate: (_, _) async {},
+    );
+    addTearDown(queue.dispose);
+
+    // Queued (and left pending, since _FakeNetworkInfo reports offline)
+    // BEFORE the bloc — and therefore its watchAll() subscription — exists.
+    // watchAll() never replays to a late subscriber, so this only surfaces
+    // if the bloc also reads OfflineMutationQueue.allPending on construction.
+    await queue.enqueue(PendingMutation(
+      id: 'm1',
+      orderId: 'a',
+      targetStatus: OrderStatus.accepted,
+      actorUid: 'u1',
+      enqueuedAt: DateTime(2026, 8, 11),
+    ));
+
+    final queuedBloc = OwnerOrdersBloc(
+      shopId: 's1',
+      watchShopOrders: WatchShopOrders(repo),
+      queue: queue,
+    );
+    addTearDown(queuedBloc.close);
+
+    expect(queuedBloc.state.pendingStatuses['a'], OrderStatus.accepted);
+  });
+
   test('an order not in the queue has no pendingStatuses entry', () async {
     TestWidgetsFlutterBinding.ensureInitialized();
     SharedPreferences.setMockInitialValues({});
