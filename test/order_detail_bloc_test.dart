@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:dukkan/core/errors/failures.dart';
+import 'package:dukkan/core/offline/offline_mutation_queue.dart';
+import 'package:dukkan/core/offline/pending_mutation.dart';
 import 'package:dukkan/domain/admin/entities/orders_page.dart';
 import 'package:dukkan/domain/admin/repositories/admin_orders_repository.dart';
 import 'package:dukkan/domain/admin/usecases/add_order_note.dart';
@@ -26,6 +29,7 @@ import 'package:dukkan/domain/notifications/usecases/notify_order_event.dart';
 import 'package:dukkan/presentation/orders/bloc/order_detail_bloc.dart';
 import 'package:dukkan/presentation/orders/order_viewer_role.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Not exercised by these tests — the staff role has its own suite. Every
 /// method just returns an empty/no-op result so it can satisfy
@@ -223,11 +227,20 @@ Order _order(OrderStatus status, {int? rating}) => Order(
 void main() {
   late _FakeOrderRepository repo;
   late _FakeAdminOrdersRepository adminRepo;
+  late OfflineMutationQueue queue;
   late OrderDetailBloc bloc;
 
-  setUp(() {
+  setUp(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     repo = _FakeOrderRepository();
     adminRepo = _FakeAdminOrdersRepository();
+    queue = OfflineMutationQueue(
+      prefs: prefs,
+      currentUidProvider: () => 'u1',
+      remoteUpdate: (_, _) async {},
+    );
     bloc = OrderDetailBloc(
       orderId: 'o1',
       watchOrder: WatchOrder(repo),
@@ -239,12 +252,14 @@ void main() {
       staffCancelOrder: CancelOrderAsStaff(adminRepo),
       watchOrderNotes: WatchOrderNotes(adminRepo),
       addOrderNote: AddOrderNote(adminRepo),
+      queue: queue,
     );
   });
 
   tearDown(() async {
     await bloc.close();
     await repo.controller.close();
+    await queue.dispose();
   });
 
   Future<void> tick() => Future<void>.delayed(Duration.zero);
@@ -413,6 +428,7 @@ void main() {
       addOrderNote: AddOrderNote(adminRepo),
       getUserById: GetUserById(authRepo),
       role: OrderViewerRole.owner,
+      queue: queue,
     );
     addTearDown(ownerBloc.close);
 
@@ -448,6 +464,7 @@ void main() {
       watchOrderNotes: WatchOrderNotes(adminRepo),
       addOrderNote: AddOrderNote(adminRepo),
       getUserById: GetUserById(authRepo),
+      queue: queue,
     );
     addTearDown(customerBloc.close);
 
@@ -472,6 +489,25 @@ void main() {
     expect(repo.advanceCalls, 1);
     // No local patch — status only changes when the stream delivers it.
     expect(bloc.state.order!.status, OrderStatus.preparing);
+  });
+
+  test(
+      'advanceStatus returns to idle after a successful advance even when no '
+      'stream snapshot ever arrives (final-review C1) — an advance that only '
+      'enqueued while offline succeeds from the bloc\'s point of view exactly '
+      'like this: no exception, but no Firestore write to produce a '
+      'snapshot either, so the button must not be left stuck on '
+      '"submitting" forever waiting for one', () async {
+    bloc.add(const OrderDetailStarted());
+    await tick();
+    repo.controller.add(_order(OrderStatus.preparing));
+    await tick();
+
+    bloc.add(const OrderDetailAdvanceRequested(OrderStatus.outForDelivery));
+    await tick();
+
+    expect(repo.advanceCalls, 1);
+    expect(bloc.state.advanceStatus, OrderAdvanceStatus.idle);
   });
 
   test('a failed courier advance surfaces advanceStatus.failure', () async {
@@ -518,6 +554,7 @@ void main() {
       addOrderNote: AddOrderNote(adminRepo),
       notifyOrderEvent: NotifyOrderEvent(notifyRepo),
       role: OrderViewerRole.courier,
+      queue: queue,
     );
     addTearDown(courierBloc.close);
 
@@ -548,6 +585,7 @@ void main() {
       addOrderNote: AddOrderNote(adminRepo),
       notifyOrderEvent: NotifyOrderEvent(notifyRepo),
       role: OrderViewerRole.courier,
+      queue: queue,
     );
     addTearDown(courierBloc.close);
 
@@ -560,5 +598,212 @@ void main() {
     await tick();
 
     expect(notifyRepo.calls, 0);
+  });
+
+  test('a queued mutation for this order surfaces as pendingTargetStatus', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      currentUidProvider: () => 'u1',
+      // Never lets replay succeed — the mutation enqueued below must stay
+      // queued (and therefore keep surfacing as `pendingTargetStatus`)
+      // through this test's own `tick()`.
+      remoteUpdate: (_, _) async =>
+          throw const ServerFailure('offline', 'unavailable'),
+    );
+    final queuedBloc = OrderDetailBloc(
+      orderId: 'o1',
+      watchOrder: WatchOrder(repo),
+      cancelOrder: CancelOrder(repo),
+      rateOrder: RateOrder(repo),
+      updateOrderStatus: UpdateOrderStatus(repo),
+      forceOrderStatus: ForceOrderStatus(adminRepo),
+      reassignOrderDriver: ReassignOrderDriver(adminRepo),
+      staffCancelOrder: CancelOrderAsStaff(adminRepo),
+      watchOrderNotes: WatchOrderNotes(adminRepo),
+      addOrderNote: AddOrderNote(adminRepo),
+      queue: queue,
+    );
+    addTearDown(queuedBloc.close);
+    addTearDown(queue.dispose);
+
+    queuedBloc.add(const OrderDetailStarted());
+    await tick();
+    repo.controller.add(_order(OrderStatus.preparing));
+    await tick();
+
+    await queue.enqueue(PendingMutation(
+      id: 'm1',
+      orderId: 'o1',
+      targetStatus: OrderStatus.outForDelivery,
+      actorUid: 'u1',
+      enqueuedAt: DateTime(2026, 8, 11),
+    ));
+    await tick();
+
+    expect(queuedBloc.state.pendingTargetStatus, OrderStatus.outForDelivery);
+  });
+
+  test('a sync failure for this order surfaces syncFailureReason once', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      currentUidProvider: () => 'u1',
+      remoteUpdate: (_, _) async => throw const ServerFailure('denied', 'permission-denied'),
+    );
+    final queuedBloc = OrderDetailBloc(
+      orderId: 'o1',
+      watchOrder: WatchOrder(repo),
+      cancelOrder: CancelOrder(repo),
+      rateOrder: RateOrder(repo),
+      updateOrderStatus: UpdateOrderStatus(repo),
+      forceOrderStatus: ForceOrderStatus(adminRepo),
+      reassignOrderDriver: ReassignOrderDriver(adminRepo),
+      staffCancelOrder: CancelOrderAsStaff(adminRepo),
+      watchOrderNotes: WatchOrderNotes(adminRepo),
+      addOrderNote: AddOrderNote(adminRepo),
+      queue: queue,
+    );
+    addTearDown(queuedBloc.close);
+    addTearDown(queue.dispose);
+
+    queuedBloc.add(const OrderDetailStarted());
+    await tick();
+    repo.controller.add(_order(OrderStatus.preparing));
+    await tick();
+
+    await queue.enqueue(PendingMutation(
+      id: 'm1',
+      orderId: 'o1',
+      targetStatus: OrderStatus.outForDelivery,
+      actorUid: 'u1',
+      enqueuedAt: DateTime(2026, 8, 11),
+    ));
+    await tick();
+
+    expect(queuedBloc.state.syncFailureReason, isNotNull);
+
+    queuedBloc.add(const OrderDetailSyncFailureDismissed());
+    await tick();
+
+    expect(queuedBloc.state.syncFailureReason, isNull);
+  });
+
+  test(
+      'a mutation already queued before the bloc is constructed still '
+      'surfaces in the initial state', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final preQueue = OfflineMutationQueue(
+      prefs: prefs,
+      currentUidProvider: () => 'u1',
+      // Never lets replay succeed — irrelevant to this test's own
+      // synchronous assertion below, but keeps the mutation queued through
+      // the later `OrderDetailStarted`/`tick()` drive at the end too.
+      remoteUpdate: (_, _) async =>
+          throw const ServerFailure('offline', 'unavailable'),
+    );
+    addTearDown(preQueue.dispose);
+
+    // Queued (and left pending) BEFORE
+    // the bloc — and therefore its watchAll() subscription — exists.
+    // watchAll() never replays to a late subscriber, so this only surfaces
+    // if the bloc also reads OfflineMutationQueue.pendingForOrder(orderId)
+    // on construction.
+    await preQueue.enqueue(PendingMutation(
+      id: 'm1',
+      orderId: 'o1',
+      targetStatus: OrderStatus.outForDelivery,
+      actorUid: 'u1',
+      enqueuedAt: DateTime(2026, 8, 11),
+    ));
+
+    final queuedBloc = OrderDetailBloc(
+      orderId: 'o1',
+      watchOrder: WatchOrder(repo),
+      cancelOrder: CancelOrder(repo),
+      rateOrder: RateOrder(repo),
+      updateOrderStatus: UpdateOrderStatus(repo),
+      forceOrderStatus: ForceOrderStatus(adminRepo),
+      reassignOrderDriver: ReassignOrderDriver(adminRepo),
+      staffCancelOrder: CancelOrderAsStaff(adminRepo),
+      watchOrderNotes: WatchOrderNotes(adminRepo),
+      addOrderNote: AddOrderNote(adminRepo),
+      queue: preQueue,
+    );
+    addTearDown(queuedBloc.close);
+
+    // No tick()/await here — this must already be correct synchronously
+    // right after construction, before any stream event has had a chance
+    // to fire.
+    expect(queuedBloc.state.pendingTargetStatus, OrderStatus.outForDelivery);
+
+    // Drive the bloc's own watch subscription so the shared `repo`'s
+    // single-subscription StreamController gets a listener before the
+    // file's tearDown() closes it (an unlistened single-subscription
+    // controller's close() future never completes).
+    queuedBloc.add(const OrderDetailStarted());
+    await tick();
+    repo.controller.add(_order(OrderStatus.preparing));
+    await tick();
+  });
+
+  test(
+      'a sync failure recorded before the bloc is constructed still surfaces '
+      '(final-review I2) — the rejection can land while no page for this '
+      'order is open at all (replay runs on a timer / app-resume), so it '
+      'must not be lost the way an unbuffered broadcast stream would lose '
+      'it', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final preQueue = OfflineMutationQueue(
+      prefs: prefs,
+      currentUidProvider: () => 'u1',
+      remoteUpdate: (_, _) async =>
+          throw const ServerFailure('denied', 'permission-denied'),
+    );
+    addTearDown(preQueue.dispose);
+
+    // Rejected while nobody was subscribed to `failures` — in particular,
+    // before this order's bloc (and its `.failures` listener) existed.
+    await preQueue.enqueue(PendingMutation(
+      id: 'm1',
+      orderId: 'o1',
+      targetStatus: OrderStatus.outForDelivery,
+      actorUid: 'u1',
+      enqueuedAt: DateTime(2026, 8, 11),
+    ));
+    await Future<void>.delayed(Duration.zero);
+    expect(preQueue.unseenFailures.single.orderId, 'o1');
+
+    final queuedBloc = OrderDetailBloc(
+      orderId: 'o1',
+      watchOrder: WatchOrder(repo),
+      cancelOrder: CancelOrder(repo),
+      rateOrder: RateOrder(repo),
+      updateOrderStatus: UpdateOrderStatus(repo),
+      forceOrderStatus: ForceOrderStatus(adminRepo),
+      reassignOrderDriver: ReassignOrderDriver(adminRepo),
+      staffCancelOrder: CancelOrderAsStaff(adminRepo),
+      watchOrderNotes: WatchOrderNotes(adminRepo),
+      addOrderNote: AddOrderNote(adminRepo),
+      queue: preQueue,
+    );
+    addTearDown(queuedBloc.close);
+
+    queuedBloc.add(const OrderDetailStarted());
+    await tick();
+    repo.controller.add(_order(OrderStatus.preparing));
+    await tick();
+
+    expect(queuedBloc.state.syncFailureReason, isNotNull);
+    // Shown once — the queue's own unseen backlog no longer holds it.
+    expect(preQueue.unseenFailures, isEmpty);
   });
 }

@@ -202,6 +202,8 @@
   "orderAssignedAtLabel": "اتعيّن",
   "orderTimelineTitle": "سجل الطلب",
   "orderForcedChip": "تصحيح إداري",
+  "offlineSyncPendingBadge": "قيد المزامنة",
+  "offlineSyncFailedBody": "حصلت مشكلة في المزامنة — جرّب تاني",
   "orderNotesTitle": "الملاحظات الداخلية",
   "orderNotesEmpty": "لسه مفيش ملاحظات.",
   "orderNotesAddHint": "اكتب ملاحظة للفريق…",

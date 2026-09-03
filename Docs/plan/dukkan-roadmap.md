@@ -789,6 +789,24 @@ shapes.
       scope which mutations are safe to queue at all (e.g. placing an order offline is very
       different from an owner force-changing order status — some actions may need to stay
       online-only). Output of that session is a proper multi-session plan, inserted here.
+  - [x] **O2 slice 1 — order-status offline queue.** DONE — plan
+        `Docs/plan/2026-08-11-offline-order-status-queue-plan.md` fully executed (12 tasks,
+        branch `feat/o2-order-status-queue`, worktree `Dukkan-o2-order-status-queue`).
+        `OfflineMutationQueue` (`lib/core/offline/`) queues the 5 owner/courier status
+        transitions when offline, replays on a 15s timer / app-resume / right after enqueue;
+        `OrderRepositoryImpl.updateOrderStatus` is the one offline branch on this repository.
+        Pending-sync badge on the owner desk, courier active list, and order-detail page;
+        blame-free banner on a real rejection. Every task went through spec-compliance +
+        quality review; two tasks (owner desk, order detail) hit the same real bug in their
+        own plan text — `watchAll()` never replays to a late subscriber, so a page-scoped
+        bloc that only subscribed (no initial seed) silently lost the pending badge and the
+        double-queue guard on navigate-away-and-back — fixed via a new sync
+        `OfflineMutationQueue.allPending`/`pendingForOrder` seed in each bloc's constructor,
+        re-reviewed clean; the courier list task had the fix folded in from the start and
+        needed no correction. Gates green: analyze 0, test 275/275, parity 787. Live device
+        pass still owed (same as every session before a device connects). Remaining O2 scope
+        (order placement, driver assignment, catalog/console mutations) is still fully
+        unscoped — each needs its own design pass per the original design doc.
 
 ## Standing regression (added 2026-07-10)
 

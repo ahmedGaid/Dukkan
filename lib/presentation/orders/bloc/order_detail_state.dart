@@ -33,6 +33,8 @@ class OrderDetailState extends Equatable {
     this.customer,
     this.area,
     this.notes,
+    this.pendingTargetStatus,
+    this.syncFailureReason,
   });
 
   final OrderDetailStatus status;
@@ -56,6 +58,16 @@ class OrderDetailState extends Equatable {
   /// snapshot hasn't arrived yet, empty list once it has and there are none.
   final List<OrderNote>? notes;
 
+  /// The offline-queued target status for this order (O2 slice 1), null when
+  /// nothing is queued. Overrides the displayed status/stepper the same way
+  /// `pendingStatuses` does on the owner desk and courier list.
+  final OrderStatus? pendingTargetStatus;
+
+  /// Set once when the queue reports this order's mutation was rejected
+  /// (not a network blip) — the page shows a blame-free banner and fires
+  /// [OrderDetailSyncFailureDismissed] to clear it back to null.
+  final String? syncFailureReason;
+
   bool get isCancelling => cancelStatus == OrderCancelStatus.submitting;
   bool get isRating => rateStatus == OrderRateStatus.submitting;
   bool get isAdvancing => advanceStatus == OrderAdvanceStatus.submitting;
@@ -71,6 +83,8 @@ class OrderDetailState extends Equatable {
     AppUser? customer,
     Area? area,
     List<OrderNote>? notes,
+    OrderStatus? pendingTargetStatus,
+    String? syncFailureReason,
   }) {
     return OrderDetailState(
       status: status ?? this.status,
@@ -82,8 +96,28 @@ class OrderDetailState extends Equatable {
       customer: customer ?? this.customer,
       area: area ?? this.area,
       notes: notes ?? this.notes,
+      pendingTargetStatus: pendingTargetStatus ?? this.pendingTargetStatus,
+      syncFailureReason: syncFailureReason ?? this.syncFailureReason,
     );
   }
+
+  /// `copyWith`'s `??`-fallback pattern can never set a field back to null
+  /// once non-null (every other field in this class has the same
+  /// limitation) — clearing [syncFailureReason] needs this dedicated path
+  /// instead of `copyWith(syncFailureReason: null)`.
+  OrderDetailState clearSyncFailure() => OrderDetailState(
+        status: status,
+        order: order,
+        cancelStatus: cancelStatus,
+        rateStatus: rateStatus,
+        advanceStatus: advanceStatus,
+        staffActionStatus: staffActionStatus,
+        customer: customer,
+        area: area,
+        notes: notes,
+        pendingTargetStatus: pendingTargetStatus,
+        syncFailureReason: null,
+      );
 
   @override
   List<Object?> get props => [
@@ -96,5 +130,7 @@ class OrderDetailState extends Equatable {
         customer,
         area,
         notes,
+        pendingTargetStatus,
+        syncFailureReason,
       ];
 }

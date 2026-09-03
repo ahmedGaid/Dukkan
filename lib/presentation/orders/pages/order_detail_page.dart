@@ -17,6 +17,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../widgets/common/app_snackbar.dart';
 import '../../widgets/common/empty_state.dart';
+import '../../widgets/common/pending_sync_badge.dart';
 import '../../widgets/common/price_tag.dart';
 import '../../widgets/common/skeletons.dart';
 import '../../widgets/common/status_chip.dart';
@@ -127,7 +128,8 @@ class _OrderDetailView extends StatelessWidget {
             previous.cancelStatus != current.cancelStatus ||
             previous.rateStatus != current.rateStatus ||
             previous.advanceStatus != current.advanceStatus ||
-            previous.staffActionStatus != current.staffActionStatus,
+            previous.staffActionStatus != current.staffActionStatus ||
+            previous.syncFailureReason != current.syncFailureReason,
         listener: (context, state) {
           if (state.cancelStatus == OrderCancelStatus.failure) {
             AppSnackBar.error(context, l10n.orderCancelErrorBody);
@@ -140,6 +142,10 @@ class _OrderDetailView extends StatelessWidget {
           }
           if (state.staffActionStatus == StaffActionStatus.failure) {
             AppSnackBar.error(context, l10n.staffOrderActionErrorBody);
+          }
+          if (state.syncFailureReason != null) {
+            AppSnackBar.error(context, l10n.offlineSyncFailedBody);
+            context.read<OrderDetailBloc>().add(const OrderDetailSyncFailureDismissed());
           }
         },
         builder: (context, state) => switch (state.status) {
@@ -162,6 +168,7 @@ class _OrderDetailView extends StatelessWidget {
               isRating: state.isRating,
               isAdvancing: state.isAdvancing,
               isStaffActionBusy: state.isStaffActionBusy,
+              pendingTargetStatus: state.pendingTargetStatus,
               onCancel: () => _confirmCancel(context),
               onRate: (rating) => context
                   .read<OrderDetailBloc>()
@@ -185,6 +192,7 @@ class _OrderDetailContent extends StatelessWidget {
     required this.isRating,
     required this.isAdvancing,
     required this.isStaffActionBusy,
+    required this.pendingTargetStatus,
     required this.onCancel,
     required this.onRate,
     required this.onAdvance,
@@ -207,6 +215,10 @@ class _OrderDetailContent extends StatelessWidget {
   final bool isRating;
   final bool isAdvancing;
   final bool isStaffActionBusy;
+
+  /// The offline-queued target status for this order (O2 slice 1), null when
+  /// nothing is queued — overrides the displayed status/stepper.
+  final OrderStatus? pendingTargetStatus;
   final VoidCallback onCancel;
   final ValueChanged<int> onRate;
   final ValueChanged<OrderStatus> onAdvance;
@@ -217,13 +229,22 @@ class _OrderDetailContent extends StatelessWidget {
     final locale = Localizations.localeOf(context).languageCode;
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final view = orderStatusView(l10n, order.status);
+    final effectiveStatus = pendingTargetStatus ?? order.status;
+    final view = orderStatusView(l10n, effectiveStatus);
     final isOwner = role == OrderViewerRole.owner;
     final isCourier = role == OrderViewerRole.courier;
     final isStaff = role == OrderViewerRole.staff;
     final areaName = area == null ? null : (locale == 'ar' ? area!.nameAr : area!.nameEn);
     final isTerminalBranch =
         order.status == OrderStatus.cancelled || order.status == OrderStatus.rejected;
+    // Null out the action once a mutation is already queued for this order
+    // — same reasoning as `order_desk_page.dart`'s `_OwnerOrderCard`
+    // (nulls `primary`/`secondary` on `pendingStatus != null`): the button
+    // is labeled from `order.status`, the real (stale-while-queued) status,
+    // so a second tap before the queued write lands would target the wrong
+    // next status and queue a duplicate transition (final-review C1).
+    final courierAction =
+        pendingTargetStatus == null ? courierPrimaryAction(l10n, order.status) : null;
 
     return Column(
       children: [
@@ -245,7 +266,11 @@ class _OrderDetailContent extends StatelessWidget {
               if (isTerminalBranch)
                 StatusChip(label: view.label, tone: view.tone)
               else
-                OrderStatusStepper(status: order.status),
+                OrderStatusStepper(status: effectiveStatus),
+              if (pendingTargetStatus != null) ...[
+                const SizedBox(height: AppSpacing.sm),
+                const PendingSyncBadge(),
+              ],
               const SizedBox(height: AppSpacing.lg),
               Text(l10n.checkoutSummary, style: text.titleSmall),
               const SizedBox(height: AppSpacing.sm),
@@ -331,7 +356,7 @@ class _OrderDetailContent extends StatelessWidget {
               ),
             ),
           )
-        else if (isCourier && courierPrimaryAction(l10n, order.status) != null)
+        else if (isCourier && courierAction != null)
           DecoratedBox(
             decoration: BoxDecoration(
               color: scheme.surface,
@@ -342,10 +367,8 @@ class _OrderDetailContent extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 child: FilledButton(
-                  onPressed: isAdvancing
-                      ? null
-                      : () => onAdvance(
-                          courierPrimaryAction(l10n, order.status)!.target),
+                  onPressed:
+                      isAdvancing ? null : () => onAdvance(courierAction.target),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(52),
                     shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
@@ -356,7 +379,7 @@ class _OrderDetailContent extends StatelessWidget {
                           height: AppSpacing.lg,
                           child: CircularProgressIndicator(strokeWidth: 2.5),
                         )
-                      : Text(courierPrimaryAction(l10n, order.status)!.label),
+                      : Text(courierAction.label),
                 ),
               ),
             ),

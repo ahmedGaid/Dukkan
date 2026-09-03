@@ -11,12 +11,14 @@ import '../../../domain/driver/entities/driver.dart';
 import '../../../domain/driver/usecases/set_driver_online.dart';
 import '../../../domain/driver/usecases/watch_driver.dart';
 import '../../../domain/order/entities/order.dart';
+import '../../../domain/order/entities/order_status.dart';
 import '../../../domain/shop/entities/shop.dart';
 import '../../../domain/shop/usecases/watch_shop.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../orders/order_status_view.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/empty_state.dart';
+import '../../widgets/common/pending_sync_badge.dart';
 import '../../widgets/common/price_tag.dart';
 import '../../widgets/common/skeletons.dart';
 import '../../widgets/common/status_chip.dart';
@@ -222,8 +224,11 @@ class _DeliveriesList extends StatelessWidget {
                   itemCount: orders.length,
                   separatorBuilder: (_, _) =>
                       const SizedBox(height: AppSpacing.sm),
-                  itemBuilder: (context, i) =>
-                      _DeliveryCard(order: orders[i], areas: state.areas),
+                  itemBuilder: (context, i) => _DeliveryCard(
+                    order: orders[i],
+                    areas: state.areas,
+                    pendingStatus: state.pendingStatuses[orders[i].id],
+                  ),
                 ),
         };
       },
@@ -232,10 +237,11 @@ class _DeliveriesList extends StatelessWidget {
 }
 
 class _DeliveryCard extends StatefulWidget {
-  const _DeliveryCard({required this.order, required this.areas});
+  const _DeliveryCard({required this.order, required this.areas, this.pendingStatus});
 
   final Order order;
   final List<Area> areas;
+  final OrderStatus? pendingStatus;
 
   @override
   State<_DeliveryCard> createState() => _DeliveryCardState();
@@ -260,7 +266,8 @@ class _DeliveryCardState extends State<_DeliveryCard> {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final order = widget.order;
-    final view = orderStatusView(l10n, order.status);
+    final effectiveStatus = widget.pendingStatus ?? order.status;
+    final view = orderStatusView(l10n, effectiveStatus);
     final area = _areaFor(order.deliveryAddress.areaId);
     final dim = text.bodySmall?.copyWith(color: scheme.onSurface.withValues(alpha: 0.6));
 
@@ -288,7 +295,16 @@ class _DeliveryCardState extends State<_DeliveryCard> {
                   },
                 ),
               ),
-              StatusChip(label: view.label, tone: view.tone),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  StatusChip(label: view.label, tone: view.tone),
+                  if (widget.pendingStatus != null) ...[
+                    const SizedBox(width: AppSpacing.xs),
+                    const PendingSyncBadge(),
+                  ],
+                ],
+              ),
             ],
           ),
           if (area != null) ...[

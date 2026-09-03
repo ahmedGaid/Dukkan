@@ -537,6 +537,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orderForcedChip => 'تصحيح إداري';
 
   @override
+  String get offlineSyncPendingBadge => 'قيد المزامنة';
+
+  @override
+  String get offlineSyncFailedBody => 'حصلت مشكلة في المزامنة — جرّب تاني';
+
+  @override
   String get orderNotesTitle => 'الملاحظات الداخلية';
 
   @override

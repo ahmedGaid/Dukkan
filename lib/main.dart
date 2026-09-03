@@ -12,6 +12,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/di/injector.dart';
 import 'core/l10n/locale_controller.dart';
 import 'core/notifications/notification_service.dart';
+import 'core/offline/offline_mutation_queue.dart';
 import 'core/notifications/root_messenger_key.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -49,6 +50,12 @@ Future<void> main() async {
     };
   }
   await initDependencies();
+  // Registers the app-resume observer from boot, and — if a queue survived
+  // an app kill — attempts a replay right away instead of waiting for the
+  // user to change another order or background/foreground the app
+  // (final-review I1). Safe this early because replay is gated on
+  // `FirebaseAuth.currentUser` being non-null (final-review C2).
+  sl<OfflineMutationQueue>();
   unawaited(sl<NotificationService>().init());
   runApp(const DukkanApp());
 }

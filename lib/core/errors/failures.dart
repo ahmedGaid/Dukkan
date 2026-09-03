@@ -13,7 +13,16 @@ abstract class Failure extends Equatable {
 }
 
 class ServerFailure extends Failure {
-  const ServerFailure([super.message]);
+  const ServerFailure([super.message, this.code]);
+
+  /// The originating `FirebaseException.code`, when known — lets a caller
+  /// (the offline mutation queue's replay loop) tell "still offline" apart
+  /// from "the server actually rejected this" without parsing [message].
+  /// Null for every failure that isn't wrapping a `FirebaseException`.
+  final String? code;
+
+  @override
+  List<Object?> get props => [message, code];
 }
 
 class CacheFailure extends Failure {

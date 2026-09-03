@@ -71,3 +71,13 @@ class _AreasArrived extends DeliveriesEvent {
   @override
   List<Object?> get props => [areas];
 }
+
+/// Internal: the offline queue's contents changed.
+class _PendingMutationsUpdated extends DeliveriesEvent {
+  const _PendingMutationsUpdated(this.mutations);
+
+  final List<PendingMutation> mutations;
+
+  @override
+  List<Object?> get props => [mutations];
+}

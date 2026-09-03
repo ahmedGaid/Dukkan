@@ -1124,6 +1124,18 @@ abstract class AppLocalizations {
   /// **'تصحيح إداري'**
   String get orderForcedChip;
 
+  /// No description provided for @offlineSyncPendingBadge.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد المزامنة'**
+  String get offlineSyncPendingBadge;
+
+  /// No description provided for @offlineSyncFailedBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'حصلت مشكلة في المزامنة — جرّب تاني'**
+  String get offlineSyncFailedBody;
+
   /// No description provided for @orderNotesTitle.
   ///
   /// In ar, this message translates to:
