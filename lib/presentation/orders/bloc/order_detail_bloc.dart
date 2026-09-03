@@ -50,7 +50,10 @@ part 'order_detail_state.dart';
 /// ever watches one order. A real rejection for this order (not a network
 /// blip) arrives via [OfflineMutationQueue.failures] as a one-shot
 /// `syncFailureReason`, cleared by [OrderDetailSyncFailureDismissed] once the
-/// page has shown it.
+/// page has shown it — a rejection that already happened before this page
+/// opened is likewise seeded from [OfflineMutationQueue.unseenFailures] and
+/// marked shown via `markFailureSeen` (final-review I2), same
+/// seed-then-live-stream shape as `pendingTargetStatus` above.
 class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
   OrderDetailBloc({
     required String orderId,
@@ -125,6 +128,17 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     _failureSub = _queue.failures
         .where((f) => f.orderId == _orderId)
         .listen((f) => add(_SyncFailureArrived(f.reason)));
+
+    // A rejection for this order can have landed while no page for it was
+    // open — replay runs on a 15s timer / app-resume, not "the user has
+    // this order's detail page open", so `failures` (unbuffered, no late
+    // subscribers) would otherwise lose it silently (final-review I2).
+    // Mirrors `pendingTargetStatus`'s seed-from-sync-snapshot pattern above.
+    final missed = _queue.unseenFailures.where((f) => f.orderId == _orderId);
+    if (missed.isNotEmpty) {
+      add(_SyncFailureArrived(missed.first.reason));
+      _queue.markFailureSeen(_orderId);
+    }
   }
 
   final String _orderId;
@@ -282,6 +296,13 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     emit(state.copyWith(advanceStatus: OrderAdvanceStatus.submitting));
     try {
       await _updateOrderStatus(_orderId, event.target);
+      // Reset here instead of relying on the next `_onArrived` snapshot: a
+      // successful call can mean "wrote to Firestore" (a snapshot is on the
+      // way) OR "only enqueued for later while offline" (no snapshot is
+      // ever coming for this) — the offline branch's success looks
+      // identical from here (final-review C1). Waiting for a snapshot that
+      // may never arrive left the button stuck on "submitting" forever.
+      emit(state.copyWith(advanceStatus: OrderAdvanceStatus.idle));
       if (_role == OrderViewerRole.courier &&
           event.target == OrderStatus.delivered) {
         _notifyShopOwner();

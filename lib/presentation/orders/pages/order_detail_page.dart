@@ -237,6 +237,14 @@ class _OrderDetailContent extends StatelessWidget {
     final areaName = area == null ? null : (locale == 'ar' ? area!.nameAr : area!.nameEn);
     final isTerminalBranch =
         order.status == OrderStatus.cancelled || order.status == OrderStatus.rejected;
+    // Null out the action once a mutation is already queued for this order
+    // — same reasoning as `order_desk_page.dart`'s `_OwnerOrderCard`
+    // (nulls `primary`/`secondary` on `pendingStatus != null`): the button
+    // is labeled from `order.status`, the real (stale-while-queued) status,
+    // so a second tap before the queued write lands would target the wrong
+    // next status and queue a duplicate transition (final-review C1).
+    final courierAction =
+        pendingTargetStatus == null ? courierPrimaryAction(l10n, order.status) : null;
 
     return Column(
       children: [
@@ -348,7 +356,7 @@ class _OrderDetailContent extends StatelessWidget {
               ),
             ),
           )
-        else if (isCourier && courierPrimaryAction(l10n, order.status) != null)
+        else if (isCourier && courierAction != null)
           DecoratedBox(
             decoration: BoxDecoration(
               color: scheme.surface,
@@ -359,10 +367,8 @@ class _OrderDetailContent extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 child: FilledButton(
-                  onPressed: isAdvancing
-                      ? null
-                      : () => onAdvance(
-                          courierPrimaryAction(l10n, order.status)!.target),
+                  onPressed:
+                      isAdvancing ? null : () => onAdvance(courierAction.target),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(52),
                     shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
@@ -373,7 +379,7 @@ class _OrderDetailContent extends StatelessWidget {
                           height: AppSpacing.lg,
                           child: CircularProgressIndicator(strokeWidth: 2.5),
                         )
-                      : Text(courierPrimaryAction(l10n, order.status)!.label),
+                      : Text(courierAction.label),
                 ),
               ),
             ),

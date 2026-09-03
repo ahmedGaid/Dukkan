@@ -1,6 +1,6 @@
-import '../../../core/network/network_info.dart';
 import '../../../core/offline/offline_mutation_queue.dart';
 import '../../../core/offline/pending_mutation.dart';
+import '../../../core/errors/failures.dart';
 import '../../../domain/order/entities/address.dart';
 import '../../../domain/order/entities/order.dart';
 import '../../../domain/order/entities/order_item.dart';
@@ -16,12 +16,10 @@ import '../datasources/order_remote_datasource.dart';
 class OrderRepositoryImpl implements OrderRepository {
   OrderRepositoryImpl(
     OrderRemoteDataSource remote, {
-    required NetworkInfo networkInfo,
     required OfflineMutationQueue queue,
     required String? Function() currentUidProvider,
   })  : _updateOrderStatusRemote = remote.updateOrderStatus,
         _remote = remote,
-        _networkInfo = networkInfo,
         _queue = queue,
         _currentUidProvider = currentUidProvider;
 
@@ -31,18 +29,15 @@ class OrderRepositoryImpl implements OrderRepository {
   /// [OrderRemoteDataSource.updateOrderStatus].
   OrderRepositoryImpl.forTest({
     required Future<void> Function(String orderId, OrderStatus status) updateOrderStatusRemote,
-    required NetworkInfo networkInfo,
     required OfflineMutationQueue queue,
     required String? Function() currentUidProvider,
   })  : _updateOrderStatusRemote = updateOrderStatusRemote,
         _remote = null,
-        _networkInfo = networkInfo,
         _queue = queue,
         _currentUidProvider = currentUidProvider;
 
   final OrderRemoteDataSource? _remote;
   final Future<void> Function(String orderId, OrderStatus status) _updateOrderStatusRemote;
-  final NetworkInfo _networkInfo;
   final OfflineMutationQueue _queue;
   final String? Function() _currentUidProvider;
 
@@ -102,18 +97,30 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<void> cancelOrder(String orderId) => _remote!.cancelOrder(orderId);
 
+  /// Try-then-queue, not check-then-branch (final-review I3): attempts the
+  /// real write first and only falls back to the offline queue when it
+  /// throws a [ServerFailure] that [isOfflineShapedFailure] recognizes as
+  /// "couldn't reach the server", rather than paying a `NetworkInfo` probe
+  /// (2 real HTTP requests) ahead of every single call. This also closes
+  /// the old check-then-branch's gap where connectivity could drop (or the
+  /// probe could succeed through something that can't actually reach
+  /// Firestore) between the check and the write — that write used to throw
+  /// straight to the caller instead of being queued; now the same write
+  /// attempt IS the check.
   @override
   Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
-    if (await _networkInfo.isConnected) {
-      return _updateOrderStatusRemote(orderId, status);
+    try {
+      await _updateOrderStatusRemote(orderId, status);
+    } on ServerFailure catch (e) {
+      if (!isOfflineShapedFailure(e)) rethrow;
+      await _queue.enqueue(PendingMutation(
+        id: '${DateTime.now().microsecondsSinceEpoch}-$orderId',
+        orderId: orderId,
+        targetStatus: status,
+        actorUid: _currentUidProvider() ?? '',
+        enqueuedAt: DateTime.now(),
+      ));
     }
-    await _queue.enqueue(PendingMutation(
-      id: '${DateTime.now().microsecondsSinceEpoch}-$orderId',
-      orderId: orderId,
-      targetStatus: status,
-      actorUid: _currentUidProvider() ?? '',
-      enqueuedAt: DateTime.now(),
-    ));
   }
 
   @override

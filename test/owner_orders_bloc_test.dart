@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:dukkan/core/network/network_info.dart';
+import 'package:dukkan/core/errors/failures.dart';
 import 'package:dukkan/core/offline/offline_mutation_queue.dart';
 import 'package:dukkan/core/offline/pending_mutation.dart';
 import 'package:dukkan/domain/order/entities/address.dart';
@@ -13,10 +13,12 @@ import 'package:dukkan/presentation/orders/bloc/owner_orders_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class _FakeNetworkInfo implements NetworkInfo {
-  @override
-  Future<bool> get isConnected async => false;
-}
+/// Always throws an offline-shaped [ServerFailure] — deterministically keeps
+/// an enqueued mutation queued (mirrors the old always-`false`
+/// `_FakeNetworkInfo`, now that replay has no upfront connectivity probe to
+/// gate on, final-review I3).
+Future<void> _neverReaches(String orderId, OrderStatus status) async =>
+    throw const ServerFailure('offline', 'unavailable');
 
 /// Drives the shop-orders stream by hand (mirrors `_FakeOrderRepository` in
 /// orders_bloc_test.dart).
@@ -105,8 +107,8 @@ void main() {
     repo = _FakeOrderRepository();
     queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo(),
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      remoteUpdate: _neverReaches,
     );
     bloc = OwnerOrdersBloc(
       shopId: 's1',
@@ -129,8 +131,8 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo(),
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      remoteUpdate: _neverReaches,
     );
     final queuedBloc = OwnerOrdersBloc(
       shopId: 's1',
@@ -163,8 +165,8 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo(),
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      remoteUpdate: _neverReaches,
     );
     addTearDown(queue.dispose);
 
@@ -196,8 +198,8 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo(),
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      remoteUpdate: _neverReaches,
     );
     final queuedBloc = OwnerOrdersBloc(
       shopId: 's1',

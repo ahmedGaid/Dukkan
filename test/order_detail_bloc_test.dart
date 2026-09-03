@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dukkan/core/errors/failures.dart';
-import 'package:dukkan/core/network/network_info.dart';
 import 'package:dukkan/core/offline/offline_mutation_queue.dart';
 import 'package:dukkan/core/offline/pending_mutation.dart';
 import 'package:dukkan/domain/admin/entities/orders_page.dart';
@@ -31,12 +30,6 @@ import 'package:dukkan/presentation/orders/bloc/order_detail_bloc.dart';
 import 'package:dukkan/presentation/orders/order_viewer_role.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class _FakeNetworkInfo implements NetworkInfo {
-  bool connected = true;
-  @override
-  Future<bool> get isConnected async => connected;
-}
 
 /// Not exercised by these tests — the staff role has its own suite. Every
 /// method just returns an empty/no-op result so it can satisfy
@@ -245,7 +238,7 @@ void main() {
     adminRepo = _FakeAdminOrdersRepository();
     queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo(),
+      currentUidProvider: () => 'u1',
       remoteUpdate: (_, _) async {},
     );
     bloc = OrderDetailBloc(
@@ -498,6 +491,25 @@ void main() {
     expect(bloc.state.order!.status, OrderStatus.preparing);
   });
 
+  test(
+      'advanceStatus returns to idle after a successful advance even when no '
+      'stream snapshot ever arrives (final-review C1) — an advance that only '
+      'enqueued while offline succeeds from the bloc\'s point of view exactly '
+      'like this: no exception, but no Firestore write to produce a '
+      'snapshot either, so the button must not be left stuck on '
+      '"submitting" forever waiting for one', () async {
+    bloc.add(const OrderDetailStarted());
+    await tick();
+    repo.controller.add(_order(OrderStatus.preparing));
+    await tick();
+
+    bloc.add(const OrderDetailAdvanceRequested(OrderStatus.outForDelivery));
+    await tick();
+
+    expect(repo.advanceCalls, 1);
+    expect(bloc.state.advanceStatus, OrderAdvanceStatus.idle);
+  });
+
   test('a failed courier advance surfaces advanceStatus.failure', () async {
     repo.advanceShouldFail = true;
     bloc.add(const OrderDetailStarted());
@@ -592,11 +604,14 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    final network = _FakeNetworkInfo()..connected = false;
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: network,
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      // Never lets replay succeed — the mutation enqueued below must stay
+      // queued (and therefore keep surfacing as `pendingTargetStatus`)
+      // through this test's own `tick()`.
+      remoteUpdate: (_, _) async =>
+          throw const ServerFailure('offline', 'unavailable'),
     );
     final queuedBloc = OrderDetailBloc(
       orderId: 'o1',
@@ -635,10 +650,9 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    final network = _FakeNetworkInfo()..connected = true;
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: network,
+      currentUidProvider: () => 'u1',
       remoteUpdate: (_, _) async => throw const ServerFailure('denied', 'permission-denied'),
     );
     final queuedBloc = OrderDetailBloc(
@@ -685,15 +699,18 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    final network = _FakeNetworkInfo()..connected = false;
     final preQueue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: network,
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      // Never lets replay succeed — irrelevant to this test's own
+      // synchronous assertion below, but keeps the mutation queued through
+      // the later `OrderDetailStarted`/`tick()` drive at the end too.
+      remoteUpdate: (_, _) async =>
+          throw const ServerFailure('offline', 'unavailable'),
     );
     addTearDown(preQueue.dispose);
 
-    // Queued (and left pending, since `network.connected = false`) BEFORE
+    // Queued (and left pending) BEFORE
     // the bloc — and therefore its watchAll() subscription — exists.
     // watchAll() never replays to a late subscriber, so this only surfaces
     // if the bloc also reads OfflineMutationQueue.pendingForOrder(orderId)
@@ -734,5 +751,59 @@ void main() {
     await tick();
     repo.controller.add(_order(OrderStatus.preparing));
     await tick();
+  });
+
+  test(
+      'a sync failure recorded before the bloc is constructed still surfaces '
+      '(final-review I2) — the rejection can land while no page for this '
+      'order is open at all (replay runs on a timer / app-resume), so it '
+      'must not be lost the way an unbuffered broadcast stream would lose '
+      'it', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final preQueue = OfflineMutationQueue(
+      prefs: prefs,
+      currentUidProvider: () => 'u1',
+      remoteUpdate: (_, _) async =>
+          throw const ServerFailure('denied', 'permission-denied'),
+    );
+    addTearDown(preQueue.dispose);
+
+    // Rejected while nobody was subscribed to `failures` — in particular,
+    // before this order's bloc (and its `.failures` listener) existed.
+    await preQueue.enqueue(PendingMutation(
+      id: 'm1',
+      orderId: 'o1',
+      targetStatus: OrderStatus.outForDelivery,
+      actorUid: 'u1',
+      enqueuedAt: DateTime(2026, 8, 11),
+    ));
+    await Future<void>.delayed(Duration.zero);
+    expect(preQueue.unseenFailures.single.orderId, 'o1');
+
+    final queuedBloc = OrderDetailBloc(
+      orderId: 'o1',
+      watchOrder: WatchOrder(repo),
+      cancelOrder: CancelOrder(repo),
+      rateOrder: RateOrder(repo),
+      updateOrderStatus: UpdateOrderStatus(repo),
+      forceOrderStatus: ForceOrderStatus(adminRepo),
+      reassignOrderDriver: ReassignOrderDriver(adminRepo),
+      staffCancelOrder: CancelOrderAsStaff(adminRepo),
+      watchOrderNotes: WatchOrderNotes(adminRepo),
+      addOrderNote: AddOrderNote(adminRepo),
+      queue: preQueue,
+    );
+    addTearDown(queuedBloc.close);
+
+    queuedBloc.add(const OrderDetailStarted());
+    await tick();
+    repo.controller.add(_order(OrderStatus.preparing));
+    await tick();
+
+    expect(queuedBloc.state.syncFailureReason, isNotNull);
+    // Shown once — the queue's own unseen backlog no longer holds it.
+    expect(preQueue.unseenFailures, isEmpty);
   });
 }

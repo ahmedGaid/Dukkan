@@ -1,5 +1,4 @@
 import 'package:dukkan/core/errors/failures.dart';
-import 'package:dukkan/core/network/network_info.dart';
 import 'package:dukkan/core/offline/offline_mutation_queue.dart';
 import 'package:dukkan/core/offline/pending_mutation.dart';
 import 'package:dukkan/domain/order/entities/order_status.dart';
@@ -7,17 +6,19 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class _FakeNetworkInfo implements NetworkInfo {
-  bool connected = true;
-  @override
-  Future<bool> get isConnected async => connected;
-}
+/// Always throws an offline-shaped [ServerFailure] — used wherever a test
+/// needs a replay attempt to be made (so it counts as "attempted") but never
+/// succeed, deterministically, instead of racing a trivially-succeeding
+/// fake against the test's own un-awaited assertions.
+Future<void> _neverReaches(String orderId, OrderStatus status) async =>
+    throw const ServerFailure('offline', 'unavailable');
 
-PendingMutation _mutation(String id, {String orderId = 'o1'}) => PendingMutation(
+PendingMutation _mutation(String id, {String orderId = 'o1', String actorUid = 'u1'}) =>
+    PendingMutation(
       id: id,
       orderId: orderId,
       targetStatus: OrderStatus.preparing,
-      actorUid: 'u1',
+      actorUid: actorUid,
       enqueuedAt: DateTime(2026, 8, 11),
     );
 
@@ -29,8 +30,8 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo()..connected = false,
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      remoteUpdate: _neverReaches,
     );
 
     expect(queue.pendingForOrder('o1'), isEmpty);
@@ -42,8 +43,8 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo()..connected = false,
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      remoteUpdate: _neverReaches,
     );
 
     await queue.enqueue(_mutation('m1'));
@@ -57,8 +58,8 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo()..connected = false,
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      remoteUpdate: _neverReaches,
     );
 
     final emissions = <int>[];
@@ -77,16 +78,16 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final first = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo()..connected = false,
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      remoteUpdate: _neverReaches,
     );
     await first.enqueue(_mutation('m1'));
     await first.dispose();
 
     final second = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo()..connected = false,
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      remoteUpdate: _neverReaches,
     );
 
     expect(second.pendingForOrder('o1').single.id, 'm1');
@@ -98,17 +99,20 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final first = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo()..connected = false,
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      remoteUpdate: _neverReaches,
     );
     await first.enqueue(_mutation('m1'));
     await first.dispose();
 
-    // Construct a fresh queue with m1 already persisted
+    // Construct a fresh queue with m1 already persisted. `_neverReaches`
+    // keeps the constructor's own auto-replay (final-review I1) from ever
+    // succeeding, so this test's late-subscriber assertion below stays
+    // about broadcast-stream semantics, not a race against that replay.
     final second = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo()..connected = false,
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      remoteUpdate: _neverReaches,
     );
 
     // Subscribe AFTER construction — should not receive an initial emission
@@ -139,8 +143,8 @@ void main() {
     // Should not throw; should construct with an empty queue
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo()..connected = false,
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      remoteUpdate: _neverReaches,
     );
 
     expect(queue.pendingForOrder('o1'), isEmpty);
@@ -157,8 +161,8 @@ void main() {
     // Should not throw; should construct with an empty queue
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo()..connected = false,
-      remoteUpdate: (_, _) async {},
+      currentUidProvider: () => 'u1',
+      remoteUpdate: _neverReaches,
     );
 
     expect(queue.pendingForOrder('o1'), isEmpty);
@@ -170,7 +174,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo(),
+      currentUidProvider: () => 'u1',
       remoteUpdate: (_, _) async {},
     );
 
@@ -186,7 +190,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo(),
+      currentUidProvider: () => 'u1',
       remoteUpdate: (_, _) async =>
           throw const ServerFailure('offline', 'unavailable'),
     );
@@ -198,12 +202,37 @@ void main() {
     await queue.dispose();
   });
 
+  test(
+      'a code-less ServerFailure (e.g. "not signed in" before the write ever '
+      'reaches Firestore) is retried, never treated as a real rejection '
+      '(final-review C2)', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    SyncFailure? failure;
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      currentUidProvider: () => 'u1',
+      // No `code` — mirrors `_advanceStatus`'s "Not signed in" guard, which
+      // fires before any FirebaseException could carry one.
+      remoteUpdate: (_, _) async => throw const ServerFailure('Not signed in'),
+    );
+    final sub = queue.failures.listen((f) => failure = f);
+
+    await queue.enqueue(_mutation('m1'));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(queue.pendingForOrder('o1').single.id, 'm1');
+    expect(failure, isNull);
+    await sub.cancel();
+    await queue.dispose();
+  });
+
   test('replay removes the item and emits SyncFailure on a real rejection', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo(),
+      currentUidProvider: () => 'u1',
       remoteUpdate: (_, _) async =>
           throw const ServerFailure('denied', 'permission-denied'),
     );
@@ -226,7 +255,7 @@ void main() {
     final attempted = <String>[];
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo(),
+      currentUidProvider: () => 'u1',
       remoteUpdate: (orderId, _) async {
         attempted.add(orderId);
         // Only o1 is still-offline; o2 would succeed if it were ever
@@ -257,7 +286,7 @@ void main() {
     final attempted = <String>[];
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo(),
+      currentUidProvider: () => 'u1',
       remoteUpdate: (orderId, _) async {
         attempted.add(orderId);
         if (orderId == 'o1') {
@@ -290,7 +319,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo(),
+      currentUidProvider: () => 'u1',
       remoteUpdate: (orderId, _) async {
         if (orderId == 'o1') {
           throw const ServerFailure('denied', 'permission-denied');
@@ -311,22 +340,28 @@ void main() {
   test('an app resume with a non-empty queue triggers a replay', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    final network = _FakeNetworkInfo()..connected = false;
+    var succeed = false;
     var attempts = 0;
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: network,
-      remoteUpdate: (_, _) async => attempts++,
+      currentUidProvider: () => 'u1',
+      remoteUpdate: (_, _) async {
+        attempts++;
+        if (!succeed) throw const ServerFailure('offline', 'unavailable');
+      },
     );
     await queue.enqueue(_mutation('m1'));
-    expect(attempts, 0); // still offline, the post-enqueue attempt no-ops
+    await Future<void>.delayed(Duration.zero);
+    expect(attempts, 1); // enqueue's own immediate pass; still offline, stays queued
+    expect(queue.pendingForOrder('o1'), isNotEmpty);
 
-    network.connected = true;
+    succeed = true;
     (queue as WidgetsBindingObserver)
       .didChangeAppLifecycleState(AppLifecycleState.resumed);
     await Future<void>.delayed(Duration.zero);
 
-    expect(attempts, 1);
+    expect(attempts, 2);
+    expect(queue.pendingForOrder('o1'), isEmpty);
     await queue.dispose();
   });
 
@@ -336,7 +371,7 @@ void main() {
     var attempts = 0;
     final queue = OfflineMutationQueue(
       prefs: prefs,
-      networkInfo: _FakeNetworkInfo(),
+      currentUidProvider: () => 'u1',
       remoteUpdate: (_, _) async => attempts++,
     );
 
@@ -345,6 +380,144 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(attempts, 0);
+    await queue.dispose();
+  });
+
+  test(
+      'a fresh instance over a persisted non-empty queue attempts remoteUpdate '
+      'without any external trigger (final-review I1)', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final seed = OfflineMutationQueue(
+      prefs: prefs,
+      currentUidProvider: () => 'u1',
+      remoteUpdate: _neverReaches,
+    );
+    await seed.enqueue(_mutation('m1'));
+    await seed.dispose();
+
+    var attempts = 0;
+    final revived = OfflineMutationQueue(
+      prefs: prefs,
+      currentUidProvider: () => 'u1',
+      remoteUpdate: (_, _) async => attempts++,
+    );
+    // No enqueue(), no didChangeAppLifecycleState() call — nothing external
+    // triggers a replay here; the constructor itself must have started one.
+    await Future<void>.delayed(Duration.zero);
+
+    expect(attempts, 1);
+    expect(revived.pendingForOrder('o1'), isEmpty);
+    await revived.dispose();
+  });
+
+  test(
+      'a mutation queued under a different signed-in identity is left queued, '
+      'never replayed under the current one (final-review I4)', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final attempted = <String>[];
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      currentUidProvider: () => 'u2', // a different user is signed in now
+      remoteUpdate: (orderId, _) async => attempted.add(orderId),
+    );
+
+    await queue.enqueue(_mutation('m1', actorUid: 'u1'));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(attempted, isEmpty);
+    expect(queue.pendingForOrder('o1').single.id, 'm1');
+    await queue.dispose();
+  });
+
+  test(
+      'a mismatched actor does not block a same-pass mutation from a matching '
+      'actor (final-review I4)', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final attempted = <String>[];
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      currentUidProvider: () => 'u2',
+      remoteUpdate: (orderId, _) async => attempted.add(orderId),
+    );
+
+    await queue.enqueue(_mutation('m1', orderId: 'o1', actorUid: 'u1'));
+    await queue.enqueue(_mutation('m2', orderId: 'o2', actorUid: 'u2'));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(attempted, ['o2']);
+    expect(queue.pendingForOrder('o1'), isNotEmpty); // skipped, not attempted
+    expect(queue.pendingForOrder('o2'), isEmpty); // matching actor, replayed
+    await queue.dispose();
+  });
+
+  test(
+      'replay never attempts or drops anything while nobody is signed in '
+      '(final-review C2/I4)', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final attempted = <String>[];
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      currentUidProvider: () => null,
+      remoteUpdate: (orderId, _) async => attempted.add(orderId),
+    );
+
+    await queue.enqueue(_mutation('m1'));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(attempted, isEmpty);
+    expect(queue.pendingForOrder('o1').single.id, 'm1');
+    await queue.dispose();
+  });
+
+  test(
+      'a sync failure survives with nobody subscribed at emission time, and '
+      'is retrievable afterward (final-review I2)', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      currentUidProvider: () => 'u1',
+      remoteUpdate: (_, _) async =>
+          throw const ServerFailure('denied', 'permission-denied'),
+    );
+
+    // Nobody is listening to `failures` right now — no `.listen(...)` call
+    // anywhere in this test before the failure fires.
+    await queue.enqueue(_mutation('m1'));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(queue.pendingForOrder('o1'), isEmpty); // dropped as a real rejection
+    expect(queue.unseenFailures.single.orderId, 'o1'); // but not lost
+
+    queue.markFailureSeen('o1');
+    expect(queue.unseenFailures, isEmpty);
+
+    await queue.dispose();
+  });
+
+  test('markFailureSeen only clears the named order, not every unseen failure', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final queue = OfflineMutationQueue(
+      prefs: prefs,
+      currentUidProvider: () => 'u1',
+      remoteUpdate: (_, _) async =>
+          throw const ServerFailure('denied', 'permission-denied'),
+    );
+
+    await queue.enqueue(_mutation('m1', orderId: 'o1'));
+    await queue.enqueue(_mutation('m2', orderId: 'o2'));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(queue.unseenFailures.map((f) => f.orderId), containsAll(['o1', 'o2']));
+
+    queue.markFailureSeen('o1');
+
+    expect(queue.unseenFailures.map((f) => f.orderId), ['o2']);
     await queue.dispose();
   });
 }

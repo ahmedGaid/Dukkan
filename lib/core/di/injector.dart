@@ -983,14 +983,13 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(
     () => OfflineMutationQueue(
       prefs: sl(),
-      networkInfo: sl(),
       remoteUpdate: (orderId, status) => sl<OrderRemoteDataSource>().updateOrderStatus(orderId, status),
+      currentUidProvider: () => sl<FirebaseAuth>().currentUser?.uid,
     ),
   );
   sl.registerLazySingleton<OrderRepository>(
     () => OrderRepositoryImpl(
       sl(),
-      networkInfo: sl(),
       queue: sl(),
       currentUidProvider: () => sl<FirebaseAuth>().currentUser?.uid,
     ),
