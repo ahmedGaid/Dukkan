@@ -1,6 +1,6 @@
+import '../../../core/errors/failures.dart';
 import '../../../core/offline/offline_mutation_queue.dart';
 import '../../../core/offline/pending_mutation.dart';
-import '../../../core/errors/failures.dart';
 import '../../../domain/order/entities/address.dart';
 import '../../../domain/order/entities/order.dart';
 import '../../../domain/order/entities/order_item.dart';
