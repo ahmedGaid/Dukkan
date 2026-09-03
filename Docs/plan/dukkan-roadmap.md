@@ -803,10 +803,39 @@ shapes.
         double-queue guard on navigate-away-and-back — fixed via a new sync
         `OfflineMutationQueue.allPending`/`pendingForOrder` seed in each bloc's constructor,
         re-reviewed clean; the courier list task had the fix folded in from the start and
-        needed no correction. Gates green: analyze 0, test 275/275, parity 787. Live device
-        pass still owed (same as every session before a device connects). Remaining O2 scope
-        (order placement, driver assignment, catalog/console mutations) is still fully
-        unscoped — each needs its own design pass per the original design doc.
+        needed no correction. **Merged into `feat/c2c-search` 2026-08-12** (commit `8457218`).
+        The final whole-branch review (a step no task-scoped review could cover) found 2
+        Critical + 4 Important cross-task bugs, all rooted in Task 6 changing
+        `updateOrderStatus`'s completion contract (sometimes "queued", not "written") without
+        every downstream consumer being updated for it: the courier's advance button could
+        spin forever offline with no double-queue guard (order-detail page only, owner desk
+        was already correct); a code-less `ServerFailure` (e.g. the async window right after
+        cold start before `FirebaseAuth` restores) was misclassified as a real rejection and
+        silently dropped a queued write; a persisted queue never auto-replayed after an app
+        kill; a real rejection was only visible if that exact order's detail page happened to
+        be open; every online write paid a 2-request connectivity probe (latency + a TOCTOU
+        gap that could miss the offline branch entirely) repeated every 15s while queued items
+        remained; the queue wasn't scoped to a signed-in user (a shared device risked
+        misattributing a replay). One fix wave addressed all six together (a shared
+        `isOfflineShapedFailure` classifier, a `currentUidProvider` auth seam, constructor-time
+        replay of a hydrated queue, a buffered `unseenFailures`/`markFailureSeen` pair, and a
+        try-then-queue inversion that dropped `NetworkInfo` entirely from both classes) —
+        re-reviewed clean, no load-bearing issues remaining. Gates green post-merge: analyze 0,
+        test 286/286, parity 787. **4 minor residuals documented, none blocking** (full detail
+        in the SDD ledger before its deletion — see git history of
+        `.superpowers/sdd/2026-08-11-offline-order-status-queue-plan/progress.md` on the merge
+        commit if needed): (1) a failure shown live while a detail page is open isn't marked
+        seen, so it can re-show as a stale toast next visit — one-line fix, good first-5-minutes
+        task for a future O2 session; (2) a genuinely signed-out write (not just the narrow
+        cold-start race) enqueues under an empty `actorUid` that never matches any signed-in
+        user, permanently soft-locking that order's status actions on every surface — very low
+        reachability, needs a refuse-and-surface-error fix; (3) a `TimeoutException` from a
+        stalled-but-connected write isn't covered by the shared offline classification, so
+        `_replay`'s catch-all drops it as a rejection instead of retrying; (4) the design doc
+        still describes the now-removed `NetworkInfo` pre-check. Live device pass still owed
+        (same as every session before a device connects). Remaining O2 scope (order placement,
+        driver assignment, catalog/console mutations) is still fully unscoped — each needs its
+        own design pass per the original design doc.
 
 ## Standing regression (added 2026-07-10)
 
