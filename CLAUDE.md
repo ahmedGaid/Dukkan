@@ -41,3 +41,8 @@ Green gates + brand-feel check (`dukkan-brand` checklist) = actually done.
 One session = one roadmap session-block. When done: update **`dukkan-status`** skill →
 commit + push → report with **How to test** → tell the user to clear and start a fresh session.
 Blocked? Write blocker into `dukkan-status`, stop, ask.
+
+## Session hand-off (always)
+- At the START of every session: read Docs/NEXT_GOAL.md and continue from it.
+- At the END of every session: write the /goal block for the next session to Docs/NEXT_GOAL.md (overwrite it), commit it, and also print it in your last message. It must include: WHERE we are, NEXT task, READ FIRST, SCOPE, FIT (model), ALSO OPEN, BLOCKED.
+- Build every hand-off from live git (`git log --oneline -12 main`, `git branch --merged main`, `git status`) — never copy status from old notes or status skills. Until `feat/c2c-search` is merged, read `feat/c2c-search` where this says `main`.
